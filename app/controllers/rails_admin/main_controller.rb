@@ -329,6 +329,10 @@ module RailsAdmin
       options.merge!(get_sort_reverse_hash)
       options.merge!(get_query_hash(options))
       options.merge!(get_filter_hash(options))
+      
+      #remove duplicates due to joins caused by the authorization module
+      options.merge!({:select => "distinct #{@abstract_model.model.table_name}.id, #{@abstract_model.model.table_name}.*"})      
+      
       per_page = @model_config.list.items_per_page
 
       scope = @authorization_adapter && @authorization_adapter.query(:list, @abstract_model)
