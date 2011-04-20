@@ -87,7 +87,8 @@
             widget.dialog = null;
           },
           modal: true,
-          width: this.options.width
+          width: this.options.width,
+          height: 600
         });
       }
       return this.dialog;
