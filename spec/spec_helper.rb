@@ -55,7 +55,7 @@ RSpec.configure do |config|
   config.include GeneratorHelpers
 
   # == Mock Framework
-  config.mock_with :rspec
+  config.mock_with :rr
 
   config.include Warden::Test::Helpers
 
