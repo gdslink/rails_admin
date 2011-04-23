@@ -24,6 +24,11 @@ module RailsAdmin
           nil
         end
       end
+      
+      def where(options = {}, scope = nil)
+        scope ||= model
+        scope.where(options)
+      end
 
       def get_bulk(ids, scope = nil)
         scope ||= model

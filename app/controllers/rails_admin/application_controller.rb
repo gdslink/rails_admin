@@ -15,6 +15,26 @@ module RailsAdmin
       not_found if @model_config.excluded?
       @properties = @abstract_model.properties
     end
+    
+    def get_scope_models
+      @scope = {}
+      parent_model = nil
+      RailsAdmin::Config::Scope.models.each do |model|
+        selected = session[:scope][model.name] rescue 
+        options = parent_model ? {"#{parent_model.name.downcase}_id" => selected} : {}
+        @scope[model.name] = {:entries => list_entries_for(model.name, options), :selected => selected };
+        parent_model = model
+      end
+    end
+
+    def list_entries_for(model_name, association = {})
+      abstract_model = RailsAdmin::AbstractModel.new(model_name)
+      scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
+      p "AAAAAAAAAAAAAAAAA"
+      p abstract_model.where(association, scope)
+      p "BBBBBBBBBBBBBBBBBB"      
+      abstract_model.where(association, scope)
+    end
 
     def to_model_name(param)
       parts = param.split("~")

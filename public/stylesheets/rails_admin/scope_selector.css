@@ -1,0 +1,35 @@
+#scopeSelector ul{
+	float: right;
+	padding-top: 5px;
+}
+
+#scopeSelector li{
+	list-style: none;
+	padding-bottom: 3px;
+}
+
+#scopeSelector li label{  
+  display: inline-block;
+	margin-right: 5px;
+	text-align: right;
+	vertical-align: baseline;
+	width: 80px;
+}
+
+#scopeSelector li select{
+	padding: 3px 4px 4px;
+	width: 160px;
+}
+
+label#scopeSelectorLabel{
+	color: #ccc;
+	float: left;
+	font-size: 200%;
+	margin-right: 3px;
+	margin-top: 12px;
+	text-transform: lowercase;
+}
+
+#scopeSelectorLinks {
+	display: inline;
+}

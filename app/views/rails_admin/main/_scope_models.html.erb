@@ -1,0 +1,8 @@
+<%=select_tag model.name, 
+              options_for_select(@scope[model.name][:entries].collect{|o| [o.name, o.id]}, @scope[model.name][:selected]),
+              :id => "scope#{model.name}"
+%>
+<div id="scopeSelectorLinks">
+<a>Add</a>
+<a>Edit</a>
+</div>

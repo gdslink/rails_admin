@@ -1,6 +1,7 @@
 require 'rails_admin/config/model'
 require 'rails_admin/config/sections/list'
 require 'rails_admin/config/sections/navigation'
+require 'rails_admin/config/sections/scope'
 require 'active_support/core_ext/class/attribute_accessors'
 
 module RailsAdmin
@@ -73,6 +74,14 @@ module RailsAdmin
     # @see RailsAdmin::Config::Sections::Navigation
     def self.navigation
       RailsAdmin::Config::Sections::Navigation
+    end
+
+    # Shortcut to access the scope section's class configuration
+    # within a config DSL block
+    #
+    # @see RailsAdmin::Config::Sections::Scope
+    def self.scope
+      RailsAdmin::Config::Scope
     end
 
     # Reset a provided model's configuration. If omitted, reset all model
