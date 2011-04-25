@@ -1,0 +1,35 @@
+<%
+models = RailsAdmin::Config::Scope.models
+%>
+
+<div id='scopeSelector'>
+  <label id='scopeSelectorLabel'>Select the system you want to edit > </label>
+  <ul>
+  <%models.each do |model|%>
+    <li><%=label_tag model.name + ":"%>
+      <%=select_tag model.name, 
+                    options_for_select(@scope[model.name][:entries].collect{|o| [o.name, o.id]}, @scope[model.name][:selected]),
+                    :id => "#{model.name}"
+      %>
+      <div id="scopeSelectorLinks">
+      <a>Add</a>
+      <a>Edit</a>
+      <a>Delete</a>
+      </div>
+    </li>
+  <%end%>
+  </ul>
+
+  <script>
+  jQuery(function(jQuery) {
+      jQuery('<%=models.collect{|model| "##{model.name}"}.join(',')%>').change(function() {
+          jQuery.ajax({url: '<%= url_for :action => :set_scope, :controller => :scope %>',
+          data: 'selected=' + this.value + '&model=' + this.id,
+          dataType: 'text',
+          success: function(html){
+            jQuery("#scopeSelector").html(html);
+          }})
+      });
+  });
+  </script>
+</div>

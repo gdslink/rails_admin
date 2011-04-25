@@ -2,11 +2,12 @@ module RailsAdmin
   class ScopeController < RailsAdmin::ApplicationController
     def set_scope
       session[:scope] = {}
-      RailsAdmin::Config::Scope.models.each do |model|
-        session[:scope][model.name] = params[:selected] if params[:model] == model.name
-      end
+      model = RailsAdmin::Config::Scope.models[RailsAdmin::Config::Scope.models.index { |model| params[:model] == model.name }]
+      session[:scope][model.name] = params[:selected]
       get_scope_models
-      render :nothing => true
+      respond_to do |format|
+        format.js {render :partial => 'scope_selector', :locals => {:models => RailsAdmin::Config::Scope.models}}
+      end
     end
   end
 end

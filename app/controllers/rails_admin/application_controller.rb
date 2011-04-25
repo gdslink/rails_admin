@@ -18,21 +18,21 @@ module RailsAdmin
     
     def get_scope_models
       @scope = {}
-      parent_model = nil
+      parent_model     = nil
+      parent_selection = nil
       RailsAdmin::Config::Scope.models.each do |model|
-        selected = session[:scope][model.name] rescue 
-        options = parent_model ? {"#{parent_model.name.downcase}_id" => selected} : {}
-        @scope[model.name] = {:entries => list_entries_for(model.name, options), :selected => selected };
+        selected = session[:scope][model.name] rescue nil        
+        association = parent_model && parent_selection ? {"#{parent_model.name.downcase}_id" => parent_selection} : parent_model.first.id rescue nil || {}
+        @scope[model.name] = {:entries => list_entries_for(model.name, association), :selected => selected };
         parent_model = model
+        parent_selection = selected
       end
     end
 
     def list_entries_for(model_name, association = {})
       abstract_model = RailsAdmin::AbstractModel.new(model_name)
       scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
-      p "AAAAAAAAAAAAAAAAA"
       p abstract_model.where(association, scope)
-      p "BBBBBBBBBBBBBBBBBB"      
       abstract_model.where(association, scope)
     end
 
