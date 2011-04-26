@@ -9,6 +9,7 @@ module RailsAdmin
           @models = models
           @controller = controller
           @controller.extend ControllerExtension
+          @controller.prepend_before_filter(self.get_scope_models)
         end
         
         # Array of the models defined as part of the scope configuration

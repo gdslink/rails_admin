@@ -1,7 +1,6 @@
 module RailsAdmin
   class MainController < RailsAdmin::ApplicationController
     before_filter :get_model, :except => [:index, :update_scope]
-    before_filter :get_scope_models
     before_filter :get_object, :only => [:edit, :update, :delete, :destroy]
     before_filter :get_bulk_objects, :only => [:bulk_delete, :bulk_destroy]
     before_filter :get_attributes, :only => [:create, :update]
@@ -341,7 +340,7 @@ module RailsAdmin
       per_page = @model_config.list.items_per_page
 
       scope = @authorization_adapter && @authorization_adapter.query(:list, @abstract_model)
-      scope = @scope_adapter.apply_scope(scope, @abstract_model)
+      scope = @scope_adapter.apply_scope(scope, @abstract_model) if @scope_adapter
 
       # external filter
       options.merge!(other)
