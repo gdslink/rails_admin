@@ -1,8 +1,10 @@
     <div id="header">
       <div id="headerLeft">
-        <ul class="scopeSelector">
-          <%= render(:partial => 'rails_admin/main/scope_selector')%>          
-        </ul>
+        <%if @scope_adapter %>
+          <ul class="scopeSelector">
+            <%= render(:partial => 'rails_admin/extensions/scope/scope_selector')%>          
+          </ul>
+        <%end%>
       </div>
 
       <div id="headerRight">

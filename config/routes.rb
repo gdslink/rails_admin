@@ -5,7 +5,7 @@ Rails.application.routes.draw do
     # Routes for rails_admin controller
     controller "main" do
       match "/", :to => :index, :as => "dashboard"
-      match "/set_scope", :to => :set_scope, :as => "set_scope"
+      match "/update_scope", :to => :update_scope, :as => "update_scope"      
       get "/:model_name", :to => :list, :as => "list"
       get "/:model_name/new", :to => :new, :as => "new"
       match "/:model_name/get_pages", :to => :get_pages, :as => "get_pages"

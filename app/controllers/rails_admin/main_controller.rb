@@ -1,6 +1,6 @@
 module RailsAdmin
   class MainController < RailsAdmin::ApplicationController
-    before_filter :get_model, :except => [:index, :set_scope]
+    before_filter :get_model, :except => [:index, :update_scope]
     before_filter :get_scope_models
     before_filter :get_object, :only => [:edit, :update, :delete, :destroy]
     before_filter :get_bulk_objects, :only => [:bulk_delete, :bulk_destroy]
@@ -180,20 +180,6 @@ module RailsAdmin
       redirect_to rails_admin_list_path(:model_name => @abstract_model.to_param)
     end
 
-    def set_scope
-      session[:scope] ||= {}
-      model = RailsAdmin::Config::Scope.models[RailsAdmin::Config::Scope.models.index { |model| params[:model] == model.name }]
-      session[:scope][model.name] = params[:selected]
-      get_scope_models
-      respond_to do |format|
-        format.js {render :partial => 'scope_selector', :locals => {:models => RailsAdmin::Config::Scope.models}}
-      end
-    end
-    
-    def get_scope
-      return session[:scope]
-    end
-
     def handle_error(e)
       if RailsAdmin::AuthenticationNotConfigured === e
         Rails.logger.error e.message
@@ -205,47 +191,12 @@ module RailsAdmin
         super
       end
     end
+    
+    def update_scope
+      super if @scope_adapter
+    end
 
     private
-
-    def retrieve_associations_tree(abstract_model, association_name, tree = [])
-      tree << abstract_model.model
-      abstract_model.associations.each do |assoc|
-        abstract_model = RailsAdmin::AbstractModel.new(assoc[:parent_model].name)
-        retrieve_associations_tree(abstract_model, association_name, tree) if not tree.include?(abstract_model.model)        
-      end
-      tree = nil if not tree.include?(association_name.constantize) rescue nil
-      tree
-    end
-
-
-    def apply_scope(query)
-
-      tree = nil
-      get_scope.each do |key, value|
-        next if @abstract_model.model.name == key
-        tree = retrieve_associations_tree(@abstract_model, key)
-        next if not tree
-        tree.each do |model|
-          next if model == @abstract_model.model
-          #we check if the tree has only one association.
-          #We check the length against 2 because the first element is always
-          #the main model, the next object in the array is the first association etc...
-          if tree.length == 2 then
-            query = query.where("#{model.table_name.singularize}_id = #{value}")
-          else
-            case model.name
-            when key
-              query = query.where("#{model.table_name.singularize}_id = #{value}")
-            else
-              query = query.joins(model.table_name.singularize.to_sym)
-            end
-          end        
-        end
-      end
-      query
-    end
-
 
     def get_bulk_objects
       scope = @authorization_adapter && @authorization_adapter.query(params[:action].to_sym, @abstract_model)
@@ -390,7 +341,7 @@ module RailsAdmin
       per_page = @model_config.list.items_per_page
 
       scope = @authorization_adapter && @authorization_adapter.query(:list, @abstract_model)
-      scope = apply_scope(scope)
+      scope = @scope_adapter.apply_scope(scope, @abstract_model)
 
       # external filter
       options.merge!(other)

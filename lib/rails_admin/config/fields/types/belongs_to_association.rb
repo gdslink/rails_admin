@@ -29,8 +29,9 @@ module RailsAdmin
             :form_belongs_to
           end
 
-          def associated_collection(authorization_adapter)
+          def associated_collection(authorization_adapter, scope_adapter)
             scope = authorization_adapter && authorization_adapter.query(:read, associated_model_config.abstract_model)
+            scope = scope_adapter.apply_scope(scope, associated_model_config.abstract_model) if scope_adapter
             associated_model_config.abstract_model.all({}, scope).map do |object|
               [associated_model_config.with(:object => object).object_label, object.id]
             end

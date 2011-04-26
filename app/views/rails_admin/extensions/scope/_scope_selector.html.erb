@@ -1,5 +1,5 @@
 <%
-models = RailsAdmin::Config::Scope.models
+models = @scope_adapter.models
 %>
 
 <div id='scopeSelector'>
@@ -24,7 +24,7 @@ models = RailsAdmin::Config::Scope.models
   <script>
   jQuery(function(jQuery) {
       jQuery('<%=models.collect{|model| "##{model.name}"}.join(',')%>').change(function() {
-          jQuery.ajax({url: '<%= url_for :action => :set_scope, :controller => :main %>',
+          jQuery.ajax({url: '<%= url_for :action => :update_scope %>',
           data: 'selected=' + this.value + '&model=' + this.id,
           dataType: 'text',
           success: function(html){

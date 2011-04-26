@@ -184,6 +184,10 @@ module RailsAdmin
     def authorization_adapter
       @authorization_adapter
     end
+    
+    def scope_adapter
+      @scope_adapter
+    end
 
     # returns a link to "/" unless there's a problem, which will
     # probably be caused by root_path not being configured.  see
