@@ -9,7 +9,6 @@ module RailsAdmin
           @models = models
           @controller = controller
           @controller.extend ControllerExtension
-          @controller.prepend_before_filter(self.get_scope_models)
         end
         
         # Array of the models defined as part of the scope configuration
@@ -19,8 +18,7 @@ module RailsAdmin
         #
         def models
           @models
-        end
-        
+        end        
         
         # Apply the scope to an ActiveRelation object
         # First argument is the query the scope has to be applied to
@@ -49,7 +47,6 @@ module RailsAdmin
               end        
             end
           end
-          p query.to_sql
           query
         end
         
@@ -71,6 +68,7 @@ module RailsAdmin
         end
                         
         module ControllerExtension
+          
           def current_scope
             # use _current_user instead of default current_user so it works with
             # whatever current user method is defined with RailsAdmin
