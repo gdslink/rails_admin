@@ -6,10 +6,11 @@ models = RailsAdmin::Config::Scope.models
   <label id='scopeSelectorLabel'>Select the system you want to edit > </label>
   <ul>
   <%models.each do |model|%>
-    <li><%=label_tag model.name + ":"%>
-      <%=select_tag model.name, 
-                    options_for_select(@scope[model.name][:entries].collect{|o| [o.name, o.id]}, @scope[model.name][:selected]),
-                    :id => "#{model.name}"
+    <%model_name = model.name%>
+    <li><%=label_tag model.human_name + ":"%>
+      <%=select_tag model_name, 
+                    options_for_select(@scope[model_name][:entries].collect{|o| [o.name, o.id]}, @scope[model_name][:selected]),
+                    :id => "#{model_name}"
       %>
       <div id="scopeSelectorLinks">
       <a>Add</a>
@@ -23,11 +24,12 @@ models = RailsAdmin::Config::Scope.models
   <script>
   jQuery(function(jQuery) {
       jQuery('<%=models.collect{|model| "##{model.name}"}.join(',')%>').change(function() {
-          jQuery.ajax({url: '<%= url_for :action => :set_scope, :controller => :scope %>',
+          jQuery.ajax({url: '<%= url_for :action => :set_scope, :controller => :main %>',
           data: 'selected=' + this.value + '&model=' + this.id,
           dataType: 'text',
           success: function(html){
             jQuery("#scopeSelector").html(html);
+            location.reload();
           }})
       });
   });

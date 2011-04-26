@@ -4,6 +4,7 @@ require 'rails_admin/abstract_history'
 require 'rails_admin/config'
 require 'rails_admin/extension'
 require 'rails_admin/extensions/cancan'
+require 'rails_admin/extensions/scope'
 
 module RailsAdmin
   class AuthenticationNotConfigured < StandardError; end
@@ -34,6 +35,8 @@ module RailsAdmin
   end
 
   DEFAULT_AUTHORIZE = Proc.new {}
+  
+  DEFAULT_SCOPE = Proc.new {}
 
   DEFAULT_CURRENT_USER = Proc.new do
     warden = request.env["warden"]
@@ -137,6 +140,21 @@ module RailsAdmin
     configuration = CONFIGURATION_ADAPTERS[extension].new
     yield(configuration) if block_given?
   end
+
+
+  #TODO: documentation
+  def self.scope_with(*args)
+    extension = args.shift
+
+    if(extension)
+      @scope = Proc.new {
+        @scope_adapter = SCOPE_ADAPTERS[extension].new(*([self] + args).compact)
+      }
+    end
+
+    @scope || DEFAULT_SCOPE
+  end
+    
 
   # Setup RailsAdmin
   #

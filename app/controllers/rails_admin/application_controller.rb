@@ -1,9 +1,10 @@
 require 'rails_admin/abstract_model'
 
 module RailsAdmin
-  class ApplicationController < ::ApplicationController
+  class ApplicationController < ::ApplicationController    
     before_filter :_authenticate!
     before_filter :_authorize!
+    before_filter :_scope!    
     before_filter :set_plugin_name
 
     helper_method :_current_user
@@ -14,26 +15,6 @@ module RailsAdmin
       @model_config = RailsAdmin.config(@abstract_model)
       not_found if @model_config.excluded?
       @properties = @abstract_model.properties
-    end
-    
-    def get_scope_models
-      @scope = {}
-      parent_model     = nil
-      parent_selection = nil
-      RailsAdmin::Config::Scope.models.each do |model|
-        selected = session[:scope][model.name] rescue nil        
-        association = parent_model && parent_selection ? {"#{parent_model.name.downcase}_id" => parent_selection} : parent_model.first.id rescue nil || {}
-        @scope[model.name] = {:entries => list_entries_for(model.name, association), :selected => selected };
-        parent_model = model
-        parent_selection = selected
-      end
-    end
-
-    def list_entries_for(model_name, association = {})
-      abstract_model = RailsAdmin::AbstractModel.new(model_name)
-      scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
-      p abstract_model.where(association, scope)
-      abstract_model.where(association, scope)
     end
 
     def to_model_name(param)
@@ -47,6 +28,10 @@ module RailsAdmin
     end
 
     private
+
+    def _scope!
+      instance_eval &RailsAdmin.scope_with
+    end
 
     def _authenticate!
       instance_eval &RailsAdmin.authenticate_with

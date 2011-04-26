@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     # Routes for rails_admin controller
     controller "main" do
       match "/", :to => :index, :as => "dashboard"
+      match "/set_scope", :to => :set_scope, :as => "set_scope"
       get "/:model_name", :to => :list, :as => "list"
       get "/:model_name/new", :to => :new, :as => "new"
       match "/:model_name/get_pages", :to => :get_pages, :as => "get_pages"
@@ -16,11 +17,7 @@ Rails.application.routes.draw do
       get "/:model_name/bulk_delete", :to => :bulk_delete, :as => "bulk_delete"
       post "/:model_name/bulk_destroy", :to => :bulk_destroy, :as => "bulk_destroy"
     end
-    scope "scope", :as => "scope" do
-      controller "scope" do
-        match "/set_scope", :to => :set_scope, :as => "set_scope"
-      end
-    end
+
     scope "history", :as => "history" do
       controller "history" do
         match "/list", :to => :list, :as => "list"
