@@ -64,7 +64,7 @@ Run:
 
 And then run:
 
-    $ rails generate rails_admin:install_admin
+    $ rake rails_admin:install
 
 This task will install RailsAdmin and [Devise](http://github.com/plataformatec/devise) if you
 don't already have it installed. [Devise](http://github.com/plataformatec/devise) is strongly
@@ -74,19 +74,19 @@ If you plan to use Devise, but want to use a custom model for authentication
 (default is User) you can provide that as an argument for the installer. For example
 to override the default with a Member model run:
 
-    $ rails generate rails_admin:install_admin member
+    $ rake rails_admin:install model_name=member
 
 If you want to use the CKEditor, you need to [download it](http://ckeditor.com/download) from source
 and unpack the 'ckeditor' folder into your default 'public/javascripts' folder. If you're using any
 non-Windows system, you can try to use the automatic downloader:
 
-    $ rake admin:ckeditor_download
+    $ rake rails_admin:ckeditor_download
 
 When running RailsAdmin in production the images, stylesheets, and javascript assets may return 404
 not found error's depending on your servers static assets configuration.  To prevent this issue you
 can copy assets directly into your application by running:
 
-    $ rake admin:copy_assets
+    $ rake rails_admin:copy_assets
 
 Usage
 -----
@@ -120,6 +120,29 @@ You can exclude models from RailsAdmin by appending those models to `excluded_mo
       config.excluded_models << ClassName
     end
 
+**Whitelist Approach**
+
+By default, RailsAdmin automatically discovers all the models in the system and adds them to its list of models to
+be accessible through RailsAdmin. The `excluded_models` configuration above permits the blacklisting of individual model classes.
+
+If you prefer a whitelist approach, then you can use the `included_models` configuration option instead:
+
+    RailsAdmin.config do |config|
+      config.included_models = [Class1, Class2, Class3]
+    end
+
+Only the models explicitly listed will be put under RailsAdmin access, and the auto-discovery of models is skipped.
+
+The blacklist is effective on top of that, still, so that if you also have:
+
+    RailsAdmin.config do |config|
+      config.excluded_models = [Class1]
+    end
+
+then only `Class2` and `Class3` would be made available to RailsAdmin.
+
+The whitelist approach may be useful if RailsAdmin is used only for a part of the application and you want to make
+sure that new models are not automatically added to RailsAdmin, e.g. because of security concerns. 
 
 ### Model Class and Instance Labels ###
 
