@@ -10,7 +10,7 @@ module RailsAdmin
           @controller = controller
           @controller.extend ControllerExtension
         end
-        
+         
         # Array of the models defined as part of the scope configuration
         # Ex:
         # RailsAdmin.scope_with :scope, [Company, Application]
@@ -18,8 +18,8 @@ module RailsAdmin
         #
         def models
           @models
-        end        
-        
+        end       
+         
         # Apply the scope to an ActiveRelation object
         # First argument is the query the scope has to be applied to
         # Second argument is the base_model that is used in the select statement.
@@ -44,14 +44,14 @@ module RailsAdmin
                 else
                   query = query.joins(model.table_name.singularize.to_sym)
                 end
-              end        
+              end       
             end
           end
           query
         end
-        
+         
         private
-        
+         
         # Retrieve the association hierarchy for a model.
         # Ex: let's assume a model is defined as follow :
         # Field belongs_to Table belongs_to Company
@@ -66,16 +66,15 @@ module RailsAdmin
           tree = nil if not tree.include?(association_name.constantize) rescue nil
           tree
         end
-                        
+                         
         module ControllerExtension
-          
+           
           def current_scope
             # use _current_user instead of default current_user so it works with
             # whatever current user method is defined with RailsAdmin
-            session[:scope] ||= {}
             @current_scope = session[:scope]
           end
-          
+           
           def update_scope
             model = @scope_adapter.models[@scope_adapter.models.index { |model| params[:model] == model.name }]
             session[:scope][model.name] = params[:selected]
@@ -84,15 +83,16 @@ module RailsAdmin
               format.js {render :partial => 'rails_admin/extensions/scope/scope_selector', :locals => {:models => @scope_adapter.models}}
             end
           end
-          
+           
           def list_entries_for(model_name, association = {})
             abstract_model = RailsAdmin::AbstractModel.new(model_name)
             scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
             abstract_model.where(association, scope)
           end
-          
+           
           def get_scope_models
             @scope = {}
+            session[:scope] ||= {}
             parent_model     = nil
             parent_selection = nil
             @scope_adapter.models.each do |model|
@@ -103,7 +103,7 @@ module RailsAdmin
               parent_model = model        
               parent_selection = session[:scope][model_name]
             end
-          end          
+          end         
         end
       end
     end
