@@ -6,7 +6,7 @@ module RailsAdmin
     before_filter :_authorize!
     before_filter :_scope!    
     before_filter :set_plugin_name
-    before_filter :get_scope_models
+    before_filter :_get_scope_models!
 
     helper_method :_current_user
 
@@ -35,7 +35,7 @@ module RailsAdmin
     end
 
     def _get_scope_models!
-      @scope_adapter.get_scope_models if @scope_adapter
+      get_scope_models if @scope_adapter
     end
 
     def _authenticate!
