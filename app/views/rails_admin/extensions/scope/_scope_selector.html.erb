@@ -13,9 +13,22 @@ models = @scope_adapter.models
                     :id => "#{model_name}"
       %>
       <div id="scopeSelectorLinks">
-      <a>Add</a>
-      <a>Edit</a>
-      <a>Delete</a>
+        <% if authorized? :new, model %>
+          <%= link_to "Add", rails_admin_new_path(:model_name => mode.name ), :class => "createAssociatedRecord" %>
+        <%end%>
+        <%if @scope[model_name][:entries].length > 0%>
+          <% if authorized? :edit, model %>
+            <%= link_to "Edit", rails_admin_edit_path(:model_name => mode.name, :id => @scope[model_name][:selected]), :class => "editRecord" %>
+          <%end%>
+          <% if authorized? :destroy, model %>
+            <%= link_to "Delete", rails_admin_destroy_path(:model_name => mode.name, :id => @scope[model_name][:selected]), :class => "destroyRecord" %>
+          <%end%>
+        <%end%>
+        <%= javascript_tag do %>
+          $j(document).ready(function($) {
+            $(".createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog" });
+          });
+        <% end %>
       </div>
     </li>
   <%end%>
