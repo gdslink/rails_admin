@@ -5,6 +5,10 @@ en:
   home:
     name: "home"
   admin:
+    scope:
+      add: "Add"
+      edit: "Edit"
+      delete: "Delete"
     dashboard:
       pagename: "Site administration"
       name: "Dashboard"

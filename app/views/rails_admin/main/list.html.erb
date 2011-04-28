@@ -13,14 +13,6 @@
 <% head_javascript "rails_admin/application.js" %>
 <% head_style "rails_admin/list" %>
 
-<% head_javascript do %>
-  $j(document).ready(function($) {
-    $(this).one("ajax:success", function(e, data, status, xhr) {
-      $("#content").html(data);
-    });
-  });
-<% end %>
-
 <% head_style do %>
   <% @style.each do |key, value| %>
     .grid thead <%= ".#{key}" %>{

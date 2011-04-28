@@ -43,10 +43,10 @@
       var dialog = this._getDialog(),
           form = dialog.find("form"),
           widget = this,
-          saveButtonText = dialog.find("input[name=_save]").val(),
+          saveButtonText = dialog.find("input[name=_save]").val() || dialog.find("input[name=_delete]").val(),
           cancelButtonText = dialog.find("input[name=_continue]").val();
-
       dialog.dialog("option", "title", $(".ui-widget-header", dialog).remove().text());
+      dialog.find(".remove-for-form").remove();
 
       form.attr("data-remote", true);
       dialog.find(".submit").remove();
@@ -65,9 +65,16 @@
       dialog.dialog("option", "buttons", buttons);
 
       form.bind("ajax:success", function(e, data, status, xhr) {
-        var input = widget.element.prev(), json = $.parseJSON(data);
-        input.append('<option value="' + json.id + '">' + json.label + '</option>' );
+        if(widget.options.elementToUpdate)
+          var input = widget.options.elementToUpdate
+        else
+          var input = widget.element.prev()
+        var json = $.parseJSON(data);
+        if (json.id != null){
+          input.append('<option selected value="' + json.id + '">' + json.label + '</option>' );
+        }
         dialog.dialog("close");
+        input.change();
       });
 
       form.bind("ajax:error", function(e, xhr, status, error) {

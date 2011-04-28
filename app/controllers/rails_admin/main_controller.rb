@@ -109,7 +109,10 @@ module RailsAdmin
       @page_name = t("admin.actions.update").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
 
-      render :layout => 'rails_admin/form'
+      respond_to do |format|
+        format.html { render :layout => 'rails_admin/form' }
+        format.js   { render :layout => 'rails_admin/plain.html.erb' }
+      end
     end
 
     def update
@@ -129,8 +132,19 @@ module RailsAdmin
       @object.associations = params[:associations]
 
       if @object.save
+        object_label = @model_config.with(:object => @object).object_label
         AbstractHistory.create_update_history @abstract_model, @object, @cached_assocations_hash, associations_hash, @modified_assoc, @old_object, _current_user
-        redirect_to_on_success
+        respond_to do |format|
+          format.html do
+            redirect_to_on_success
+          end
+          format.js do
+            render :json => {
+              :id => @object.id,
+              :label => object_label,
+            }
+          end
+        end
       else
         render_error :edit
       end
@@ -142,7 +156,10 @@ module RailsAdmin
       @page_name = t("admin.actions.delete").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
 
-      render :layout => 'rails_admin/delete'
+      respond_to do |format|
+        format.html { render :layout => 'rails_admin/form' }
+        format.js   { render :layout => 'rails_admin/plain.html.erb' }
+      end
     end
 
     def destroy
@@ -153,7 +170,17 @@ module RailsAdmin
 
       AbstractHistory.create_history_item("Destroyed #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
 
-      redirect_to rails_admin_list_path(:model_name => @abstract_model.to_param)
+      respond_to do |format|
+        format.html do
+          redirect_to rails_admin_list_path(:model_name => @abstract_model.to_param)
+        end
+        format.js do
+          render :json => {
+            :id => nil,
+            :label => nil,
+          }
+        end
+      end
     end
 
     def bulk_delete

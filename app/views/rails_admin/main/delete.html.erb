@@ -10,7 +10,7 @@
           <%= form_for(@object, :url => rails_admin_destroy_path(:model_name => @abstract_model.to_param, :id => @object.id), :html => {:method => "delete"}) do %>
             <ul class="submit clearfix">
               <li>
-                <%= submit_tag t("admin.delete.confirmation"), :class => "ra-button ui-state-highlight" %>
+                <%= submit_tag t("admin.delete.confirmation"), :class => "ra-button ui-state-highlight", :name => "_delete"%>
               </li>
               <li>
                 <%= submit_tag t("admin.new.cancel"), :class => "ra-button", :name => "_continue" %>
