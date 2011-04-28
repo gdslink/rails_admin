@@ -1,3 +1,5 @@
+require 'rails_admin/extensions/scope/scope_adapter'
+
 module RailsAdmin
 
   # Rails Admin's history API.  All access to history data should go
@@ -134,10 +136,44 @@ module RailsAdmin
       }
       self.history_summaries(from, to)
     end
-
+    
+    def self.translate_table_name(tbl_name)
+      new_name = ""
+      tbl_name.split.each { |tkn|
+        new_name += tkn.capitalize
+      }
+      new_name
+    end
+    
     # Fetch detailed history for one month.
-    def self.history_for_month(month, year)
-      return RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year])
+    def self.history_for_month(month, year, scope_adapter, authorization_adapter)
+      filtered = Array.new
+      other_tables = Array.new
+      history_rows =  RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year])
+      history_rows.each { |row|
+        other_tables << row.table
+      }
+      other_tables.uniq!
+      Rails.logger.debug "debuggin: " +  other_tables.join("-")
+
+      table_data = {}
+      other_tables.each { |table_name|
+        tbl_name_formatted = translate_table_name(table_name)
+        table_data[table_name] = tbl_name_formatted.constantize.find(:all)
+        # apply scope
+        scope = authorization_adapter.query(:list, AbstractModel.new( tbl_name_formatted.constantize ))
+        table_data[table_name] = scope_adapter.apply_scope(scope, AbstractModel.new(tbl_name_formatted.constantize))
+      }
+      
+      history_rows.each { |row|
+        table_data[row.table].each { |t|
+          if t.id == row.item
+            filtered << row
+          end
+        }
+      }
+    
+      filtered
     end
 
     # Fetch the most recent history item for a model.

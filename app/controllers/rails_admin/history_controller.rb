@@ -9,7 +9,7 @@ module RailsAdmin
       else
         @month = params[:month].to_i
         @year = params[:year].to_i
-        @history = AbstractHistory.history_for_month(@month, @year)
+        @history = AbstractHistory.history_for_month(@month, @year, @scope_adapter, @authorization_adapter)
         render :template => 'rails_admin/main/history', :layout => false
       end
     end

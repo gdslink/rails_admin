@@ -14,7 +14,7 @@ module RailsAdmin
       @history = AbstractHistory.history_latest_summaries
       @month = DateTime.now.month
       @year = DateTime.now.year
-      @history= AbstractHistory.history_for_month(@month, @year)
+      @history= AbstractHistory.history_for_month(@month, @year, @scope_adapter, @authorization_adapter)
 
       @abstract_models = RailsAdmin::Config.visible_models.map(&:abstract_model)
 
