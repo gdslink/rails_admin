@@ -35,7 +35,7 @@ models = @scope_adapter.models
   <script>
   jQuery(function(jQuery) {
       jQuery('<%=models.collect{|model| "##{model.name}"}.join(',')%>').change(function() {
-          jQuery.ajax({url: '<%= url_for :action => :update_scope %>',
+          jQuery.ajax({url: '<%= url_for :action => :update_scope, :controller => :main %>',
           data: 'selected=' + this.value + '&model=' + this.id,
           dataType: 'text',
           success: function(html){
