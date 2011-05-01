@@ -69,9 +69,20 @@ module RailsAdmin
     # Fetch the history items for a model.  Returns an array containing
     # the page count and an AR query result containing the history
     # items.
-    def self.history_for_model(model, query, sort, sort_reverse, all, page, per_page = RailsAdmin::Config::Sections::List.default_items_per_page || 20)
+    def self.history_for_model(model, query, sort, sort_reverse, all, page,scope_adapter,authorization_adapter,
+    per_page=20)
       page ||= "1"
-      history = History.where :table => model.pretty_name
+
+      # apply scope
+      scope = authorization_adapter.query(:list, model)
+      scoped_records = scope_adapter.apply_scope(scope, model)
+    
+      id_list = Array.new
+      scoped_records.each { |record|
+        id_list << record.id
+      }
+      
+      history = History.where :table => model.pretty_name, :item => id_list
 
       if query
         history = history.where "#{History.connection.quote_column_name(:message)} LIKE ? OR #{History.connection.quote_column_name(:username)} LIKE ?", "%#{query}%", "%#{query}%"
