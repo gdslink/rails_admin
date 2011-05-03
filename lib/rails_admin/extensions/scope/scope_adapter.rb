@@ -103,7 +103,7 @@ module RailsAdmin
             parent_selection = nil
             @scope_adapter.models.each do |model|
               model_name = model.name
-              session[:scope][model_name] ||= model.first.id
+              session[:scope][model_name] ||= model.first.id rescue nil
               association = parent_model && parent_selection ? {"#{parent_model.table_name.singularize}_id" => parent_selection} : parent_model.first.id rescue nil || {}
               @scope[model_name] = {:entries => list_entries_for(model_name, association), :selected => session[:scope][model_name] };
               parent_model = model        
