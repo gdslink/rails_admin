@@ -9,8 +9,8 @@ module RailsAdmin
         unless @polymorphic_parents
           @polymorphic_parents = {}
           RailsAdmin::AbstractModel.all.each do |abstract_model|
-            abstract_model.polymorphic_has_many_associations.each do |association|
-              (@polymorphic_parents[association[:options][:as]] ||= []) << abstract_model
+            abstract_model.polymorphic_associations.each do |association|
+              (@polymorphic_parents[association[:options][:as].to_sym] ||= []) << abstract_model
             end
           end
         end
@@ -122,8 +122,8 @@ module RailsAdmin
         end
       end
 
-      def polymorphic_has_many_associations
-        has_many_associations.select do |association|
+      def polymorphic_associations
+        (has_many_associations + has_one_associations).select do |association|
           association[:options][:as]
         end
       end
