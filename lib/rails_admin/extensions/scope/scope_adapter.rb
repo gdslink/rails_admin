@@ -33,12 +33,13 @@ module RailsAdmin
             next if base_abstract_model.model.name == key
             tree = retrieve_associations_tree(base_abstract_model, key)
             next if not tree
+            
             #remove the first element since it's always going to be the abstract base model
             tree.shift
             
-            #build the joins query            
+            #build the joins query
             query = query.joins([tree.collect{|model| model.table_name.singularize.to_sym}.reverse.inject { |a, b| {b => a}}])
-
+            
             #build the conditions based on the selected scope
             @controller.current_scope.each do |key, value|
               if(tree.collect{|model| model.name}.include?(key))
@@ -51,6 +52,16 @@ module RailsAdmin
         
         private
         
+        def check_associations(abstract_model, tree = [])
+          tree << abstract_model.model.name
+          abstract_model.belongs_to_associations.each do |assoc|
+            tree << assoc[:parent_model].name     
+            check_associations(RailsAdmin::AbstractModel.new(assoc[:parent_model].name))
+          end
+          
+          return (self.models.collect{|m| m.name} & tree).length > 0
+        end
+        
         # Retrieve the association hierarchy for a model.
         # Ex: let's assume a model is defined as follow :
         # Field belongs_to Table belongs_to Company
@@ -58,10 +69,11 @@ module RailsAdmin
         #
         def retrieve_associations_tree(abstract_model, association_name, tree = [])
           tree << abstract_model.model
-          abstract_model.associations.each do |assoc|
-            abstract_model = RailsAdmin::AbstractModel.new(assoc[:parent_model].name)
+          abstract_model.belongs_to_associations.each do |assoc|
+            abstract_model = RailsAdmin::AbstractModel.new(assoc[:parent_model].name)            
+            next if not check_associations(abstract_model)
             retrieve_associations_tree(abstract_model, association_name, tree) if not tree.include?(abstract_model.model)        
-          end          
+          end
           tree = nil if not tree.include?(association_name.constantize) rescue nil
           tree
         end
