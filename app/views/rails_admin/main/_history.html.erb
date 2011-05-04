@@ -1,3 +1,10 @@
+<%
+  models_list = {}
+  RailsAdmin::Config.models.each do |m|
+    models_list[m.abstract_model.model.name] = m.label
+  end
+%>
+
 <div class="ui-widget-header">
   <%= month_names[month - 1] %> <%= year %> <%= t("admin.history.name").downcase %>
 </div>
@@ -5,10 +12,16 @@
   <table class="grid">
     <tbody>
       <% history.each do |t|%>
+      <%
+          model = nil
+          table_name = t.table.strip.gsub(/ /,'_').camelize
+          model = models_list[table_name] if models_list.include?(table_name)        
+      %>
       <tr class="<%= cycle 'odd', 'even' %>">
          <td style="text-align: left;"><%= t.created_at %></td> 
          <td style="text-align: left;"><%= t.username%></td>
          <td style="text-align: left;"><%= history_output(t) %></td>
+         <td style="text-align: left;"><%= model %></td> 
       </tr>
       <% end %>
     </tbody>
