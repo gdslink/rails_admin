@@ -11,7 +11,12 @@ describe "rails_admin:install Rake task" do
   before(:each) do
     prepare_destination
     create_rails_folder_structure
+    @rails_root = Rails.configuration.root
     Rails.configuration.root = Pathname.new(destination_root)
+  end
+  
+  after(:each) do
+    Rails.configuration.root = @rails_root
   end
 
   context "when devise is installed" do
@@ -20,7 +25,7 @@ describe "rails_admin:install Rake task" do
       create_routes_with_devise
       assert_no_file destination_root + "/config/locales/devise.en.yml"
       assert_no_file destination_root + "/config/locales/rails_admin.en.yml"
-      RailsAdmin::ExtraTasks.install
+      silence_stream(STDOUT) { RailsAdmin::ExtraTasks.install }
     end
 
     it "creates locales files" do
