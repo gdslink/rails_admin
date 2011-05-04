@@ -2,6 +2,7 @@ require 'builder'
 
 module RailsAdmin
   module MainHelper
+    
     def get_indicator(percent)
       percent = 0 if percent.nil?
       return "low" if percent.between?(0, 33)

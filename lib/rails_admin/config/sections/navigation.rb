@@ -5,11 +5,22 @@ module RailsAdmin
   module Config
     module Sections
       # Configuration of the navigation view
-      class Navigation < RailsAdmin::Config::Base
-        # Defines the number of tabs to be renderer in the main navigation.
-        # Rest of the links will be rendered to a drop down menu.
-        register_class_option(:max_visible_tabs) do
-          5
+      class Navigation < RailsAdmin::Config::Base        
+        register_class_option(:accordion_navigation) do
+          {
+            :sections => [
+            {
+                 :label => I18n.t("admin.dashboard.name"),
+                 :image => "rails_admin/icons/house.png",
+                 :links => [
+                     {
+                         :url_for => {:action => :dashboard, :model => nil},
+                         :label => I18n.t("admin.dashboard.name"),
+                         :image => "rails_admin/icons/application_home.png" 
+                     }
+                 ] 
+             }]
+          }
         end
       end
     end

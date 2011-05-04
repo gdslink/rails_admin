@@ -16,8 +16,11 @@
 <body>
   <div id="wrapper">
     <%= render(:partial => 'layouts/rails_admin/header') %>
-    <div id="content">
-<%= content_for(:layout) %>
+    <div id="splitter">    
+      <%= render(:partial => 'rails_admin/main/navigation') %>
+      <div id="content">
+  <%= content_for(:layout) %>
+      </div>
     </div>
   </div>
 </body>

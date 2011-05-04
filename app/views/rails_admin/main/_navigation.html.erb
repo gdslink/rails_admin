@@ -1,20 +1,37 @@
 <%
-  max_visible_tabs = RailsAdmin::Config::Sections::Navigation.max_visible_tabs
-  models = RailsAdmin::Config.visible_models.select { |model| authorized?(:list, model.abstract_model) }
+  accordion_navigation = RailsAdmin::Config::Sections::Navigation.accordion_navigation
 %>
-      <ul id="nav">
-        <li <%if @page_type == "dashboard" %>class="active"<% end %>><%= link_to(t("admin.dashboard.name"), rails_admin_dashboard_path) %></li>
-<% models[0..max_visible_tabs-1].each do |model| %>
-        <li <%if @page_type == model.abstract_model.pretty_name.downcase %>class="active"<% end %>><%= link_to(model.label, rails_admin_list_path(:model_name => model.abstract_model.to_param)) %></li>
-<% end %>
-<% if models.size > max_visible_tabs %>
-        <li class="more">
-          <a href="#">&raquo;</a>
-          <ul>
-          <% models[max_visible_tabs..models.size].each do |model| %>
-          <li <%if @page_type == model.abstract_model.pretty_name.downcase %>class="active"<% end %>><%= link_to(model.label, rails_admin_list_path(:model_name => model.abstract_model.to_param)) %></li>
-          <% end %>
-          </ul>
-        </li>
-<% end %>
-      </ul>
+
+<div id="accordion">
+  <%accordion_navigation[:sections].each do |section|%>
+    <%
+      section[:links].delete_if do |link|
+        !link[:url_for] or !link[:url_for].include?(:model) or 
+        (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].constantize))
+      end
+    %>
+    <%next if section[:links].length == 0%>    
+    <h3>
+      <%if section[:image] then%>
+        <%=image_tag section[:image], {:class => "sectionImage"} %>
+      <%end%>
+      <%=link_to section[:label],  "#", {:id => "#{section[:label]}_id", :class => section[:match_keys]} %>
+    </h3>
+    <div>
+      <p>
+        <ul>
+          <%section[:links].each do |link| %>
+            <li>
+              <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for].include?(:model)%>              
+                <%if link[:image] then%>
+                  <%=image_tag link[:image], {:class => "linkImage"} %>
+                <%end%>
+                <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model]), :class => "sectionLink"%>
+              <%end%>
+            </li>
+          <%end%>
+        </ul>
+      </p>
+    </div>
+  <%end%>
+</div>

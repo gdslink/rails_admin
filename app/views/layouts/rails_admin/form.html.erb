@@ -11,10 +11,13 @@
 <%= render(:partial => 'layouts/rails_admin/head') %>
 <body>
   <div id="wrapper">
-    <%= render(:partial => 'layouts/rails_admin/header') %>
-    <div id="content">
-<%= yield %>
-    </div>
+    <%= render(:partial => 'layouts/rails_admin/header') %>   
+    <div id="splitter">
+      <%= render :partial => 'rails_admin/main/navigation'%>
+      <div id="content">      
+        <%= yield %>
+      </div>
+     </div>    
   </div>
 </body>
 </html>

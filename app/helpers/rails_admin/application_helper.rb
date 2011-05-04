@@ -5,6 +5,18 @@ module RailsAdmin
 
     include RailsAdmin::I18nSupport
 
+    def get_url(action, model_name)
+      case action
+      when :dashboard
+        rails_admin_dashboard_path
+      when :list 
+        rails_admin_list_path(:model_name => model_name)
+      when :new
+        rails_admin_new_path(:model_name => model_name)        
+      end      
+    end
+
+
     def head_javascript(path = nil, &block)
       if block
         (@head_javascript ||= []) << capture(&block)

@@ -1,24 +1,52 @@
-    <div id="header">
+    <script>
+      jQuery(document).ready(function() {
+        
+        jQuery("#splitter").splitter({
+        		splitVertical: true,
+        		outline: true,
+        		sizeLeft: true,
+        		accessKey: "I",
+        		anchorToWindow: true,
+        		cookie: "rails_admin_splitter",
+        		cookiePath: "/"
+        	});
+        
+        jQuery("#accordion").accordion(
+          {
+            navigation: true, 
+            fillSpace: true, 
+            navigationFilter: function(){
+              matchKeys = jQuery(this).attr("class")
+              if(matchKeys.length == 0)
+                return false;
+              matchKeys = matchKeys.split(' ');
+              for(var i=0;i<matchKeys.length;i++){
+                if(this.href.toLowerCase().indexOf(matchKeys[i].toLowerCase()) >= 0)
+                  return true;
+              }
+              return false;
+            }
+          });
+
+        
+        jQuery(window).resize(function(){
+            jQuery("#accordion").accordion("resize");
+        });
+      });  
+    </script>
+    <div id="header">     
       <div id="headerLeft">
+        <h1 id="logo">
+          <%= link_to rails_admin_dashboard_path do %>
+            <span class="image_replacement"><%= @plugin_name %></span>
+          <% end -%>
+        </h1>        
+      </div>
+      <div id="headerRight">      
+        <%= render(:partial => 'rails_admin/main/user_info', :locals => {:current_user => _current_user}) %>        
         <%if @scope_adapter %>
-          <ul class="scopeSelector">
-            <%= render(:partial => 'rails_admin/extensions/scope/scope_selector')%>          
-          </ul>
-        <%end%>
+          <img id='separator' src="/images/rails_admin/3dots-separator.png"></img>        
+          <%= render(:partial => 'rails_admin/extensions/scope/scope_selector')%>
+        <%end%>        
       </div>
-
-      <div id="headerRight">
-<%= render(:partial => 'rails_admin/main/user_info', :locals => {:current_user => _current_user}) %>
-      </div>
-    </div>
-
-    <div id="header2">
-      <h1 id="logo">
-      <%= link_to rails_admin_dashboard_path do %>
-        <span class="image_replacement"><%= @plugin_name %></span>
-      <% end -%>
-      </h1>
-
-      <%= render(:partial => 'rails_admin/main/navigation') %>
-      
     </div>
