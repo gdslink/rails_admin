@@ -28,11 +28,14 @@ module RailsAdmin
         # Second argument is the base_model that is used in the select statement.
         # Example: select field from table (table is the base_model).
         def apply_scope(query, base_abstract_model)
+          tree = nil
+          
           #Treat the User model as a special case since we want to see all the users if they are not hierarchically
           #assigned (ex: User not being associated to a company)
           if @controller.current_user.class.name == base_abstract_model.model.name then
             return query if !@authorization_adapter || @authorization_adapter.authorized?(:list, nil, @controller.current_user.class.name)
           end
+          
           @controller.current_scope.each do |key, value|
             next if base_abstract_model.model.name == key
             tree = retrieve_associations_tree(base_abstract_model, key)
