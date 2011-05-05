@@ -200,6 +200,10 @@ module RailsAdmin
     def scope_adapter
       @scope_adapter
     end
+    
+    def current_scope(model_name)
+      session[:scope][model_name] rescue nil
+    end
 
     # returns a link to "/" unless there's a problem, which will
     # probably be caused by root_path not being configured.  see
