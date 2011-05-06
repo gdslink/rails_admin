@@ -148,6 +148,7 @@ height:70px;
 
 #content {
 background:#FFF;
+overflow: auto;
 }
 
 .ra-block .ui-widget-header {
