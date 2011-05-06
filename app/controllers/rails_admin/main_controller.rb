@@ -134,6 +134,7 @@ module RailsAdmin
       if @object.save
         object_label = @model_config.with(:object => @object).object_label
         AbstractHistory.create_update_history @abstract_model, @object, @cached_assocations_hash, associations_hash, @modified_assoc, @old_object, _current_user
+
         respond_to do |format|
           format.html do
             redirect_to_on_success
@@ -319,13 +320,16 @@ module RailsAdmin
       param = @abstract_model.to_param
       pretty_name = @model_config.label
       action = params[:action]
-
+      
       if params[:_add_another]
         flash[:notice] = t("admin.flash.successful", :name => pretty_name, :action => t("admin.actions.#{action}d"))
         redirect_to rails_admin_new_path(:model_name => param)
       elsif params[:_add_edit]
         flash[:notice] = t("admin.flash.successful", :name => pretty_name, :action => t("admin.actions.#{action}d"))
         redirect_to rails_admin_edit_path(:model_name => param, :id => @object.id)
+      elsif params[:remote]
+        flash[:notice] = t("admin.flash.successful", :name => pretty_name, :action => t("admin.actions.#{action}d"))
+        redirect_to :back
       else
         flash[:notice] = t("admin.flash.successful", :name => pretty_name, :action => t("admin.actions.#{action}d"))
         redirect_to rails_admin_list_path(:model_name => param)

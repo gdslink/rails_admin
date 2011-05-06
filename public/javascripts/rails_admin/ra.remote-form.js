@@ -49,6 +49,8 @@
       dialog.find(".remove-for-form").remove();
 
       form.attr("data-remote", true);
+      form.attr("action", form.attr("action")+'?remote=true');
+      
       dialog.find(".submit").remove();
       dialog.find(".ra-block-content").removeClass("ra-block-content");
 
