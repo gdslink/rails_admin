@@ -142,7 +142,7 @@ The blacklist is effective on top of that, still, so that if you also have:
 then only `Class2` and `Class3` would be made available to RailsAdmin.
 
 The whitelist approach may be useful if RailsAdmin is used only for a part of the application and you want to make
-sure that new models are not automatically added to RailsAdmin, e.g. because of security concerns. 
+sure that new models are not automatically added to RailsAdmin, e.g. because of security concerns.
 
 ### Model Class and Instance Labels ###
 
@@ -243,6 +243,70 @@ tabs. Even though this option is not model specific, it shares the same
 semantics as the earlier ones - you could also pass in a block which would be
 evaluated at runtime.
 
+**Create a dropdown menu in navigation**
+
+This will desactivate config.navigation.max_visible_tabs.
+
+    RailsAdmin.config do |config|
+      config.model Team do
+        parent League
+      end
+    end
+
+    RailsAdmin.config do |config|
+      config.model Division do
+        parent League
+      end
+    end
+
+Obtained navigation:
+
+    Dashboard
+    ...
+    League
+      Division
+      Team
+    ...
+
+If you want a non-clickable root menu entry, add 'dropdown ENTRY_NAME' to your parent.
+Your parent will then be placed INSIDE his dropdown, in FIRST position.
+
+Added to previous example:
+
+    RailsAdmin.config do |config|
+      config.model League do
+        dropdown 'League related'
+      end
+    end
+
+Obtained navigation:
+
+    Dashboard
+    ...
+    League related  # (non-clickable)
+      League
+      Division
+      Team
+    ...
+
+**Change models order in navigation**
+
+By default, they are ordered by alphabetical order. If you need to override this, specify
+a weight attribute. Default is 0. Lower values will bubble items to the left, higher values
+will move them to the right. Items with same weight will still be ordered by alphabetical order.
+The mecanism is fully compatible with dropdown menus. Items will be ordered within their own
+menu subset.
+
+Example:
+
+    RailsAdmin.config do |config|
+      config.model League do
+        dropdown 'League related'
+        weight -1
+      end
+    end
+
+The 'League related' dropdown menu will move to the leftmost position.
 
 ### List view ###
 
