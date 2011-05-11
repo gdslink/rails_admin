@@ -45,7 +45,7 @@ overflow:hidden;
 }
 
 #wrapper {
-width:95%;
+width:99%;
 text-align:left;
 margin:0 auto;
 }
@@ -325,6 +325,7 @@ background:#aaa;
 width:5px;
 }
 
+
 #accordion {
 font-family:Verdana, Geneva, sans-serif;
 min-width:150px;
@@ -332,43 +333,52 @@ width:200px;
 bottom:1px;
 }
 
-#accordion li {
-list-style-type:none;
-padding-bottom:5px;
-}
-
-#accordion a.sectionLink {
-font-family:"Lucida Grande",Verdana,"Bitstream Vera Sans",Arial,sans-serif;
-font-weight:400;
-text-decoration:none;
-font-size:13px;
-color:#21759B;
-}
-
-#accordion a.sectionLink:hover {
-color:#d54e21;
-}
-
-#accordion .linkImage {
-float:left;
-margin-right:5px;
-}
-
-#accordion .sectionImage {
+#accordion h3 img {
 float:right;
 width:16px;
 margin-top:5px;
 margin-right:5px;
 }
 
-.clearfix,ul#nav li.more:hover ul {
-display:block;
+#accordion li {
+list-style-type:none;
+padding-bottom:5px;
 }
 
-fieldset,.ra-block-content .ra-block-content,#nav li a img {
-border:none;
+#accordion ul a {
+font-family:"Lucida Grande",Verdana,"Bitstream Vera Sans",Arial,sans-serif;
+font-weight:400;
+text-decoration:none;
+font-size:13px;
+color:#21759B;
+font-weight: bold;
 }
 
-ul#nav li.more ul li a:hover,ul#nav li.more ul li.active a {
-background:#ccc;
+#accordion ul a:hover {
+color:#d54e21;
+}
+
+#accordion ul img {
+float:left;
+margin-right:5px;
+}
+
+#accordion ul ul {
+  margin-left: 15px;
+  font-size: 11px;
+  text-decoration: none;
+  color:#21759B;
+}
+
+#accordion ul ul img{
+  width: 13px;
+}
+
+#accordion ul ul a{
+	font-size: 11px;
+	font-weight: normal;
+}
+
+#accordion ul ul li {
+	padding-top: 2px;
 }
