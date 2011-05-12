@@ -190,7 +190,7 @@ padding:10px;
 line-height:1em;
 }
 
-input {
+.ra-content input {
 font-family:Verdana, Geneva, sans-serif;
 font-size:12px;
 border-left:1px solid #e2e3ea;
@@ -381,4 +381,9 @@ margin-right:5px;
 
 #accordion ul ul li {
 	padding-top: 2px;
+}
+
+.ra-block-toolbar ul.submit.clearfix {
+	margin-top: 0px;
+	float: left;
 }

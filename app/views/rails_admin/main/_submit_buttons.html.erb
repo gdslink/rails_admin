@@ -1,19 +1,24 @@
 <ul class="submit clearfix">
   <li class="save">
-    <%= submit_tag t("admin.new.save"), :class => "ra-button ui-state-highlight", :name => "_save" %>
+    <%= submit_tag t("admin.new.save"), :class => "ra-button ui-state-highlight", :name => "_save", 
+        :onClick => "console.log((jQuery(this).closest('form'))); if(jQuery(this).closest('form').length > 0) return ; jQuery(\"form >.submit > * > input[name=_save]\").click();" %>
   </li>
 
   <% if authorized? :new, @abstract_model %>
     <li class="save add">
-      <%= submit_tag t("admin.new.save_and_add_another"), :class => "ra-button", :name => "_add_another" %>
+      <%= submit_tag t("admin.new.save_and_add_another"), :class => "ra-button", :name => "_add_another",
+          :onClick => "if(jQuery(this).closest('form').length > 0) return ; jQuery(\"form >.submit > * > input[name=_add_another]\").click()" %>
     </li>
   <% end %>
 
   <li class="save edit">
-    <%= submit_tag t("admin.new.save_and_edit"), :class => "ra-button", :name => "_add_edit" %>
+    <%= submit_tag t("admin.new.save_and_edit"), :class => "ra-button", :name => "_add_edit",
+        :onClick => "if(jQuery(this).closest('form').length > 0) return ; jQuery(\"form >.submit > * > input[name=_add_edit]\").click()" %>
   </li>
 
   <li class="cancel">
-    <%= submit_tag t("admin.new.cancel"), :class => "ra-button", :name => "_continue" %>
+    <%= submit_tag t("admin.new.cancel"), :class => "ra-button", :name => "_continue",
+        :onClick => "if(jQuery(this).closest('form').length > 0) return ; jQuery(\"form >.submit > * > input[name=_continue]\").click()"
+     %>
   </li>
 </ul>
