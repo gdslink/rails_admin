@@ -24,9 +24,7 @@
             <% @model_config.edit.with(:object => @object).visible_groups.each do |fieldset| %>
               <%= render :partial => 'form_fieldset', :locals => { :fieldset => fieldset, :form => form, :object => @object } -%>
             <% end %>
-            <div class="ra-block-toolbar ui-state-highlight clearfix">
-              <%= render :partial => 'submit_buttons' %>
-            </div>
+            <%= render :partial => 'submit_buttons' %>
           <% end %>
         </div>
       </div>
