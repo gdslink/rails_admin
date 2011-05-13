@@ -18,7 +18,7 @@
           model = models_list[table_name] if models_list.include?(table_name)        
       %>
       <tr class="<%= cycle 'odd', 'even' %>">
-         <td style="text-align: left;"><%= t.created_at %></td> 
+         <td style="text-align: left;"><%= t.created_at.localtime  %></td> 
          <td style="text-align: left;"><%= t.username%></td>
          <td style="text-align: left;"><%= history_output(t) %></td>
          <td style="text-align: left;"><%= model %></td> 
