@@ -72,15 +72,24 @@
       dialog.dialog("option", "buttons", buttons);
 
       form.bind("ajax:success", function(e, data, status, xhr) {
+
+				var json = $.parseJSON(data);
+       	var select = widget.element.siblings('select');
+
         if(widget.options.elementToUpdate)
           var input = widget.options.elementToUpdate
         else
-          var input = widget.element.prev()
-        var json = $.parseJSON(data);
-        if (json.id != null){
-          input.append('<option selected value="' + json.id + '">' + json.label + '</option>' );
-        }
-        dialog.dialog("close");
+				  var input = widget.element.siblings('.ra-filtering-select-input');
+ 				
+				if(input.length > 0) {
+ 					input[0].value = json.label;
+ 				}
+				
+ 				if(select.length > 0) {
+ 					select.html('<option value="' + json.id + '">' + json.label + '</option>' );
+ 					select[0].value = json.id;
+ 				}
+				dialog.dialog("close");
         input.change();
       });
 

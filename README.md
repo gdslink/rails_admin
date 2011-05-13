@@ -82,19 +82,14 @@ non-Windows system, you can try to use the automatic downloader:
 
     $ rake rails_admin:ckeditor_download
 
-When running RailsAdmin in production the images, stylesheets, and javascript assets may return 404
-not found error's depending on your servers static assets configuration.  To prevent this issue you
-can copy assets directly into your application by running:
-
-    $ rake rails_admin:copy_assets
-
 Usage
 -----
 Start the server:
 
     $ rails server
 
-You should now be able to administer your site at <http://localhost:3000/admin>
+You should now be able to administer your site at
+[http://localhost:3000/admin](http://localhost:3000/admin).
 
 Configuration
 -------------
@@ -750,6 +745,7 @@ RailsAdmin ships with the following field types:
 * integer
 * password _initializes if string type column's name is password_
 * string
+* enum
 * text
 * time
 * timestamp
@@ -797,6 +793,34 @@ Everything can be overridden with `help`:
       end
     end
 
+**Fields - Enum**
+
+Fields of datatype string, integer, text can be rendered with select boxes, if object responds to `method_enum`.
+
+    class Team < ActiveRecord::Base
+      ...
+      def color_enum
+        self.team.available_color_choices
+        # return collection like ["blue", "yellow", "red"] or [["blue", 1], ["yellow", 2], ["red", 3]]
+      end
+      ...
+    end
+    
+    RailsAdmin.config do |config|
+      config.model Team do
+        edit do
+          field :name
+          field :color
+          field :created_at do
+            date_format :short
+          end
+          field :updated_at do
+            strftime_format "%Y-%m-%d"
+          end
+        end
+      end
+    end
+
 **Fields - CKEditor integration**
 
 CKEditor can be enabled on fields of type text:
@@ -811,10 +835,22 @@ CKEditor can be enabled on fields of type text:
       end
     end
 
-In this example we configured a field named description to instantiate as a
-text field and set ckeditor option to true. If the database column is a text
-field, explicitly setting the type as the second argument is not
-necessary.
+**Fields - Ordered has_many/has_and_belongs_to_many/has_many :through associations**
+
+Orderable can be enabled on filtering multiselect fields (has_many, has_many :through & has_and_belongs_to_many associations), allowing selected options to be moved up/down.
+RailsAdmin will handle ordering in and out of the form.
+
+    RailsAdmin.config do |config|
+      config.model Player do
+        edit do
+          field :fans do
+            orderable true
+          end
+        end
+      end
+    end
+
+You'll need to handle ordering in your model with a position column for example.
 
 ### Mass Assignment Operations ###
 
@@ -881,6 +917,18 @@ accomplished like this:
       config.models do
         fields_of_type :datetime do
           strftime_format "%Y-%m-%d"
+        end
+      end
+    end
+    
+Or even scope it like this:
+
+    RailsAdmin.config do |config|
+      config.models do
+        list do
+          fields_of_type :datetime do
+            date_format :compact
+          end
         end
       end
     end

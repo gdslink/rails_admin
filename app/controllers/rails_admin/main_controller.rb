@@ -80,7 +80,6 @@ module RailsAdmin
         @authorization_adapter.authorize(:create, @abstract_model, @object)
       end
       @object.attributes = @attributes
-      @object.associations = params[:associations]
       @page_name = t("admin.actions.create").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
 
@@ -129,7 +128,6 @@ module RailsAdmin
       @model_config.update.fields.each {|f| f.parse_input(@attributes) if f.respond_to?(:parse_input) }
 
       @object.attributes = @attributes
-      @object.associations = params[:associations]
 
       if @object.save
         object_label = @model_config.with(:object => @object).object_label
