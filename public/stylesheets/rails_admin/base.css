@@ -190,7 +190,7 @@ padding:10px;
 line-height:1em;
 }
 
-div.ra-block-content form input {
+div.ra-block-content form fieldset input {
 font-family:Verdana, Geneva, sans-serif;
 font-size:12px;
 border-left:1px solid #e2e3ea;
