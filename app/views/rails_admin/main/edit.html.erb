@@ -19,8 +19,9 @@
               </li>
               <% end %>
             </ul>
-          </div>          
-          <%= form_for(@object, :url => rails_admin_update_path(:model_name => @abstract_model.to_param, :id => @object.id), :html => { :method => "put", :multipart => true }) do |form| %>
+          </div>
+          <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
+          <%= send(@model_config.update.form_builder, @object, :url => rails_admin_update_path(:model_name => @abstract_model.to_param, :id => @object.id), :html => { :method => "put", :multipart => true }) do |form| %>
             <% @model_config.edit.with(:object => @object).visible_groups.each do |fieldset| %>
               <%= render :partial => 'form_fieldset', :locals => { :fieldset => fieldset, :form => form, :object => @object } -%>
             <% end %>
