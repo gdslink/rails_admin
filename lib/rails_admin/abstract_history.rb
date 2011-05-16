@@ -170,7 +170,7 @@ module RailsAdmin
       table_data = {}
       other_tables.each { |table_name|
         tbl_name_formatted = translate_table_name(table_name)
-        table_data[table_name] = tbl_name_formatted.constantize.find(:all)
+        table_data[table_name] = tbl_name_formatted.constantize.find(:all) rescue nil
         # apply scope
         scope = authorization_adapter.query(:list, AbstractModel.new( tbl_name_formatted.constantize ))
         table_data[table_name] = scope_adapter.apply_scope(scope, AbstractModel.new(tbl_name_formatted.constantize))

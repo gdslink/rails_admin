@@ -47,11 +47,12 @@
           select: function(event, ui) {
             var option = $('<option value="' + ui.item.id + '" selected="selected">' + ui.item.value + '</option>');
             select.html(option);
+            select.trigger("change", option);
             self._trigger("selected", event, {
               item: option
             });
           },
-          change: function(event, ui) {
+          change: function(event, ui) {                          
             if (!ui.item) {
               var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex($(this).val()) + "$", "i"),
                   valid = false;
