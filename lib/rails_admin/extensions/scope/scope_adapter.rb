@@ -95,9 +95,8 @@ module RailsAdmin
           
           def update_scope
             model = @scope_adapter.models[@scope_adapter.models.index { |model| params[:model] == model.name }]
-            first_id = model.first.id
+            first_id = model.first.id rescue nil
             record_ids  = @scope[model.name][:entries].collect{ |e| e.id}
-            p record_ids
             if not record_ids.include?(params[:selected].to_i) then
               session[:scope][model.name] = first_id
             else
