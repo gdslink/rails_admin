@@ -28,7 +28,6 @@
       <%=link_to section[:label],  "#", {:id => "#{section[:label]}_id", :class => section[:match_keys]} %>
     </h3>
     <div>
-      <p>
       <ul>  
           <%if section[:links] then%>      
             <%section[:links].each do |link| %>
@@ -63,7 +62,6 @@
             <%end%>
           <%end%>
         </ul>
-      </p>
     </div>
   <%end%>
 </div>
