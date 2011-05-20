@@ -316,6 +316,7 @@ min-width:200px;
 min-height:300px;
 height:90%;
 margin-top:20px;
+margin-bottom:20px;
 }
 
 .vsplitbar:hover {
@@ -332,6 +333,7 @@ font-family:Verdana, Geneva, sans-serif;
 min-width:150px;
 width:200px;
 bottom:1px;
+height:90%;
 }
 
 #accordion h3 img {
