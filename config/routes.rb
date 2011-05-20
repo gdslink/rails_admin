@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       match "/:model_name/get_pages", :to => :get_pages, :as => "get_pages"
       post "/:model_name", :to => :create, :as => "create"
       get "/:model_name/:id/edit", :to => :edit, :as => "edit"
+      get "/:model_name/:id/show", :to => :show, :as => "show"
       put "/:model_name/:id", :to => :update, :as => "update"
       get "/:model_name/:id/delete", :to => :delete, :as => "delete"
       delete "/:model_name/:id", :to => :destroy, :as => "destroy"

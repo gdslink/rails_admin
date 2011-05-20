@@ -1,7 +1,7 @@
 module RailsAdmin
   class MainController < RailsAdmin::ApplicationController
     before_filter :get_model, :except => [:index, :update_scope]
-    before_filter :get_object, :only => [:edit, :update, :delete, :destroy]
+    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy]
     before_filter :get_bulk_objects, :only => [:bulk_delete, :bulk_destroy]
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :bulk_destroy]
@@ -99,6 +99,13 @@ module RailsAdmin
         end
       else
         render_error
+      end
+    end
+
+    def show
+      @authorization_adapter.authorize(:read, @abstract_model, @object) if @authorization_adapter
+      respond_to do |format|
+        format.js { render :json => @object.to_json };
       end
     end
 
