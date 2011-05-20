@@ -1,7 +1,7 @@
 module RailsAdmin
 
   # This module adds the default_scope class method to a model. It is included in the model adapters.
-  module DefaultScope
+  module CurrentScope
     module ClassMethods
       # Returns a scope which fetches only the records that the passed ability
       # can perform a given action on. 
@@ -20,5 +20,5 @@ module RailsAdmin
 end
 
 ActiveRecord::Base.class_eval do
-  include RailsAdmin::DefaultScope
+  include RailsAdmin::CurrentScope
 end
