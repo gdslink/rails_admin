@@ -98,7 +98,7 @@ module RailsAdmin
           end
         end
       else
-        render_error
+        handle_save_error
       end
     end
 
@@ -152,7 +152,7 @@ module RailsAdmin
           end
         end
       else
-        render_error :edit
+        handle_save_error :edit
       end
     end
 
@@ -341,7 +341,7 @@ module RailsAdmin
       end
     end
 
-    def render_error whereto = :new
+    def handle_save_error whereto = :new
       action = params[:action]
 
       flash.now[:error] = t("admin.flash.error", :name => @model_config.label, :action => t("admin.actions.#{action}d"))
