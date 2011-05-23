@@ -149,6 +149,7 @@ height:70px;
 #content {
 background:#FFF;
 overflow: auto;
+padding-bottom: 1px;
 }
 
 .ra-block .ui-widget-header {
@@ -190,16 +191,15 @@ padding:10px;
 line-height:1em;
 }
 
-div.ra-block-content form > fieldset > * > input {
+input {
 font-family:Verdana, Geneva, sans-serif;
 font-size:12px;
+padding:5px;
 border-left:1px solid #e2e3ea;
 border-top:1px solid #abadb3;
 border-bottom:1px solid #e3e9ef;
 border-right:1px solid #dbdfe6;
-padding:5px;
 }
-
 
 ul#nav {
 float:left;
@@ -311,26 +311,52 @@ ul.items li a:hover {
 text-decoration:none;
 }
 
-#splitter {
+.splitter {
+border: 0px;
 min-width:200px;
 min-height:300px;
 height:90%;
-margin-top:20px;
-margin-bottom:20px;
+margin-top:10px;
+margin-bottom:5px;
 }
 
-.vsplitbar:hover {
-background:#aaa;
-}
-
-.vsplitbar {
+.splitter-bar.hover {
+opacity: 0.5;
 width:5px;
+background-color: #b8b8b8;
+margin-bottom:10px;  
 }
 
+.splitter-bar.highlight {
+width:5px;
+background-color: #b8b8b8;
+margin-bottom:10px;  
+}
+
+.splitter-bar-vertical {
+  width: 5px;
+ 
+}
+
+.splitter-bar-vertical-docked.hover {
+opacity: 1;
+width:5px;
+background-color: #b8b8b8;
+margin-bottom:10px;  
+}
+
+.splitter-bar-vertical-docked {
+width:5px;
+background-color: #b8b8b8;
+margin-bottom:10px;  
+}
+
+.splitter-iframe-hide {
+  visibility: hidden;
+}
 
 #accordion {
 font-family:Verdana, Geneva, sans-serif;
-min-width:150px;
 width:200px;
 bottom:1px;
 height:90%;
