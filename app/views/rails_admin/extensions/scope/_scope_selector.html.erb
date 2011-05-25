@@ -4,15 +4,17 @@ models = @scope_adapter.models
 
 <div id='scopeSelector'>
   <ul>
-  <%models.each do |model|%>
+  <%models.each_with_index do |model, index|%>
     <%model_name = model.name%>
     <li><%=label_tag RailsAdmin.config(RailsAdmin::AbstractModel.new(model.name)).label + ":"%>
       <%=select_tag model_name, 
                     options_for_select(@scope[model_name][:entries].collect{|o| [o.name, o.id]}, @scope[model_name][:selected]),
                     :id => "#{model_name}"
       %>
-      <% if authorized? :new, nil, model %>
-        <%= link_to I18n.t('admin.scope.add'), rails_admin_new_path(:model_name => model.name ), :id => model.name, :class => "createAssociatedRecord" %>
+      <%if index == 0 or (index > 0 and @scope[models[index-1].name][:entries].length != 0)%>
+        <% if authorized? :new, nil, model %>
+          <%= link_to I18n.t('admin.scope.add'), rails_admin_new_path(:model_name => model.name ), :id => model.name, :class => "createAssociatedRecord" %>
+        <%end%>
       <%end%>
       <%if @scope[model_name][:entries].length > 0%>
         <% if authorized? :edit, nil, model %>

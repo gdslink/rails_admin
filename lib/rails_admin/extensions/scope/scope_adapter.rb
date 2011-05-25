@@ -21,7 +21,7 @@ module RailsAdmin
         #
         def models
           @models
-        end        
+        end
         
         # Apply the scope to an ActiveRelation object
         # First argument is the query the scope has to be applied to
@@ -43,7 +43,7 @@ module RailsAdmin
             
             #remove the first element since it's always going to be the abstract base model
             tree.shift
-            
+                        
             #build the joins query
             query = query.joins([tree.collect{|model| model.table_name.singularize.to_sym}.reverse.inject { |a, b| {b => a}}])
             
