@@ -9,7 +9,7 @@ models = @scope_adapter.models
     <li><%=label_tag RailsAdmin.config(RailsAdmin::AbstractModel.new(model.name)).label + ":"%>
       <%=select_tag model_name, 
                     options_for_select(@scope[model_name][:entries].collect{|o| [o.name, o.id]}, @scope[model_name][:selected]),
-                    :id => "#{model_name}"
+                    :id => "#{model_name}-scope"
       %>
       <%if index == 0 or (index > 0 and @scope[models[index-1].name][:entries].length != 0)%>
         <% if authorized? :new, nil, model %>
@@ -26,7 +26,7 @@ models = @scope_adapter.models
       <%end%>
       <%= javascript_tag do %>
         $j(document).ready(function($) {
-          $("#<%=model.name%>.createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog", elementToUpdate: $("select#<%=model.name%>")});
+          $("#<%=model.name%>.createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog", elementToUpdate: $("select#<%=model.name%>-scope")});
         });
       <% end %>
   </li>
@@ -35,9 +35,11 @@ models = @scope_adapter.models
 
   <script>
   $j(function($) {    
-      $('<%=models.collect{|model| "##{model.name}"}.join(',')%>').change(function() {
+      $('<%=models.collect{|model| "##{model.name}-scope"}.join(',')%>').change(function() {
           $.ajax({url: '<%= url_for :action => :update_scope, :controller => :main %>',
-          data: 'selected=' + this.value + '&model=' + this.id,
+          data: $('<%=models.collect{|model| "##{model.name}-scope"}.join(',')%>').each(function(i,el){
+            '&' + el.value + '=' + el.id
+          }),
           dataType: 'text',
           success: function(html){
             $("#scopeSelector").html(html);
