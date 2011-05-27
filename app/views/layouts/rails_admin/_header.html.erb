@@ -24,7 +24,8 @@
                 return false;
               matchKeys = matchKeys.split(' ');
               for(var i=0;i<matchKeys.length;i++){
-                if(this.href.toLowerCase().indexOf(matchKeys[i].toLowerCase()) >= 0)
+                var regex = new RegExp(matchKeys[i] + '\\b', 'i');
+                if(this.href.toLowerCase().match(regex) != null)
                   return true;
               }
               return false;
