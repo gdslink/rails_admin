@@ -2,7 +2,7 @@
   config = field.associated_model_config
   selected = field.bindings[:object].send(field.association[:name])
   selected_ids = selected.map(&:id)
-  xhr = field.associated_collection_count > 100
+  xhr = field.associated_collection_count(authorization_adapter, scope_adapter) > 100
 
   if xhr
     collection = selected.map do |o|

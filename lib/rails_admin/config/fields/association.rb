@@ -35,8 +35,10 @@ module RailsAdmin
         end
 
         # Reader how many records the associated model has
-        def associated_collection_count
-          associated_model_config.abstract_model.count
+        def associated_collection_count(authorization_adapter, scope_adapter)
+          scope = authorization_adapter && authorization_adapter.query(:read, associated_model_config.abstract_model)
+          scope = scope_adapter.apply_scope(scope, associated_model_config.abstract_model) if scope_adapter
+          associated_model_config.abstract_model.count({}, scope)
         end
 
         # Reader for the association's child model's configuration

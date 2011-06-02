@@ -7,7 +7,7 @@
 
   selected_id = selected.to_i rescue field.selected_id if selected
 
-  xhr = field.associated_collection_count > 100
+  xhr = field.associated_collection_count(authorization_adapter, scope_adapter) > 100
 
   if xhr
     collection = [[field.formatted_value, selected_id]]
