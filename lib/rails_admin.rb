@@ -5,6 +5,8 @@ require 'rails_admin/config'
 require 'rails_admin/extension'
 require 'rails_admin/extensions/cancan'
 require 'rails_admin/extensions/scope'
+require 'rails_admin/support/csv_converter'
+require 'rails_admin/support/core_extensions'
 
 module RailsAdmin
   class AuthenticationNotConfigured < StandardError; end

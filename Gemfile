@@ -5,7 +5,7 @@ source 'http://rubygems.org'
 # and rake tasks are available in development mode:
 group :development, :test do
   gem 'rails', '~> 3.0.7'
-
+  gem 'rake', '~> 0.8.7'
   platforms :jruby do
     gem 'jruby-openssl', '~> 0.7'
     case ENV['CI_DB_ADAPTER']

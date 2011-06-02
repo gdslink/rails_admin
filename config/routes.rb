@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       match "/", :to => :index, :as => "dashboard"
       match "/update_scope", :to => :update_scope, :as => "update_scope"      
       get "/:model_name", :to => :list, :as => "list"
+      match "/:model_name/export", :to => :export, :as => "export"
       get "/:model_name/new", :to => :new, :as => "new"
       match "/:model_name/get_pages", :to => :get_pages, :as => "get_pages"
       post "/:model_name", :to => :create, :as => "create"
@@ -15,7 +16,7 @@ Rails.application.routes.draw do
       put "/:model_name/:id", :to => :update, :as => "update"
       get "/:model_name/:id/delete", :to => :delete, :as => "delete"
       delete "/:model_name/:id", :to => :destroy, :as => "destroy"
-      get "/:model_name/bulk_delete", :to => :bulk_delete, :as => "bulk_delete"
+      post "/:model_name/bulk_action", :to => :bulk_action, :as => "bulk_action"
       post "/:model_name/bulk_destroy", :to => :bulk_destroy, :as => "bulk_destroy"
     end
 
