@@ -8,13 +8,21 @@
   <li>&rsaquo; <span><%= @page_name %></span></li>
 <% end %>
 
+
 <%= render(:partial => 'layouts/rails_admin/head') %>
 <body>
   <div id="wrapper">
     <%= render(:partial => 'layouts/rails_admin/header') %>
-    <div id="content">
-<%= content_for(:layout) %>
-    </div>
+    <%if @scope and @scope.length > 0 && @scope[@scope_adapter.models.last.name][:entries].length == 0 %>
+      <%= render :partial => 'rails_admin/main/no_content'%>
+    <%else%>
+      <div id="splitter">
+        <%= render :partial => 'rails_admin/main/navigation'%>
+        <div id="content">      
+          <%= content_for(:layout) %>
+        </div>
+      </div>
+    <%end%>
   </div>
 </body>
 </html>

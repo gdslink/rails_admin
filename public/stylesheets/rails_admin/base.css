@@ -191,6 +191,10 @@ padding:10px;
 line-height:1em;
 }
 
+input.ra-button.ui-button {
+margin-left: 4px;
+}
+
 input {
 font-family:Verdana, Geneva, sans-serif;
 font-size:12px;

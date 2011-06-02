@@ -11,7 +11,7 @@ en:
       delete: "Delete"
       no_content: "No %{model}"
     dashboard:
-      pagename: "Site administration"
+      pagename: "Administration"
       name: "Dashboard"
       model_name: "Model name"
       last_used: "Last used"
