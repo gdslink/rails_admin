@@ -308,8 +308,11 @@ module RailsAdmin
         end
       # search over all string and text fields
       else
+        # Search case insensitively even on postgresql:
+        like_operator =  "ILIKE" if ActiveRecord::Base.configurations[Rails.env]['adapter'] == "postgresql"
+        like_operator ||= "LIKE"
         @properties.select{|property| property[:type] == :string || property[:type] == :text }.each do |property|
-          statements << "(#{table_name}.#{property[:name]} LIKE ?)"
+          statements << "(#{table_name}.#{property[:name]} #{like_operator} ?)"
           values << "%#{query}%"
         end
       end
@@ -419,7 +422,7 @@ module RailsAdmin
         page_count = 1
         record_count = objects.count
       else
-        options.merge!(:page => @current_page, :per_page => per_page)
+        options.merge!(:page => current_page, :per_page => per_page)
         page_count, objects = @abstract_model.paginated(options, scope)
         options.delete(:page)
         options.delete(:per_page)
