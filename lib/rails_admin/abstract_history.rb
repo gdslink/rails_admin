@@ -160,7 +160,7 @@ module RailsAdmin
     def self.history_for_month(month, year, scope_adapter, authorization_adapter)
       filtered = Array.new
       other_tables = Array.new
-      history_rows =  RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year])
+      history_rows =  RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year], :order => "created_at DESC")
       history_rows.each { |row|
         other_tables << row.table
       }
