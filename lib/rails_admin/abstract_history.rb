@@ -116,27 +116,30 @@ module RailsAdmin
     end
 
     # Fetch the history item counts for a requested period of months
-    def self.history_summaries(from, to)
-      # try to be helpful if the user hasn't run the history table
-      # rename generator.  this happens to be the first spot that will
-      # cause a problem.
-      # FIXME: at some point, after a reasonable transition period,
-      # we can remove the rescue, etc.
-      begin
-        RailsAdmin::History.get_history_for_dates(from[:month].to_i, to[:month].to_i, from[:year].to_i, to[:year].to_i)
-      rescue ActiveRecord::StatementInvalid => e
-        if e.message =~ /rails_admin_histories/ # seems to be the only common text in the db-specific error messages
-          message = "Please run the generator \"rails generate rails_admin:install_migrations\" then migrate your database.  #{e.message}"
-        else
-          message = e.message
+    def self.history_summaries(from, to, scope_adapter, authorization_adapter)
+      month = from[:month].to_i
+      total = 0
+      histories = Array.new
+      # cycle through each month and pull the history count, keep a running total
+      for  y in from[:year].to_i..to[:year].to_i 
+        for  m in month..12 
+          if m > to[:month].to_i && y == to[:year].to_i
+            break
+          end
+
+          h = history_for_month(m, y, scope_adapter, authorization_adapter)
+          histories << { :history => {:record_count => h.count , :year => y, :month => m }}
+
         end
-        raise ActiveRecord::StatementInvalid.new message
+        month = 1
       end
+
+      histories
     end
 
 
     # Fetch the history item counts for the most recent 5 months.
-    def self.history_latest_summaries
+    def self.history_latest_summaries(scope_adapter, authorization_adapter)
       from = {
         :month => 5.month.ago.month,
         :year => 5.month.ago.year,
@@ -145,7 +148,7 @@ module RailsAdmin
         :month => DateTime.now.month,
         :year => DateTime.now.year,
       }
-      self.history_summaries(from, to)
+      self.history_summaries(from, to, scope_adapter, authorization_adapter)
     end
     
     def self.translate_table_name(tbl_name)
