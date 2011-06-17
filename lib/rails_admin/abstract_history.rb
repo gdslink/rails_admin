@@ -118,9 +118,9 @@ module RailsAdmin
     # Fetch the history item counts for a requested period of months
     def self.history_summaries(from, to, scope_adapter, authorization_adapter)
       month = from[:month].to_i
-      total = 0
       histories = Array.new
-      # cycle through each month and pull the history count, keep a running total
+      # cycle through each month and pull the history count, store the results for each month
+      # in an array of hashes
       for  y in from[:year].to_i..to[:year].to_i 
         for  m in month..12 
           if m > to[:month].to_i && y == to[:year].to_i
