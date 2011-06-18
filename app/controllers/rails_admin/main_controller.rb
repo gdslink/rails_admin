@@ -11,7 +11,7 @@ module RailsAdmin
       @page_name = t("admin.dashboard.pagename")
       @page_type = "dashboard"
 
-      @history = AbstractHistory.history_latest_summaries
+      @history = AbstractHistory.history_latest_summaries(@scope_adapter, @authorization_adapter)
       @month = DateTime.now.month
       @year = DateTime.now.year
       @history= AbstractHistory.history_for_month(@month, @year, @scope_adapter, @authorization_adapter)
