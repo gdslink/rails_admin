@@ -15,6 +15,7 @@
     dialog: null,
     options: {
       dialogClass: "",
+      height: 600,
       width: 720
     },
 
@@ -34,7 +35,8 @@
           },
           error: function(xhr, status, error) {
             dialog.html(xhr.responseText);
-          }
+          },
+          dataType: 'text'
         });
       });
     },
@@ -111,7 +113,7 @@
           },
           modal: true,
           width: this.options.width,
-          height: 600
+          height: this.options.height
         });
       }
       return this.dialog;

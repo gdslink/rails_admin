@@ -18,7 +18,8 @@ module RailsAdmin
       if params[:from].blank? or params[:to].blank?
         not_found
       else
-        render :json => AbstractHistory.history_summaries(params[:from], params[:to])
+        render :json => AbstractHistory.history_summaries(params[:from], params[:to], @scope_adapter,
+        @authorization_adapter)
       end
     end
 
