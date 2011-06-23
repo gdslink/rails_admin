@@ -232,7 +232,9 @@ var splitterCounter = 0;
 		if ( opts.cookie ) {
 			if ( !$.cookie )
 				alert('jQuery.splitter(): jQuery cookie plugin required');
-			initPos = parseInt($.cookie(opts.cookie),10);
+			cookieVal = $.cookie(opts.cookie);
+			if (cookieVal)
+				initPos = parseInt(cookieVal,10);
 			$(window).bind("unload"+opts.eventNamespace, function(){
 				var state = String(bar.css(opts.origin));	// current location of splitbar
 				$.cookie(opts.cookie, state, {expires: opts.cookieExpires || 365, 
