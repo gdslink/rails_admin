@@ -9,6 +9,7 @@ module RailsAdmin
         include RailsAdmin::Config::Hideable
 
         attr_reader :name
+        attr_accessor :help
 
         def initialize(parent, name)
           super(parent)
@@ -51,6 +52,9 @@ module RailsAdmin
         # Configurable group label which by default is group's name humanized.
         register_instance_option(:label) do
           name.to_s.humanize
+        end
+        register_instance_option(:help) do
+          nil
         end
       end
     end
