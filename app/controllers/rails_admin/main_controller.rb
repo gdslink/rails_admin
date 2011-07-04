@@ -337,15 +337,12 @@ module RailsAdmin
       conditions = [""]
 
       if query.present?
-        queryable_fields = @model_config.list.fields.select(&:queryable?)
-        queryable_fields.each do |field|
-          searchable_columns = field.searchable_columns.flatten
-          searchable_columns.each do |field_infos|
-            statement, *value = build_statement(field_infos[:column], field_infos[:type], query, field.search_operator)
-            if statement && value
-              query_statements << statement
-              values << value
-            end
+        @queryable_fields = @model_config.list.fields.select(&:queryable?).map(&:searchable_columns).flatten
+        @queryable_fields.each do |field_infos|
+          statement, *value = build_statement(field_infos[:column], field_infos[:type], query, RailsAdmin::Config.default_search_operator)
+          if statement && value
+            query_statements << statement
+            values << value
           end
         end
       end
