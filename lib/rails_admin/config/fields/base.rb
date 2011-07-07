@@ -65,7 +65,11 @@ module RailsAdmin
         register_instance_option(:filterable?) do
           !!searchable
         end
-        
+
+        register_instance_option(:search_operator) do
+          RailsAdmin::Config.default_search_operator
+        end
+
         # serials and dates are reversed in list, which is more natural (last modified items first).
         register_instance_option(:sort_reverse?) do
           false
