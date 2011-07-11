@@ -437,7 +437,6 @@ module RailsAdmin
 
     def handle_save_error whereto = :new
       action = params[:action]
-
       flash.now[:error] = t("admin.flash.error", :name => @model_config.label, :action => t("admin.actions.#{action}d"))
       flash.now[:error] += ". #{@object.errors[:base].to_sentence}" unless @object.errors[:base].blank?
       

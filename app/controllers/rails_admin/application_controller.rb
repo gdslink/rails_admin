@@ -9,6 +9,7 @@ module RailsAdmin
     before_filter :_scope!    
     before_filter :set_plugin_name
     before_filter :_get_scope_models!
+    after_filter  :_set_scope_models!
 
     helper_method :_current_user
 
@@ -38,6 +39,10 @@ module RailsAdmin
 
     def _get_scope_models!
       get_scope_models if @scope_adapter
+    end
+
+    def _set_scope_models!
+      request.request_uri[/\/#{controller_name}\/(.*)/,1]
     end
 
     def _authenticate!

@@ -2,8 +2,6 @@ module RailsAdmin
   module Extensions
     module Scope
       
-
-      
       # This adapter enables a scope selector that limits the records fetched from the DB
       # to the specified scope.
       class ScopeAdapter
@@ -52,7 +50,7 @@ module RailsAdmin
             predicate_or  = []
             predicate_and = []            
             if(tree.collect{|model| model.name}.include?(key))
-              predicate << {key.constantize.table_name.to_sym => {:id => value}}
+              predicate << {key.constantize.table_name.to_sym => {:key => value}}
             end
             base_abstract_model.belongs_to_associations.each do |assoc|
               if(@controller.current_scope.include?(assoc[:parent_model].name)) then
@@ -105,23 +103,16 @@ module RailsAdmin
             @current_scope = session[:scope]
           end
           
+          def update_session_for_model(model, object_key)
+            session[:scope][model.name] = object_key
+          end
+
           def update_scope
             @scope_adapter.models.each do |model|
-              session[:scope][model.name] = params[model.name]
+              update_session_for_model(model, params[model.name])
             end
             get_scope_models
-            #session[:scope][model.name] = params[:selected]
-            #@scope[model_name] = {:entries => list_entries_for(model_name, association), :selected => session[:scope][model_name] }
-            #session[:scope][model.name] = params[:model]
-            #model = @scope_adapter.models[@scope_adapter.models.index { |model| params[:model] == model.name }]
-            #first_id = model.first.id rescue nil
-            #record_ids  = @scope[model.name][:entries].collect{ |e| e.id}
-            #if not record_ids.include?(params[:selected].to_i) then
-            #  session[:scope][model.name] = first_id
-            #else
-            #  session[:scope][model.name] = params[:selected]
-            #end
-            #get_scope_models
+
             respond_to do |format|
               format.js {render :partial => 'rails_admin/extensions/scope/scope_selector', :locals => {:models => @scope_adapter.models}}
             end
@@ -134,28 +125,33 @@ module RailsAdmin
           end
                     
           def get_scope_models
-            @scope = {}
-            session[:scope] ||= {}
-            parent_model     = nil
-            parent_selection = nil
-            @scope_adapter.models.each do |model|
-              model_name = model.name
-              association = parent_model && parent_selection ? {"#{parent_model.table_name.singularize}_id" => parent_selection} : parent_entries.first.id rescue nil || {} 
-              entries = list_entries_for(model_name, association)
-              if(entries.reject{|e| e.id != session[:scope][model_name].to_i}.length == 1)
-                selection = session[:scope][model_name]
-              else #reset
-                selection = entries.first.id rescue nil
-                session[:scope][model_name] = selection
+            begin
+              @scope = {}
+              session[:scope] ||= {}
+              parent_model     = nil
+              parent_selection_id = nil
+              @scope_adapter.models.each do |model|
+                model_name = model.name
+                association = parent_model && parent_selection_id ? {"#{parent_model.table_name.singularize}_id" => parent_selection_id} : parent_entries.first.id rescue nil || {} 
+                entries = list_entries_for(model_name, association)
+                if(entries.reject{|e| e.key != session[:scope][model_name]}.length == 1)
+                  selection = params[model.name] || session[:scope][model_name]
+                  update_session_for_model(model, selection)
+                else #reset
+                  selection = entries.first.key rescue nil
+                  update_session_for_model(model, selection)
+                end
+                @scope[model_name] = {:entries => entries, :selected => selection }
+                
+                #save the parent information so we can cascade reset if needed
+                parent_model = model
+                parent_entries = entries
+                parent_selection_id = model.find_by_key(selection).id
               end
-              @scope[model_name] = {:entries => entries, :selected => selection }
-              
-              #save the parent information so we can cascade reset if needed
-              parent_model = model
-              parent_entries = entries
-              parent_selection = @scope[model_name][:selected]              
+            rescue
+              redirect_to rails_admin_dashboard_path
             end
-          end          
+          end
         end
       end
     end

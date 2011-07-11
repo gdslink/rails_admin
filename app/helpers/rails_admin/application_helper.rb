@@ -6,13 +6,15 @@ module RailsAdmin
     include RailsAdmin::I18nSupport
 
     def get_url(action, model_name)
+      options = {:model_name => model_name}
+      options.merge!(current_scope_parameters) if current_scope_parameters      
       case action
       when :dashboard
         rails_admin_dashboard_path
       when :list 
-        rails_admin_list_path(:model_name => model_name)
+        rails_admin_list_path(options)
       when :new
-        rails_admin_new_path(:model_name => model_name)        
+        rails_admin_new_path(options)
       end      
     end
 
@@ -202,6 +204,14 @@ module RailsAdmin
       @scope_adapter
     end
     
+    def current_scope_parameters    
+      return nil if not session.include? 'scope'
+      params = {}
+      session[:scope].each do |model, value|
+        params[model] = value
+      end
+    end
+
     def current_scope(model_name)
       session[:scope][model_name] rescue nil
     end

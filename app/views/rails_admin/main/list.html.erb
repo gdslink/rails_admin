@@ -1,6 +1,6 @@
 <%
   query = params[:query]
-  params = request.params.except(:action, :controller, :model_name, :utf8, :bulk_export)
+  params = request.params.except(:action, :controller, :model_name, :utf8, :bulk_export).merge(current_scope_parameters)
   sort = params[:sort]
   sort_reverse = params[:sort_reverse]
   properties = @model_config.list.visible_fields.map{|property| property.with(:view => self)}
@@ -82,11 +82,11 @@
               </li>
               <% end %>
               <li>
-               <%= link_to(t("admin.history.name"), rails_admin_history_model_path, :class => "ra-button") %>
+               <%= link_to(t("admin.history.name"), rails_admin_history_model_path(current_scope_parameters), :class => "ra-button") %>
               </li>
               <% if authorized? :new, @abstract_model %>
                 <li>
-                 <%= link_to(t("admin.list.add_new"), rails_admin_new_path(:model_name => @abstract_model.to_param), :class => "ra-button add-button") %>
+                 <%= link_to(t("admin.list.add_new"), rails_admin_new_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :class => "ra-button add-button") %>
                 </li>
               <% end %>
             </ul>
@@ -112,7 +112,7 @@
               </fieldset>
             <% end %>
           </div>
-          <%= form_tag rails_admin_bulk_action_path(:model_name => @abstract_model.to_param), :method => :post do %>
+          <%= form_tag rails_admin_bulk_action_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :method => :post do %>
             <table class="grid">
               <thead>
                 <tr>
@@ -179,11 +179,11 @@
                     <%= link_to("...", other_right, :remote => true)%>
                   </td>
                   <td class="action edit">
-                    <%= link_to(t("admin.list.edit_action"), rails_admin_edit_path(:model_name => @abstract_model.to_param, :id => object.id)) if authorized? :edit, @abstract_model, object %>
+                    <%= link_to(t("admin.list.edit_action"), rails_admin_edit_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => object.id))) if authorized? :edit, @abstract_model, object %>
                   </td>
                   <% if authorized? :delete, @abstract_model %>
                   <td class="action delete">
-                    <%= link_to(t("admin.list.delete_action"), rails_admin_delete_path(:model_name => @abstract_model.to_param, :id => object.id)) if authorized? :delete, @abstract_model, object %>
+                    <%= link_to(t("admin.list.delete_action"), rails_admin_delete_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => object.id))) if authorized? :delete, @abstract_model, object %>
                   </td>
                   <td class="action select"><%= check_box_tag "bulk_ids[]", object.id, false, :id => "bulk_ids_#{object.id}" %></td>
                   <% end %>

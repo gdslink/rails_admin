@@ -8,7 +8,7 @@ models = @scope_adapter.models
     <%model_name = model.name%>
     <li><%=label_tag RailsAdmin.config(RailsAdmin::AbstractModel.new(model.name)).label + ":"%>
       <%=select_tag model_name, 
-                    options_for_select(@scope[model_name][:entries].collect{|o| [o.name, o.id]}, @scope[model_name][:selected]),
+                    options_for_select(@scope[model_name][:entries].collect{|o| [o.name, o.key]}, @scope[model_name][:selected]),
                     :id => "#{model_name}-scope"
       %>
       <%if index == 0 or (index > 0 and @scope[models[index-1].name][:entries].length != 0)%>
@@ -43,7 +43,7 @@ models = @scope_adapter.models
           dataType: 'text',
           success: function(html){
             $("#scopeSelector").html(html);
-            location.reload();
+            location = "<%=rails_admin_dashboard_url%>"
           }})
       });
   });
