@@ -1,10 +1,12 @@
 module RailsAdmin
 
-  class MainController < RailsAdmin::ApplicationController
-    before_filter :get_model, :except => [:index, :update_scope]
+  class MainController < RailsAdmin::ApplicationController    
+    before_filter :get_model, :except => [:index, :update_scope]    
     before_filter :get_object, :only => [:edit, :update, :delete, :destroy]
+    before_filter :check_scope_on_query, :except => [:index, :update_scope]
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :export, :bulk_destroy]
+
 
     def index
       @authorization_adapter.authorize(:index) if @authorization_adapter
@@ -196,7 +198,7 @@ module RailsAdmin
       
       AbstractHistory.create_history_item("Destroyed #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
 
-      redirect_to rails_admin_list_path(:model_name => @abstract_model.to_param), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
+      redirect_to rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
     end
     
     def export
@@ -221,9 +223,9 @@ module RailsAdmin
     end
     
     def bulk_action
-      redirect_to rails_admin_list_path, :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
+      redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
       
-      params[:bulk_delete] ? bulk_delete : (params[:bulk_export] ? export : redirect_to(rails_admin_list_path(:model_name => @abstract_model.to_param), :notice => t("admin.flash.noaction")))
+      params[:bulk_delete] ? bulk_delete : (params[:bulk_export] ? export : redirect_to(rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction")))
     end
     
     def bulk_delete
@@ -247,7 +249,7 @@ module RailsAdmin
         AbstractHistory.create_history_item(message, object, @abstract_model, _current_user)
       end
 
-      redirect_to rails_admin_list_path, :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
+      redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
     end
 
     def handle_error(e)
@@ -427,11 +429,11 @@ module RailsAdmin
     def redirect_to_on_success
       notice = t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.#{params[:action]}d"))
       if params[:_add_another]
-        redirect_to rails_admin_new_path, :notice => notice
+        redirect_to rails_admin_new_path(@current_scope_parameters), :notice => notice
       elsif params[:_add_edit]
-        redirect_to rails_admin_edit_path(:id => @object.id), :notice => notice
+        redirect_to rails_admin_edit_path(@current_scope_parameters.merge(:id => @object.id)), :notice => notice
       else
-        redirect_to rails_admin_list_path, :notice => notice
+        redirect_to rails_admin_list_path(@current_scope_parameters), :notice => notice
       end
     end
 
@@ -447,7 +449,7 @@ module RailsAdmin
     end
 
     def check_for_cancel
-      redirect_to rails_admin_list_path, :notice => t("admin.flash.noaction") if params[:_continue]
+      redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") if params[:_continue]
     end
 
     def list_entries(other = {})

@@ -4,7 +4,7 @@ models = @scope_adapter.models
 
 <div id='scopeSelector'>
   <ul>
-  <%models.each_with_index do |model, index|%>
+  <%models.each_with_index do |model, index|%>  
     <%model_name = model.name%>
     <li><%=label_tag RailsAdmin.config(RailsAdmin::AbstractModel.new(model.name)).label + ":"%>
       <%=select_tag model_name, 
@@ -18,10 +18,11 @@ models = @scope_adapter.models
       <%end%>
       <%if @scope[model_name][:entries].length > 0%>
         <% if authorized? :edit, nil, model %>
-          <%= link_to I18n.t('admin.scope.edit'), rails_admin_edit_path(:model_name => model.name, :id => @scope[model_name][:selected]), :id => model.name, :class => "createAssociatedRecord" %>
+          <%p @scope[model_name][:selected] %>
+          <%= link_to I18n.t('admin.scope.edit'), rails_admin_edit_path(:model_name => model.name, :id => @scope[model_name][:selected_id]), :id => model.name, :class => "createAssociatedRecord" %>
         <%end%>
         <% if authorized? :destroy, nil, model %>
-          <%= link_to I18n.t('admin.scope.delete'), rails_admin_delete_path(:model_name => model.name, :id => @scope[model_name][:selected]),  :id => model.name, :class => "createAssociatedRecord" %>
+          <%= link_to I18n.t('admin.scope.delete'), rails_admin_delete_path(:model_name => model.name, :id => @scope[model_name][:selected_id]),  :id => model.name, :class => "createAssociatedRecord" %>
         <%end%>
       <%end%>
       <%= javascript_tag do %>

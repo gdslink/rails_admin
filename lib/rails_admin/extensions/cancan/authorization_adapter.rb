@@ -18,7 +18,7 @@ module RailsAdmin
         # AbstractModel instance that applies. The third argument is the actual model
         # instance if it is available.
         def authorize(action, abstract_model = nil, model_object = nil)
-          action = translate_action(action)
+          action = translate_action(action)          
           @controller.current_ability.authorize!(action, model_object || abstract_model.model) if action
         end
 

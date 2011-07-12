@@ -9,8 +9,8 @@ module RailsAdmin
     before_filter :_scope!    
     before_filter :set_plugin_name
     before_filter :_get_scope_models!
-    after_filter  :_set_scope_models!
-
+    before_filter :_get_scope_parameters!
+    
     helper_method :_current_user
 
     def get_model
@@ -31,7 +31,29 @@ module RailsAdmin
       not_found unless @object
     end
 
+    def check_scope_on_query
+      return if not @scope_adapter or not @authorization_adapter
+      return if @scope_adapter.models.map{|m| m.name}.include?(@abstract_model.model.name)
+      @scope_adapter.models.each do |model|
+        assoc = @abstract_model.belongs_to_associations.map{|a| a if a[:parent_model].name == model.name}.first
+        if @object and assoc and assoc.length > 0 then
+          record = @object.send assoc[:name]
+          raise CanCan::AccessDenied if record.key != @current_scope_parameters[model.name]
+        end
+        raise CanCan::AccessDenied if not params.include?(model.name)
+      end
+    end
+
     private
+
+    def _get_scope_parameters!
+      @current_scope_parameters = {}
+      return if not session.include? 'scope'      
+      session[:scope].each do |model, value|
+        @current_scope_parameters[model] = value
+      end
+      @current_scope_parameters
+    end
 
     def _scope!
       instance_eval &RailsAdmin.scope_with
@@ -39,10 +61,6 @@ module RailsAdmin
 
     def _get_scope_models!
       get_scope_models if @scope_adapter
-    end
-
-    def _set_scope_models!
-      request.request_uri[/\/#{controller_name}\/(.*)/,1]
     end
 
     def _authenticate!

@@ -102,7 +102,7 @@ module RailsAdmin
             # whatever current user method is defined with RailsAdmin
             @current_scope = session[:scope]
           end
-          
+
           def update_session_for_model(model, object_key)
             session[:scope][model.name] = object_key
           end
@@ -130,7 +130,7 @@ module RailsAdmin
               session[:scope] ||= {}
               parent_model     = nil
               parent_selection_id = nil
-              @scope_adapter.models.each do |model|
+              @scope_adapter.models.each do |model|                
                 model_name = model.name
                 association = parent_model && parent_selection_id ? {"#{parent_model.table_name.singularize}_id" => parent_selection_id} : parent_entries.first.id rescue nil || {} 
                 entries = list_entries_for(model_name, association)
@@ -141,12 +141,13 @@ module RailsAdmin
                   selection = entries.first.key rescue nil
                   update_session_for_model(model, selection)
                 end
-                @scope[model_name] = {:entries => entries, :selected => selection }
+                id_for_selection = model.find_by_key(selection).id
+                @scope[model_name] = {:entries => entries, :selected => selection, :selected_id  => id_for_selection }
                 
                 #save the parent information so we can cascade reset if needed
                 parent_model = model
                 parent_entries = entries
-                parent_selection_id = model.find_by_key(selection).id
+                parent_selection_id = id_for_selection
               end
             rescue
               redirect_to rails_admin_dashboard_path

@@ -6,8 +6,9 @@ module RailsAdmin
     include RailsAdmin::I18nSupport
 
     def get_url(action, model_name)
+      p session
       options = {:model_name => model_name}
-      options.merge!(current_scope_parameters) if current_scope_parameters      
+      options.merge!(current_scope_parameters)
       case action
       when :dashboard
         rails_admin_dashboard_path
@@ -205,11 +206,7 @@ module RailsAdmin
     end
     
     def current_scope_parameters    
-      return nil if not session.include? 'scope'
-      params = {}
-      session[:scope].each do |model, value|
-        params[model] = value
-      end
+      @current_scope_parameters
     end
 
     def current_scope(model_name)

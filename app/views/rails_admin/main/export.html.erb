@@ -1,5 +1,6 @@
 <%
   params = request.params.except(:action, :controller, :utf8, :page, :per_page, :format, :authenticity_token)
+  params.merge!(current_scope_parameters)
   
   visible_fields = @model_config.export.visible_fields
 %>
