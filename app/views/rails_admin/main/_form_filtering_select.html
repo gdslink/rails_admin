@@ -4,7 +4,6 @@
   
   visible = !scope_adapter || !scope_adapter.models.collect{|m| m.name}.include?(config.abstract_model.model.name)
   selected = current_scope(config.abstract_model.model.name) if not visible
-
   selected_id = selected.to_i rescue field.selected_id if selected
 
   xhr = field.associated_collection_count(authorization_adapter, scope_adapter) > 100

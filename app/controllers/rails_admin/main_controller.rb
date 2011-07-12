@@ -198,7 +198,10 @@ module RailsAdmin
       
       AbstractHistory.create_history_item("Destroyed #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
 
-      redirect_to rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
+      respond_to do |format|
+        format.js {render :json => {}}
+        format.any {redirect_to rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))}
+      end
     end
     
     def export

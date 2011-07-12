@@ -205,12 +205,12 @@ module RailsAdmin
       @scope_adapter
     end
     
-    def current_scope_parameters    
+    def current_scope_parameters
       @current_scope_parameters
     end
 
     def current_scope(model_name)
-      session[:scope][model_name] rescue nil
+      @controller.current_scope[model_name][:selected] rescue nil
     end
 
     # returns a link to "/" unless there's a problem, which will

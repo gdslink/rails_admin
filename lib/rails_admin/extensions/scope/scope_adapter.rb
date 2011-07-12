@@ -30,9 +30,9 @@ module RailsAdmin
           
           #Treat the User model as a special case since we want to see all the users if they are not hierarchically
           #assigned (ex: User not being associated to a company)
-          if @controller.current_user.class.name == base_abstract_model.model.name then
-            return query if !@authorization_adapter || @authorization_adapter.authorized?(:list, nil, @controller.current_user.class.name)
-          end
+          # if @controller.current_user.class.name == base_abstract_model.model.name then
+          #   return query if !@authorization_adapter || @authorization_adapter.authorized?(:list, nil, @controller.current_user.class.name)
+          # end
           
           @controller.current_scope.each do |key, value|
             next if base_abstract_model.model.name == key
@@ -50,11 +50,11 @@ module RailsAdmin
             predicate_or  = []
             predicate_and = []            
             if(tree.collect{|model| model.name}.include?(key))
-              predicate << {key.constantize.table_name.to_sym => {:key => value}}
+              predicate << {key.constantize.table_name.to_sym => {:id => value[:selected]}}
             end
             base_abstract_model.belongs_to_associations.each do |assoc|
               if(@controller.current_scope.include?(assoc[:parent_model].name)) then
-                predicate_and << ({assoc[:child_key][0].to_s => @controller.current_scope[assoc[:parent_model].name]})
+                predicate_and << ({assoc[:child_key][0].to_s => @controller.current_scope[assoc[:parent_model].name][:selected]})
               else
                 predicate_or << ({assoc[:child_key][0].to_s => nil})
               end
@@ -98,13 +98,11 @@ module RailsAdmin
         module ControllerExtension
           
           def current_scope
-            # use _current_user instead of default current_user so it works with
-            # whatever current user method is defined with RailsAdmin
-            @current_scope = session[:scope]
+            @current_scope
           end
 
-          def update_session_for_model(model, object_key)
-            session[:scope][model.name] = object_key
+          def update_session_for_model(model, object_id)
+            session[:scope][model.name] = object_id
           end
 
           def update_scope
@@ -125,32 +123,27 @@ module RailsAdmin
           end
                     
           def get_scope_models
-            begin
-              @scope = {}
-              session[:scope] ||= {}
-              parent_model     = nil
-              parent_selection_id = nil
-              @scope_adapter.models.each do |model|                
-                model_name = model.name
-                association = parent_model && parent_selection_id ? {"#{parent_model.table_name.singularize}_id" => parent_selection_id} : parent_entries.first.id rescue nil || {} 
-                entries = list_entries_for(model_name, association)
-                if(entries.reject{|e| e.key != session[:scope][model_name]}.length == 1)
-                  selection = params[model.name] || session[:scope][model_name]
-                  update_session_for_model(model, selection)
-                else #reset
-                  selection = entries.first.key rescue nil
-                  update_session_for_model(model, selection)
-                end
-                id_for_selection = model.find_by_key(selection).id
-                @scope[model_name] = {:entries => entries, :selected => selection, :selected_id  => id_for_selection }
-                
-                #save the parent information so we can cascade reset if needed
-                parent_model = model
-                parent_entries = entries
-                parent_selection_id = id_for_selection
+            @current_scope = {}
+            session[:scope] ||= {}
+            parent_model     = nil
+            parent_selection_id = nil
+            @scope_adapter.models.each do |model|                
+              model_name = model.name
+              association = parent_model && parent_selection_id ? {"#{parent_model.table_name.singularize}_id" => parent_selection_id} : parent_entries.first.id rescue nil || {} 
+              entries = list_entries_for(model_name, association)
+              if(entries.reject{|e| e.id != session[:scope][model_name].to_i}.length == 1)
+                selection = params[model.name] || session[:scope][model_name]
+                update_session_for_model(model, selection)
+              else #reset
+                selection = entries.first.id rescue nil
+                update_session_for_model(model, selection)
               end
-            rescue
-              redirect_to rails_admin_dashboard_path
+              @current_scope[model_name] = {:entries => entries, :selected  => selection }
+              
+              #save the parent information so we can cascade reset if needed
+              parent_model = model
+              parent_entries = entries
+              parent_selection_id = selection
             end
           end
         end

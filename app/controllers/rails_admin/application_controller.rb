@@ -32,13 +32,14 @@ module RailsAdmin
     end
 
     def check_scope_on_query
+      return if not request.format.html?
       return if not @scope_adapter or not @authorization_adapter
       return if @scope_adapter.models.map{|m| m.name}.include?(@abstract_model.model.name)
       @scope_adapter.models.each do |model|
         assoc = @abstract_model.belongs_to_associations.map{|a| a if a[:parent_model].name == model.name}.first
         if @object and assoc and assoc.length > 0 then
           record = @object.send assoc[:name]
-          raise CanCan::AccessDenied if record.key != @current_scope_parameters[model.name]
+          raise CanCan::AccessDenied if record.id != @current_scope_parameters[model.name].to_i
         end
         raise CanCan::AccessDenied if not params.include?(model.name)
       end
