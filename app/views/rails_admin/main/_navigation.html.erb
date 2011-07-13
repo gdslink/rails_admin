@@ -4,18 +4,18 @@
 
 <div id="accordion">
   <%accordion_navigation[:sections].each do |section|%>
-    <%
+    <%      
       if section[:links] then
         section[:links].delete_if do |link|
           !link[:url_for] or !link[:url_for].include?(:model) or 
-          (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].constantize))
+          (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].singularize.constantize))
         end
       end
       if section[:sections] then
         section[:sections].each do |sub_section|
           sub_section[:links].delete_if do |link|
             !link[:url_for] or !link[:url_for].include?(:model) or 
-            (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].constantize))
+            (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].singularize.constantize))
           end          
         end
       end
