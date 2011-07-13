@@ -30,7 +30,7 @@
                         createQuery: function(query) {
                           return { query: query }
                         },
-                        source: "<%= rails_admin_list_path(current_scope_parameters.merge(config.abstract_model.to_param), :compact => true) %>",
+                        source: "<%= rails_admin_list_path(config.abstract_model.to_param, current_scope_parameters, :compact => true) %>",
                       <% end %>
                         sortable: <%= field.orderable ? 'true' : 'false' %>,
                       regional: {

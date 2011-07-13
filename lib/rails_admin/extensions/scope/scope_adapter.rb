@@ -135,7 +135,7 @@ module RailsAdmin
                 selection = params[model.name] || session[:scope][model_name]
                 update_session_for_model(model, selection)
               else #reset
-                selection = entries.first.id rescue nil
+                selection = params[model.name].to_s.length > 0 ? params[model.name] : entries.first.id rescue nil
                 update_session_for_model(model, selection)
               end
               @current_scope[model_name] = {:entries => entries, :selected  => selection }
