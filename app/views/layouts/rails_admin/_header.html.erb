@@ -17,7 +17,8 @@
         jQuery("#accordion").accordion(
           {
             navigation: true, 
-            fillSpace: true, 
+            fillSpace: true,
+            animated: "bounceslide",
             navigationFilter: function(){
               matchKeys = jQuery(this).attr("class")
               if(matchKeys.length == 0)
