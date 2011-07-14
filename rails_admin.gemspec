@@ -2,18 +2,21 @@
 
 Gem::Specification.new do |gem|
   # If you add a dependency, please maintain alphabetical order
+  gem.add_development_dependency 'capybara', '~> 1.0.0'
   gem.add_development_dependency 'devise', '~> 1.1'
   gem.add_development_dependency 'dummy_data', '~> 0.9'
   gem.add_development_dependency 'maruku', '~> 0.6'
   gem.add_development_dependency 'paperclip', '~> 2.3'
   gem.add_development_dependency 'rspec-rails', '~> 2.6'
   gem.add_development_dependency 'simplecov', '~> 0.4'
-  gem.add_development_dependency 'webrat', '~> 0.7'
   gem.add_development_dependency 'yard', '~> 0.7'
   gem.add_development_dependency 'ZenTest', '~> 4.5'
+  
   gem.add_runtime_dependency 'builder', '~> 2.1.0'
   gem.add_runtime_dependency 'fastercsv'
+  gem.add_runtime_dependency 'haml', ['>= 3.0.0', '< 3.2.0']
   gem.add_runtime_dependency 'rails', '~> 3.0.7'
+  
   gem.authors = ["Erik Michaels-Ober", "Bogdan Gaza", "Petteri Kääpä"]
   gem.description = %q{RailsAdmin is a Rails engine that provides an easy-to-use interface for managing your data}
   gem.email = ['sferik@gmail.com', 'bogdan@cadmio.org', 'petteri.kaapa@gmail.com']

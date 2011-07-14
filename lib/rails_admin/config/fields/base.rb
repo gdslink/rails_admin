@@ -49,15 +49,19 @@ module RailsAdmin
         register_instance_option(:column_width) do
           self.class.instance_variable_get("@column_width")
         end
-        
+
+        register_instance_option(:truncated?) do
+          true
+        end
+
         register_instance_option(:sortable) do
           true
         end
-        
+
         register_instance_option(:searchable) do
           true
         end
-        
+
         register_instance_option(:queryable?) do
           !!searchable
         end
@@ -65,7 +69,11 @@ module RailsAdmin
         register_instance_option(:filterable?) do
           !!searchable
         end
-        
+
+        register_instance_option(:search_operator) do
+          RailsAdmin::Config.default_search_operator
+        end
+
         # serials and dates are reversed in list, which is more natural (last modified items first).
         register_instance_option(:sort_reverse?) do
           false
@@ -73,7 +81,7 @@ module RailsAdmin
 
         # list of columns I should search for that field [{ :column => 'table_name.column', :type => field.type }, {..}]
         register_instance_option(:searchable_columns) do
-          @searchable_columns ||= case self.searchable 
+          @searchable_columns ||= case self.searchable
           when true
             [{ :column => "#{self.abstract_model.model.table_name}.#{self.name}", :type => self.type }]
           when false
@@ -81,15 +89,28 @@ module RailsAdmin
           when :all # valid only for associations
             self.associated_model_config.list.fields.map { |f| { :column => "#{self.associated_model_config.abstract_model.model.table_name}.#{f.name}", :type => f.type } }
           else
-            [self.searchable].flatten.map do |f| 
+            [self.searchable].flatten.map do |f|
+              if f.is_a?(String) && f.include?('.')                            #  "table_name.attribute"
+                @table_name, column_name = f.split '.'
+                f = column_name.to_sym
+              end
               field_name = f.is_a?(Hash) ? f.values.first : f
-              abstract_model = f.is_a?(Hash) ? AbstractModel.new(f.keys.first) : (self.association? ? self.associated_model_config.abstract_model : self.abstract_model)
+              abstract_model = if f.is_a?(Hash) && (f.keys.first.is_a?(Class) || f.keys.first.is_a?(String)) #  { Model => :attribute } || { "Model" => :attribute }
+                AbstractModel.new(f.keys.first)
+              elsif f.is_a?(Hash)                                            #  { :table_name => :attribute }
+                @table_name = f.keys.first.to_s
+                (self.association? ? self.associated_model_config.abstract_model : self.abstract_model)
+              else                                                           #  :attribute
+                (self.association? ? self.associated_model_config.abstract_model : self.abstract_model)
+              end
+
               property = abstract_model.properties.find{ |p| p[:name] == field_name }
-              { :column => "#{abstract_model.model.table_name}.#{property[:name]}", :type => property[:type] }
+              raise ":#{field_name} attribute not found/not accessible on table :#{abstract_model.model.table_name}. \nPlease check '#{self.abstract_model.pretty_name}' configuration for :#{self.name} attribute." unless property
+              { :column => "#{@table_name || abstract_model.model.table_name}.#{property[:name]}", :type => property[:type] }
             end
           end
         end
-        
+
         register_instance_option(:formatted_value) do
           unless (output = value).nil?
             output
@@ -100,7 +121,7 @@ module RailsAdmin
 
         # Accessor for field's help text displayed below input field.
         register_instance_option(:help) do
-          required? ? I18n.translate("admin.new.required") : I18n.translate("admin.new.optional")
+          (required? ? I18n.translate("admin.new.required") : I18n.translate("admin.new.optional") + '. ')
         end
 
         register_instance_option(:html_attributes) do
@@ -121,15 +142,32 @@ module RailsAdmin
         #
         # @see RailsAdmin::AbstractModel.properties
         register_instance_option(:length) do
-          properties[:length]
+          properties && properties[:length]
+        end
+
+        register_instance_option(:show_partial) do
+          :show_base
         end
 
         register_instance_option(:partial) do
+          # TODO remove me, I've been deprecated on 2011-07-12
+        end
+
+        register_instance_option(:edit_partial) do
           :form_field
         end
 
+        register_instance_option(:create_partial) do
+          edit_partial
+        end
+
+        register_instance_option(:update_partial) do
+          edit_partial
+        end
+
         register_instance_option(:render) do
-          bindings[:view].render :partial => partial.to_s, :locals => {:field => self, :form => bindings[:form] }
+          action = self.parent.class.to_s.demodulize.downcase
+          bindings[:view].render :partial => send("#{action}_partial").to_s, :locals => {:field => self, :form => bindings[:form] }
         end
 
         # Accessor for whether this is field is mandatory.  This is
@@ -141,16 +179,16 @@ module RailsAdmin
         register_instance_option(:required?) do
           validators = abstract_model.model.validators_on(@name)
           required_by_validator = validators.find{|v| (v.class == ActiveModel::Validations::PresenceValidator) || (v.class == ActiveModel::Validations::NumericalityValidator && v.options[:allow_nil]==false)} && true || false
-          !properties[:nullable?] || required_by_validator
+          properties && !properties[:nullable?] || required_by_validator
         end
 
         # Accessor for whether this is a serial field (aka. primary key, identifier).
         #
         # @see RailsAdmin::AbstractModel.properties
         register_instance_option(:serial?) do
-          properties[:serial?]
+          properties && properties[:serial?]
         end
-        
+
         register_instance_option(:view_helper) do
           self.class.instance_variable_get("@view_helper")
         end
@@ -216,17 +254,17 @@ module RailsAdmin
         def value
           bindings[:object].safe_send(name)
         end
-                
+
         # Reader for field's name
         def dom_name
           @dom_name ||= "#{bindings[:form].object_name}#{(index = bindings[:form].options[:index]) && "[#{index}]"}[#{method_name}]"
         end
-        
+
         # Reader for field's id
         def dom_id
           @dom_id ||= [
-            bindings[:form].object_name, 
-            bindings[:form].options[:index], 
+            bindings[:form].object_name,
+            bindings[:form].options[:index],
             method_name
           ].reject(&:blank?).join('_')
         end
