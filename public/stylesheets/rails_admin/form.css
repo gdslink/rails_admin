@@ -1,5 +1,6 @@
 form fieldset {
   border:none;
+  margin-bottom:15px;
 }
 
 form legend {
@@ -15,6 +16,15 @@ form legend {
   font-size:10px;
 }
 
+form p {
+  padding-top:5px;
+  padding-bottom:5px;
+  margin-bottom:1px;
+}
+
+form a {
+  color: #000;
+}
 
 form a.createAssociatedRecord {
     line-height: 24px;
@@ -42,11 +52,16 @@ form label.inline {
   padding: 15px 0 0 0;
 }
 
+.field .input {
+  margin-left: 103px;
+}
+
+.field .row {
+  margin: 10px 0;
+}
 
 .field .date,
 .field .datetime,
-.field .hasDatepicker,
-.field .hasTimepicker,
 .field .decimal,
 .field .float,
 .field .integer,
@@ -65,6 +80,11 @@ form label.inline {
   border-right:1px solid #dbdfe6;
 }
 
+.field .boolean {
+  float:left;
+  margin-top:6px;
+}
+
 .field .decimal {
   width:170px;
 }
@@ -73,16 +93,16 @@ form label.inline {
   width:120px;
 }
 
-.field .date, .field .timestamp, .field .time, .field .datetime, .field .hasDatepicker {
+.field .date, .field .timestamp, .field .time, .field .datetime {
   padding-right: 20px;
   width:150px;
 }
 
-.field .date, .field .datetime, .field .hasDatepicker {
+.field .date, .field .datetime {
   background: url("../../images/rails_admin/calendar.png") no-repeat right;
 }
 
-.field .time, .field .timestamp, .field .hasTimepicker {
+.field .time, .field .timestamp {
   background: url("../../images/rails_admin/clock.png") no-repeat right;
 }
 
@@ -106,32 +126,20 @@ form label.inline {
   color:#bd2b14;
 }
 
-#main .block .content p.help, p.help {
+p.help {
   clear:both;
-  font-size: 11px;
+  padding-top:2px;
+  padding-bottom:0px;
+  margin-bottom:0px;
+  font-size:10px;
   margin-left:103px;
   display:block;
-  color: #999;
-  margin-bottom: 0;
-  margin-top: 6px;
   font-style: italic;
+  color: #999;
 }
 
 .cke_skin_kama {
   margin-left: 100px;
 }
 
-.createAssociatedRecordDialog {
-  padding: 10px;
-}
-
-.createAssociatedRecordDialog div.secondary-navigation,
-.createAssociatedRecordDialog span.extra_buttons {
-  display: none;
-}
-
-.group.navform.wat-cf {
-  /* position the submit_buttons correctly: */
-  margin-top: 30px;
-  margin-bottom: 0;
-}
+.createAssociatedRecordDialog li.save.add, .createAssociatedRecordDialog li.save.edit { display: none; }
