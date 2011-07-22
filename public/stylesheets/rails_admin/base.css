@@ -471,3 +471,15 @@ margin-right:5px;
   margin: 0;
   font: 24px "Lucida Grande", Lucida, Verdana, sans-serif;
 }
+
+.help {
+  font-size: 11px;
+  display: block;
+  color: #999;
+  margin-bottom: 0;
+  margin-top: 6px;
+  font-style: italic;
+  text-align: left;
+  margin-left: 2px;
+  padding-top: 10px;
+}

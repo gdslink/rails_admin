@@ -43,8 +43,9 @@ module RailsAdmin
             tree.shift
             
             #build the joins query
+            tree.pop() if not @controller.scope_adapter.models.map{|m| m.name}.include?(tree.last.name)
             query = query.includes([tree.collect{|model| model.table_name.singularize.to_sym}.reverse.inject { |a, b| {b => a}}])
-
+            
             #build the conditions based on the selected scope
             predicate     = []
             predicate_or  = []
@@ -61,7 +62,7 @@ module RailsAdmin
             end            
             
             predicate = predicate.inject(:&)                         
-            predicate |= (predicate_or | predicate_and).inject(:&) if predicate_or.length > 0
+            predicate |= (predicate_or | predicate_and).inject(:&) if predicate_or.length > 0            
             query = query.where(predicate)
           end
           query
@@ -80,7 +81,7 @@ module RailsAdmin
         end
         
         # Retrieve the association hierarchy for a model.
-        # Ex: let's assume a model is defined as follow :
+        # Ex: let's assume a model is defined as followed :
         # Field belongs_to Table belongs_to Company
         # The tree will return [Field, Table, Company]
         #
@@ -96,6 +97,10 @@ module RailsAdmin
         end
                         
         module ControllerExtension
+          
+          def scope_adapter
+            @scope_adapter
+          end
           
           def current_scope
             @current_scope
