@@ -9,9 +9,9 @@ en:
       add: "Add"
       edit: "Edit"
       delete: "Delete"
-      no_content: "No %{model}"
+      no_content: "No %{model}"    
     dashboard:
-      pagename: "Dashboard"
+      pagename: "Site administration"
       name: "Dashboard"
       model_name: "Model name"
       last_used: "Last used"
@@ -24,6 +24,10 @@ en:
       name: "History"
       page_name: "History for %{name}"
       no_activity: "No Activity"
+    show:
+      show_in_app: "Show in app"
+      page_name: "Details for %{name}"
+      no_file_found: "No file found"
     credentials:
       log_out: "Log out"
     list:
@@ -31,18 +35,21 @@ en:
       delete_action: "Delete"
       select_action: "Select"
       export_action: "Export current view"
+      show_action: "Show"
       export_selected: "Export selected"
       delete_selected: "Delete selected"
       add_new: "Add new"
       search: "Search"
+      placeholder: "Type your text"
       select: "Select %{name} to edit"
       show_all: "Show all"
+      add_filter: "Add filter"
     new:
       basic_info: "Basic info"
       required: "Required"
       optional: "Optional"
-      one_char: "character."
-      many_chars: "characters or fewer."
+      one_char: "character"
+      many_chars: "characters or fewer"
       chosen: "Chosen %{name}"
       select_choice: "Select your choice(s) and click"
       chose_all: "Choose all"
@@ -54,8 +61,10 @@ en:
       save_and_edit: "Save and edit"
       cancel: "Cancel"
     delete:
-      flash_confirmation: "%{name} was successfully destroyed"
+      all_of_the_following_related_items_will_be_deleted: "? All of the following related items will be deleted:"
+      are_you_sure_you_want_to_delete_the_object: "Are you sure you want to delete the %{model_name}"
       confirmation: "Yes, I'm sure"
+      delete_confirmation: "Delete confirmation"
     export:
       confirmation: "Export to %{name}"
       select: "Select fields to export"
@@ -64,7 +73,7 @@ en:
       display: "Display %{name}: %{type}"
       options_for: "Options for %{name}"
       empty_value_for_associated_objects: "<empty>"
-      csv: 
+      csv:
         header_for_root_methods: "%{name}" # 'model' is available
         header_for_association_methods: "%{name} [%{association}]"
         encoding_to: "Encode to"
@@ -75,7 +84,7 @@ en:
         col_sep: "Column separator"
         col_sep_help: "Leave blank for default ('%{value}')" # value is default_col_sep
     flash:
-      successful: "%{name} was successfully %{action}"
+      successful: "%{name} successfully %{action}"
       error: "%{name} failed to be %{action}"
       noaction: "No actions were taken"
     actions:
@@ -87,3 +96,14 @@ en:
       deleted: "deleted"
       export: "export"
       exported: "exported"
+    breadcrumbs:
+      delete: "delete"
+      history: "history"
+      show: "show"
+      edit: "edit"
+      export: "export"
+      bulk_destroy: "delete"
+      new: "new"
+      model_history: "history"
+      list: "list"
+      dashboard: "dashboard"

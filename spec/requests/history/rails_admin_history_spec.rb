@@ -50,14 +50,13 @@ describe "RailsAdmin History" do
 
   describe "history ajax update" do
     it "shouldn't use the application layout" do
-      post rails_admin_history_list_path, :ref => 0, :section => 4
-      response.should_not have_tag "h1#app_layout_warning"
+      visit rails_admin_history_list_path(:ref => 0, :section => 4)
+      page.should have_no_selector "h1#app_layout_warning"
     end
   end
 
   describe "model history fetch" do
-    before :all do
-      @default_items_per_page = RailsAdmin::Config::Sections::List.default_items_per_page
+    before :each do
       @model = RailsAdmin::AbstractModel.new("Player")
       player = FactoryGirl.create :player
       30.times do |i|
@@ -72,8 +71,8 @@ describe "RailsAdmin History" do
       histories[1].all.count.should == 20
     end
 
-    it "should respect RailsAdmin::Config::Sections::List.default_items_per_page" do
-      RailsAdmin::Config::Sections::List.default_items_per_page = 15
+    it "should respect RailsAdmin::Config.default_items_per_page" do
+      RailsAdmin.config.default_items_per_page = 15
       histories = RailsAdmin::AbstractHistory.history_for_model @model, nil, false, false, false, nil
       histories[0].should == 2
       histories[1].all.count.should == 15
@@ -81,23 +80,19 @@ describe "RailsAdmin History" do
 
     context "GET admin/history/@model" do
       before :each do
-        get rails_admin_history_model_path(@model)
-      end
-
-      it "should render successfully" do
-        response.should be_successful
+        visit rails_admin_history_model_path(@model)
       end
 
       # https://github.com/sferik/rails_admin/issues/362
       # test that no link uses the "wildcard route" with the history
       # controller and for_model method
       it "should not use the 'wildcard route'" do
-        assert_tag "a", :attributes => {:href => /all=true/} # make sure we're fully testing pagination
-        assert_no_tag "a", :attributes => {:href => /^\/rails_admin\/history\/for_model/}
+        page.should have_selector("a[href*='all=true']") # make sure we're fully testing pagination
+        page.should have_no_selector("a[href^='/rails_admin/history/for_model']")
       end
 
       context "with a lot of histories" do
-        before :all do
+        before :each do
           player = @model.create(:team_id => -1, :number => -1, :name => "Player 1")
           1000.times do |i|
             player.number = i
@@ -105,19 +100,10 @@ describe "RailsAdmin History" do
           end
         end
 
-        it "should render successfully" do
-          response.should be_successful
-        end
-
         it "should render a XHR request successfully" do
           xhr :get, rails_admin_history_model_path(@model, :page => 2)
-          response.should be_successful
         end
       end
-    end
-
-    after :all do
-      RailsAdmin::Config::Sections::List.default_items_per_page = @default_items_per_page
     end
   end
 

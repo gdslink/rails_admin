@@ -4,6 +4,7 @@ FactoryGirl.define do
   factory :player do
     sequence(:name) { |n| "Player #{n}" }
     sequence(:number) { |n| n }
+    sequence(:position) { |n| "Position #{n}" }
   end
 
   factory :draft do
@@ -54,5 +55,9 @@ FactoryGirl.define do
         proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
       EOF
     end
+  end
+
+  factory :ball do
+    color(%W(red blue green yellow purple brown black white).sample)
   end
 end

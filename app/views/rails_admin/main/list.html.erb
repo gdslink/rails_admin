@@ -1,6 +1,6 @@
 <%
   query = params[:query]
-  params = request.params.except(:action, :controller, :model_name, :utf8, :bulk_export)
+  params = request.params.except(:action, :controller, :model_name, :utf8, :bulk_export, :query)
   params.merge!(current_scope_parameters)
   
   sort = params[:sort]
@@ -94,7 +94,7 @@
             </ul>
             <%= form_tag(rails_admin_list_post_path(params.merge(:model_name => @abstract_model.to_param).reject{|key, value| key.to_sym == :page || key.to_sym == :filters}), :method => :post, :remote => true) do %>
               <fieldset>
-                <input type="text" name="query" value="<%= query %>" size="32" />
+                <input type="text" name="query" value="<%= query %>" size="32" placeholder='<%="#{t("admin.list.placeholder")}"%>' />
                 <input type="submit" class="ra-button" value="<%= t("admin.list.search").upcase %>" />
                 
                 <select id="filter_select">

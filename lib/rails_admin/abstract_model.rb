@@ -49,11 +49,12 @@ module RailsAdmin
     def self.lookup(model_name,raise_error=true)
       begin
         model = model_name.constantize
-      rescue NameError
+      rescue NameError => e
+        p e
         raise "RailsAdmin could not find model #{model_name}" if raise_error
         return nil
       end
-
+      
       if model.is_a?(Class) && superclasses(model).include?(ActiveRecord::Base)
         model
       else
@@ -73,7 +74,7 @@ module RailsAdmin
     def model
       @model_name.constantize
     end
-    
+
     private
 
     def self.superclasses(klass)

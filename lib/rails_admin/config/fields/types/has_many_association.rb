@@ -14,7 +14,7 @@ module RailsAdmin
           end
 
           register_instance_option(:partial) do
-            "form_filtering_multiselect"
+            :form_filtering_multiselect
           end
 
           register_instance_option(:html_attributes) do
@@ -23,7 +23,7 @@ module RailsAdmin
               :multiple => "multiple",
             }
           end
-          
+
           # orderable associated objects
           register_instance_option(:orderable) do
             false
@@ -32,7 +32,7 @@ module RailsAdmin
           def dom_name
             "#{super}[]" # model_name[name_ids][]
           end
-        
+
           def method_name
             "#{super.singularize}_ids" # name_ids
           end

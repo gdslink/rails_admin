@@ -9,7 +9,7 @@ module RailsAdmin
           RailsAdmin::Config::Fields::Types::register(self)
 
           @column_width = 250
-          
+
           def initialize(parent, name, properties, association)
             super(parent, name, properties, association)
           end
@@ -24,11 +24,11 @@ module RailsAdmin
           register_instance_option(:visible?) do
             associated_model_config.length > 0
           end
-          
+
           register_instance_option(:sortable) do
             false
           end
-          
+
           register_instance_option(:searchable) do
             false
           end
@@ -63,7 +63,7 @@ module RailsAdmin
 
           # Reader for field's value
           def value
-            bindings[:object].send(name)
+            bindings[:object].send(association[:name])
           end
         end
       end

@@ -5,7 +5,7 @@ module RailsAdmin
   module Config
     module Fields
       class Association < RailsAdmin::Config::Fields::Base
-        
+
         def self.inherited(klass)
           super(klass)
         end
@@ -14,15 +14,26 @@ module RailsAdmin
         def association
           @properties
         end
-        
+
+        register_instance_option(:pretty_value) do
+          v = bindings[:view]
+          [value].flatten.select(&:present?).map do |associated|
+            amc = polymorphic? ? RailsAdmin::Config.model(associated) : associated_model_config # perf optimization for non-polymorphic associations
+            am = amc.abstract_model
+            wording = associated.send(amc.object_label_method)
+            can_see = v.authorized?(:show, am, associated)
+            can_see ? v.link_to(wording, v.rails_admin_show_path(:model_name => am.to_param, :id => associated.id)) : wording
+          end.to_sentence.html_safe
+        end
+
         register_instance_option(:sortable) do
           false
         end
-        
+
         register_instance_option(:searchable) do
           false
         end
-        
+
         # Accessor whether association is visible or not. By default
         # association checks whether the child model is excluded in
         # configuration or not.

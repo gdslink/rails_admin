@@ -1,9 +1,13 @@
 module RailsAdmin
 
-  class MainController < RailsAdmin::ApplicationController    
-    before_filter :get_model, :except => [:index, :update_scope]    
-    before_filter :get_object, :only => [:edit, :update, :delete, :destroy]
-    before_filter :check_scope_on_query, :except => [:index, :update_scope]
+  class MainController < RailsAdmin::ApplicationController
+    include ActionView::Helpers::TextHelper
+
+    layout "rails_admin/dashboard"
+
+    before_filter :get_model, :except => [:index, :update_scope]
+    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy]
+    before_filter :check_scope_on_query, :except => [:index, :update_scope]    
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :export, :bulk_destroy]
 
@@ -27,23 +31,22 @@ module RailsAdmin
         current_count = t.count
         @max = current_count > @max ? current_count : @max
         @count[t.pretty_name] = current_count
-        @most_recent_changes[t.pretty_name] = AbstractHistory.most_recent_history(t).limit(1).first.try(:updated_at)
+        @most_recent_changes[t.pretty_name] = t.model.order("updated_at desc").first.try(:updated_at) rescue nil
       end
-
-      render :layout => 'rails_admin/dashboard'
+      render :index
     end
 
     def list      
       @authorization_adapter.authorize(:list, @abstract_model) if @authorization_adapter
-      
+
       @page_type = @abstract_model.pretty_name.downcase
       @page_name = t("admin.list.select", :name => @model_config.label.downcase)
-      
+
       @objects, @current_page, @page_count, @record_count = list_entries
       @schema ||= { :only => @model_config.list.visible_fields.map {|f| f.name } }
-      
+
       respond_to do |format|
-        format.html { render :layout => 'rails_admin/list' }
+        format.html
         format.js { render :layout => 'rails_admin/plain.html.erb' }
         format.json do
           output = if params[:compact]
@@ -61,14 +64,14 @@ module RailsAdmin
           output = @objects.to_xml(@schema)
           if params[:send_data]
             send_data output, :filename => "#{params[:model_name]} #{DateTime.now.strftime("%Y-%m-%d %H:%M:%S")}.xml"
-          else  
+          else
             render :xml => output
           end
         end
         format.csv do
           header, encoding, output = CSVConverter.new(@objects, @schema).to_csv(params[:csv_options])
           if params[:send_data]
-            send_data output, 
+            send_data output,
               :type => "text/csv; charset=#{encoding}; #{"header=present" if header}",
               :disposition => "attachment; filename=#{params[:model_name]} #{DateTime.now.strftime("%Y-%m-%d %H:%M:%S")}.csv"
           else
@@ -86,10 +89,13 @@ module RailsAdmin
         end
         @authorization_adapter.authorize(:new, @abstract_model, @object)
       end
+      if object_params = params[@abstract_model.model.name.underscore.to_sym]
+        @object.attributes = @object.attributes.merge(object_params)
+      end
       @page_name = t("admin.actions.create").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
       respond_to do |format|
-        format.html { render :layout => 'rails_admin/form' }
+        format.html
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
       end
     end
@@ -127,7 +133,9 @@ module RailsAdmin
     end
 
     def show
-      @authorization_adapter.authorize(:read, @abstract_model, @object) if @authorization_adapter
+      @authorization_adapter.authorize(:show, @abstract_model, @object) if @authorization_adapter
+      @page_name = t("admin.show.page_name", :name => @model_config.label.downcase)
+      @page_type = @abstract_model.pretty_name.downcase
       respond_to do |format|
         format.js { render :json => @object.to_json };
       end
@@ -135,14 +143,13 @@ module RailsAdmin
 
     def edit
       @authorization_adapter.authorize(:edit, @abstract_model, @object) if @authorization_adapter
-
       @page_name = t("admin.actions.update").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
-
+      
       respond_to do |format|
         format.html { render :layout => 'rails_admin/form' }
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
-      end
+      end      
     end
 
     def update
@@ -184,26 +191,29 @@ module RailsAdmin
 
       @page_name = t("admin.actions.delete").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
-
+    
       respond_to do |format|
         format.html { render :layout => 'rails_admin/form' }
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
-      end
+      end      
     end
 
     def destroy
       @authorization_adapter.authorize(:destroy, @abstract_model, @object) if @authorization_adapter
 
-      @object = @object.destroy
-      
-      AbstractHistory.create_history_item("Destroyed #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
+      if @object.destroy
+        AbstractHistory.create_history_item("Destroyed #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
+        flash[:notice] = t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
+      else
+        flash[:error] = t("admin.flash.error", :name => @model_config.label, :action => t("admin.actions.deleted"))
+      end
 
       respond_to do |format|
         format.js {render :json => {}}
         format.any {redirect_to rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))}
       end
     end
-    
+
     def export
       # todo
       #   limitation: need to display at least one real attribute ('only') so that the full object doesn't get displayed, a way to fix this? maybe force :only => [""]
@@ -211,7 +221,7 @@ module RailsAdmin
       # maybe
       #   n-levels (backend: possible with xml&json, frontend: not possible, injections check: quite easy)
       @authorization_adapter.authorize(:export, @abstract_model) if @authorization_adapter
-      
+
       if format = params[:json] && :json || params[:csv] && :csv || params[:xml] && :xml
         request.format = format
         @schema = params[:schema].symbolize if params[:schema] # to_json and to_xml expect symbols for keys AND values.
@@ -220,39 +230,55 @@ module RailsAdmin
       else
         @page_name = t("admin.actions.export").capitalize + " " + @model_config.label.downcase
         @page_type = @abstract_model.pretty_name.downcase
-        
-        render :action => 'export', :layout => 'rails_admin/export'
+
+        render :action => 'export'
       end
     end
-    
+
     def bulk_action
       redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
-      
-      params[:bulk_delete] ? bulk_delete : (params[:bulk_export] ? export : redirect_to(rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction")))
+
+      case params[:bulk_action]
+      when "delete" then bulk_delete
+      when "export" then export
+      else redirect_to(rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction"))
+      end
     end
-    
+
     def bulk_delete
       @authorization_adapter.authorize(:bulk_delete, @abstract_model) if @authorization_adapter
       @page_name = t("admin.actions.delete").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
-      
+
       @bulk_objects, @current_page, @page_count, @record_count = list_entries
-      
-      render :action => 'bulk_delete', :layout => 'rails_admin/delete'
+
+      render :action => 'bulk_delete'
     end
 
     def bulk_destroy
       @authorization_adapter.authorize(:bulk_destroy, @abstract_model) if @authorization_adapter
-      
+
       scope = @authorization_adapter && @authorization_adapter.query(params[:action].to_sym, @abstract_model)
-      @destroyed_objects = @abstract_model.destroy(params[:bulk_ids], scope)
-      
-      @destroyed_objects.each do |object|
+
+      processed_objects = @abstract_model.destroy(params[:bulk_ids], scope)
+
+      destroyed = processed_objects.select(&:destroyed?)
+      not_destroyed = processed_objects - destroyed
+
+      destroyed.each do |object|
         message = "Destroyed #{@model_config.with(:object => object).object_label}"
         AbstractHistory.create_history_item(message, object, @abstract_model, _current_user)
       end
 
-      redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
+      unless destroyed.empty?
+        flash[:notice] = t("admin.flash.successful", :name => pluralize(destroyed.count, @model_config.label), :action => t("admin.actions.deleted"))
+      end
+
+      unless not_destroyed.empty?
+        flash[:error] = t("admin.flash.error", :name => pluralize(not_destroyed.count, @model_config.label), :action => t("admin.actions.deleted"))
+      end
+
+      redirect_to rails_admin_list_path(@current_scope_parameters)
     end
 
     def handle_error(e)
@@ -282,11 +308,13 @@ module RailsAdmin
     end
 
     def get_sort_hash
+      params[:sort] = params[:sort_reverse] = nil unless @model_config.list.visible_fields.map {|f| f.name.to_s}.include? params[:sort]
+
       params[:sort] ||= @model_config.list.sort_by.to_s
       params[:sort_reverse] ||= 'false'
-      
+
       field = @model_config.list.fields.find{ |f| f.name.to_s == params[:sort] }
-      
+
       column = if field.nil? || field.sortable == true # use params[:sort] on the base table
         "#{@abstract_model.model.table_name}.#{params[:sort]}"
       elsif field.sortable == false # use default sort, asked field is not sortable
@@ -300,13 +328,13 @@ module RailsAdmin
       else # use described column in the field conf.
         "#{@abstract_model.model.table_name}.#{field.sortable}"
       end
-      
+
       reversed_sort = (field ? field.sort_reverse? : @model_config.list.sort_reverse?)
       {:sort => column, :sort_reverse => (params[:sort_reverse] == reversed_sort.to_s)}
     end
 
     def get_conditions_hash(query, filters)
-      
+
       # TODO for filtering engine
       #   use a hidden field to store serialized params and send them through post (pagination, export links, show all link, sort links)
       #   Tricky cases where:
@@ -314,44 +342,47 @@ module RailsAdmin
       #     filter can't apply to the targetted attribute (should be sanitized front)
       #   extend engine to :
       #      belongs_to autocomplete id (optionnal)
-      
+
       #  LATER
       #   find a way for complex request (OR/AND)?
       #   multiple words queries
-      #   find a way to force a column nonetheless? 
-      
+      #   find a way to force a column nonetheless?
+
       # TODO else
       #   searchable & filtering engine
       #   has_one ?
       #   polymorphic ?
-      
-      
+
+
       return {} if query.blank? && filters.blank? # perf
-      
+
       @like_operator =  "ILIKE" if ActiveRecord::Base.configurations[Rails.env]['adapter'] == "postgresql"
       @like_operator ||= "LIKE"
-      
+
       query_statements = []
       filters_statements = []
       values = []
       conditions = [""]
 
       if query.present?
-        @queryable_fields = @model_config.list.fields.select(&:queryable?).map(&:searchable_columns).flatten
-        @queryable_fields.each do |field_infos|
-          statement, *value = build_statement(field_infos[:column], field_infos[:type], query, RailsAdmin::Config.default_search_operator)
-          if statement && value
-            query_statements << statement
-            values << value
+        queryable_fields = @model_config.list.fields.select(&:queryable?)
+        queryable_fields.each do |field|
+          searchable_columns = field.searchable_columns.flatten
+          searchable_columns.each do |field_infos|
+            statement, *value = build_statement(field_infos[:column], field_infos[:type], query, field.search_operator)
+            if statement && value
+              query_statements << statement
+              values << value
+            end
           end
         end
       end
-      
+
       unless query_statements.empty?
         conditions[0] += " AND " unless conditions == [""]
         conditions[0] += "(#{query_statements.join(" OR ")})"  # any column field will do
       end
-      
+
       if filters.present?
         @filterable_fields = @model_config.list.fields.select(&:filterable?).inject({}){ |memo, field| memo[field.name.to_sym] = field.searchable_columns; memo }
         filters.each_pair do |field_name, filters_dump|
@@ -360,7 +391,7 @@ module RailsAdmin
             @filterable_fields[field_name.to_sym].each do |field_infos|
               unless filter_dump[:disabled]
                 statement, *value = build_statement(field_infos[:column], field_infos[:type], filter_dump[:value], (filter_dump[:operator] || 'default'))
-                unless statement.nil? || value.nil?
+                if statement
                   field_statements << statement
                   values << value
                 end
@@ -370,17 +401,33 @@ module RailsAdmin
           end
         end
       end
-      
+
       unless filters_statements.empty?
        conditions[0] += " AND " unless conditions == [""]
        conditions[0] += "#{filters_statements.join(" AND ")}" # filters should all be true
       end
-      
+
       conditions += values.flatten
       conditions != [""] ? { :conditions => conditions } : {}
     end
-    
+
     def build_statement(column, type, value, operator)
+      if operator == '_discard' || value == '_discard'
+        return
+      elsif operator == '_blank' || value == '_blank'
+        return ["(#{column} IS NULL OR #{column} = '')"]
+      elsif operator == '_present' || value == '_present'
+        return ["(#{column} IS NOT NULL AND #{column} != '')"]
+      elsif operator == '_null' || value == '_null'
+        return ["(#{column} IS NULL)"]
+      elsif operator == '_not_null' || value == '_not_null'
+        return ["(#{column} IS NOT NULL)"]
+      elsif operator == '_empty' || value == '_empty'
+        return ["(#{column} = '')"]
+      elsif operator == '_not_empty' || value == '_not_empty'
+        return ["(#{column} != '')"]
+      end
+
       case type
       when :boolean
          ["(#{column} = ?)", ['true', 't', '1'].include?(value)] if ['true', 'false', 't', 'f', '1', '0'].include?(value)
@@ -416,7 +463,7 @@ module RailsAdmin
         end
         ["(#{column} BETWEEN ? AND ?)", *values]
       when :enum
-        ["(#{column} #{@like_operator} ?)", value]
+        ["(#{column} = ?)", value]
       end
     end
 
@@ -447,9 +494,9 @@ module RailsAdmin
       action = params[:action]
       flash.now[:error] = t("admin.flash.error", :name => @model_config.label, :action => t("admin.actions.#{action}d"))
       flash.now[:error] += ". #{@object.errors[:base].to_sentence}" unless @object.errors[:base].blank?
-      
+
       respond_to do |format|
-        format.html { render whereto, :layout => 'rails_admin/form', :status => :not_acceptable }
+        format.html { render whereto, :status => :not_acceptable }
         format.js   { render whereto, :layout => 'rails_admin/plain.html.erb', :status => :not_acceptable  }
       end
     end
@@ -460,7 +507,6 @@ module RailsAdmin
 
     def list_entries(other = {})
       return [get_bulk_objects(params[:bulk_ids]), 1, 1, "unknown"] if params[:bulk_ids].present?
-      
 
       associations = @model_config.list.fields.select {|f| f.type == :belongs_to_association && !f.polymorphic? }.map {|f| f.association[:name] }
       options = get_sort_hash.merge(get_conditions_hash(params[:query], params[:filters])).merge(other).merge(associations.empty? ? {} : { :include => associations })
@@ -469,7 +515,7 @@ module RailsAdmin
       scope = @scope_adapter.apply_scope(scope, @abstract_model) if @scope_adapter
 
       current_page = (params[:page] || 1).to_i
-      
+
       if params[:all]
         objects = @abstract_model.all(options, scope)
         page_count = 1
@@ -497,7 +543,7 @@ module RailsAdmin
       end
       associations
     end
-    
+
     def check_for_injections(schema)
       check_injections_for(@model_config, (schema[:only] || []) + (schema[:methods] || []))
       allowed_associations = @model_config.export.visible_fields.select{ |f| f.association? && !f.association[:options][:polymorphic] }.map(&:association)
@@ -508,7 +554,7 @@ module RailsAdmin
         check_injections_for(RailsAdmin.config(AbstractModel.new(associated_model)), (schema[:only] || []) + (schema[:methods] || []))
       end
     end
-    
+
     def check_injections_for(model_config, methods_name)
       available_fields = model_config.export.visible_fields.select{ |f| !f.association? || f.association[:options][:polymorphic] }.map do |field|
         if field.association? && field.association[:options][:polymorphic]
