@@ -62,7 +62,7 @@ module RailsAdmin
             end            
             
             predicate = predicate.inject(:&)                         
-            predicate |= (predicate_or | predicate_and).inject(:&) if predicate_or.length > 0            
+            predicate |= (predicate_or.inject(:|) & predicate_and.inject(:&)) if predicate_or.present? && predicate_and.present?
             query = query.where(predicate)
           end
           query
