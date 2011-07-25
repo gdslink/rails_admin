@@ -74,25 +74,27 @@
       dialog.dialog("option", "buttons", buttons);
 
       form.bind("ajax:success", function(e, data, status, xhr) {
-
-				var json = $.parseJSON(data);
-       	var select = widget.element.siblings('select');
-
+        var json = $.parseJSON(data);
+        var select = widget.element.siblings('select');
+        var input = widget.element.siblings('.ra-filtering-select-input');
+        var option = '<option value="' + json.id + '" selected>' + json.label + '</option>';
+        
         if(widget.options.elementToUpdate)
           var input = widget.options.elementToUpdate
-        else
-				  var input = widget.element.siblings('.ra-filtering-select-input');
- 				
-				if(input.length > 0) {
- 					input[0].value = json.label;
- 				}
-				
- 				if(select.length > 0) {
- 					select.html('<option value="' + json.id + '">' + json.label + '</option>' );
- 					select[0].value = json.id;
- 				}
-				dialog.dialog("close");
-        input.change();
+        else if(widget.element.siblings('button').length){ // add select input
+          if(input.length > 0) {
+            input[0].value = json.label;
+          }
+          if(select.length > 0) {
+            select.html(option);
+            select[0].value = json.id;
+          }          
+        }
+        else{ //add multi-select input
+          widget.element.siblings('.ra-multiselect').children('.ra-multiselect-right').children('select').prepend(option);
+          widget.element.parent().children('.hasManyAssociation').prepend(option);
+        }
+        dialog.dialog("close");
       });
 
       form.bind("ajax:error", function(e, xhr, status, error) {
