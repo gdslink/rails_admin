@@ -255,7 +255,6 @@ module RailsAdmin
       #
       # @see RailsAdmin::Config::Sections::Navigation
       def navigation
-        ActiveSupport::Deprecation.warn("RailsAdmin::Config.navigation is deprecated", caller)
         RailsAdmin::Config::Sections::Navigation
       end
       
