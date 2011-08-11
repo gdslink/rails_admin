@@ -59,11 +59,11 @@
       var buttons = {};
 
       buttons[saveButtonText] = function() {
-				// We need to manually update CKeditor mapped textarea before ajax submit
-				if(typeof CKEDITOR != 'undefined') {
-					for ( instance in CKEDITOR.instances )
-        		CKEDITOR.instances[instance].updateElement();
-				}
+        // We need to manually update CKeditor mapped textarea before ajax submit
+        if(typeof CKEDITOR != 'undefined') {
+          for ( instance in CKEDITOR.instances )
+            CKEDITOR.instances[instance].updateElement();
+        }
         dialog.find("form").submit();
       };
 
@@ -79,9 +79,13 @@
         var input = widget.element.siblings('.ra-filtering-select-input');
         var option = '<option value="' + json.id + '" selected>' + json.label + '</option>';
         
-        if(widget.options.elementToUpdate)
+        if(widget.options.elementToUpdate){
           var input = widget.options.elementToUpdate
-        else if(widget.element.siblings('button').length){ // add select input
+          if (json.id != null){
+            input.append('<option selected value="' + json.id + '">' + json.label + '</option>' );
+          }
+          input.change();
+        } else if(widget.element.siblings('button').length){ // add select input
           if(input.length > 0) {
             input[0].value = json.label;
           }
