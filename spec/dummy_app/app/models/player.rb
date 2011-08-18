@@ -7,8 +7,8 @@ class Player < ActiveRecord::Base
     record.errors.add(:base, "Player is cheating") if value.to_s =~ /on steroids/
   end
 
-  belongs_to :team
-  has_one :draft
+  belongs_to :team, :inverse_of => :players
+  has_one :draft, :dependent => :destroy
   has_many :comments, :as => :commentable
 
   attr_protected :suspended

@@ -20,6 +20,10 @@ module RailsAdmin
           register_instance_option(:ckeditor_config_js) do
             "/javascripts/ckeditor/config.js"
           end
+          
+          register_instance_option(:pretty_value) do
+            formatted_value
+          end
 
           register_instance_option(:html_attributes) do
             {

@@ -58,7 +58,7 @@ module RailsAdmin
     end
 
     def _scope!
-      instance_eval &RailsAdmin.scope_with
+      instance_eval &RailsAdmin::Config.scope_with
     end
 
     def _get_scope_models!

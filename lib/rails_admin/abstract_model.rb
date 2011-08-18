@@ -3,38 +3,46 @@ require 'rails_admin/generic_support'
 
 module RailsAdmin
   class AbstractModel
-
-    @models = []
-
+    cattr_accessor :all_models, :all_abstract_models
+    @@all_models = nil
+    @@all_abstract_models = nil
     # Returns all models for a given Rails app
+    
+    
+    # self.all_abstract_models
     def self.all
-      if @models.empty?
+      @@all_abstract_models ||= all_models.map{ |model| new(model) }
+    end
+    
+    def self.all_models
+      unless @@all_models
+        @@all_models = []    
         if RailsAdmin::Config.included_models.any?
           # Whitelist approach, use only models explicitly listed
           possible_models = RailsAdmin::Config.included_models.map(&:to_s)
         else
           # orig regexp -- found 'class' even if it's within a comment or a quote
-          filenames = Dir.glob(Rails.application.paths.app.models.collect { |path| File.join(path, "**/*.rb") })
+          filenames = Dir.glob(Rails.application.paths["app/models"].collect { |path| File.join(Rails.root, path, "**/*.rb") })
+        
           class_names = []
           filenames.each do |filename|
             class_names += File.read(filename).scan(/class ([\w\d_\-:]+)/).flatten
           end
-          possible_models = Module.constants | class_names
+          possible_models = class_names
         end
-
+        
         excluded_models = RailsAdmin::Config.excluded_models.map(&:to_s)
         excluded_models << ['History']
 
         add_models(possible_models, excluded_models)
 
-        @models.sort!{|x, y| x.model.to_s <=> y.model.to_s}
+        @@all_models.sort!{|x, y| x.to_s <=> y.to_s}
       end
-
-      @models
+      @@all_models
     end
 
     def self.add_models(possible_models=[], excluded_models=[])
-      possible_models.each do |possible_model_name|
+      possible_models.each_with_index do |possible_model_name, i|
         next if excluded_models.include?(possible_model_name)
         add_model(possible_model_name)
       end
@@ -42,19 +50,18 @@ module RailsAdmin
 
     def self.add_model(model_name)
       model = lookup(model_name,false)
-      @models << new(model) if model
+      @@all_models << model if model
     end
 
     # Given a string +model_name+, finds the corresponding model class
     def self.lookup(model_name,raise_error=true)
       begin
         model = model_name.constantize
-      rescue NameError => e
-        p e
+      rescue NameError
         raise "RailsAdmin could not find model #{model_name}" if raise_error
         return nil
       end
-      
+
       if model.is_a?(Class) && superclasses(model).include?(ActiveRecord::Base)
         model
       else

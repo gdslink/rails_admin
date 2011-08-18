@@ -7,7 +7,7 @@ module RailsAdmin
       class ScopeAdapter
         # See the +scope_with+ config method for where the initialization happens.
         def initialize(controller, models = [])
-          @models = models
+          @models = models.map {|m| m.constantize}
           @controller = controller
           @controller.extend ControllerExtension
         end
@@ -55,9 +55,9 @@ module RailsAdmin
             end
             base_abstract_model.belongs_to_associations.each do |assoc|
               if(@controller.current_scope.include?(assoc[:parent_model].name)) then
-                predicate_and << ({assoc[:child_key][0].to_s => @controller.current_scope[assoc[:parent_model].name][:selected]})
+                predicate_and << ({assoc[:child_key].to_s => @controller.current_scope[assoc[:parent_model].name][:selected]})
               else
-                predicate_or << ({assoc[:child_key][0].to_s => nil})
+                predicate_or << ({assoc[:child_key].to_s => nil})
               end
             end            
             

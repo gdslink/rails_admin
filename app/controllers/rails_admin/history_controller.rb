@@ -33,7 +33,7 @@ module RailsAdmin
       @current_page = params[:page].try(:to_i) || 1
 
       @page_count, @history = AbstractHistory.history_for_model @abstract_model, params[:query], params[:sort],
-      params[:sort_reverse], params[:all], @scope_adapter, @authorization_adapter, params[:page]
+      params[:sort_reverse], params[:all], params[:page], @scope_adapter, @authorization_adapter
 
       render "show", :layout => request.xhr? ? false : 'rails_admin/list'
     end

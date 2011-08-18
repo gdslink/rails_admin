@@ -16,9 +16,8 @@ module RailsAdmin
             puts "Please put gem 'devise' into your Gemfile"
           end
 
-          copy_locales_files
-          copy_assets_files
-
+          create_route
+          
           puts "Also you need a new migration. We'll generate it for you now."
           `rails g rails_admin:install_migrations`
 
@@ -41,18 +40,16 @@ module RailsAdmin
           end
         end
 
-        def copy_assets_files
-          print "Now copying assets files - javascripts, stylesheets and images! "
-          origin = File.join(gem_path, 'public')
-          destination = Rails.root.join('public')
-          puts copy_files(%w( stylesheets images javascripts ), origin, destination)
-        end
-
         def copy_view_files
           print "Now copying view files "
           origin = File.join(gem_path, 'app/views')
           destination = Rails.root.join('app/views')
           puts copy_files(%w( layouts . ), origin, destination)
+        end
+        
+        def create_route
+          print "Now creating rails_admin route\n"
+          `rails g rails_admin:install_route`
         end
 
         private

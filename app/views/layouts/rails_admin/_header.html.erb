@@ -42,7 +42,7 @@
     <div id="header">     
       <div id="headerLeft">
         <h1 id="logo">
-          <%= link_to rails_admin_dashboard_path do %>
+          <%= link_to dashboard_path do %>
             <span class="image_replacement"><%= @plugin_name %></span>
           <% end -%>
         </h1>        
@@ -50,7 +50,7 @@
       <div id="headerRight">      
         <%= render(:partial => 'rails_admin/main/user_info', :locals => {:current_user => _current_user}) %>        
         <%if @scope_adapter %>
-          <img id='separator' src="/images/rails_admin/3dots-separator.png"></img>        
+          <%= image_tag('rails_admin/3dots-separator.png', :id => 'separator')%>
           <%= render(:partial => 'rails_admin/extensions/scope/scope_selector')%>
         <%end%>        
       </div>

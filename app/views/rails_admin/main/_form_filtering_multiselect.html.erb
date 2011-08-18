@@ -18,7 +18,7 @@
                 <input type="hidden" name="<%= field.dom_name %>" value=""/>
                 <%= form.select field.method_name, collection, { :selected => selected_ids, :object => @object }, field.html_attributes %>
 			  	      <%if authorized? :new, config.abstract_model%>
-			  	        <%=link_to  t('admin.actions.create').capitalize + ' ' + config.abstract_model.pretty_name.downcase, rails_admin_new_path(:model_name => config.abstract_model.to_param), :class => "createAssociatedRecord"%>
+			  	        <%=link_to  t('admin.actions.create').capitalize + ' ' + config.abstract_model.pretty_name.downcase, new_path(:model_name => config.abstract_model.to_param), :class => "createAssociatedRecord"%>
 			  	      <%end%>
 
                 <% if field.has_errors? %>
@@ -35,7 +35,7 @@
                         createQuery: function(query) {
                           return { query: query }
                         },
-                        source: "<%= rails_admin_list_path(config.abstract_model.to_param, current_scope_parameters, :compact => true) %>",
+                        source: "<%= list_path(config.abstract_model.to_param, current_scope_parameters, :compact => true) %>",
                       <% end %>
                         sortable: <%= field.orderable ? 'true' : 'false' %>,
                       regional: {

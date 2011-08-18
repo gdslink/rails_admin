@@ -3,22 +3,17 @@ require 'rails'
 
 module RailsAdmin
   class Engine < Rails::Engine
-    initializer "static assets" do |app|
-      if app.config.serve_static_assets
-        app.middleware.insert_after ::ActionDispatch::Static, ::ActionDispatch::Static, "#{root}/public"
-      end
-    end
+    isolate_namespace RailsAdmin
 
     ActionDispatch::Callbacks.before do
       RailsAdmin.setup
     end
     
     initializer "rails admin development mode" do |app|
-      unless app.config.cache_classes
-        ActionDispatch::Callbacks.after do
-          RailsAdmin.reset
-        end
+      ActionDispatch::Callbacks.after do
+        RailsAdmin.reset if !app.config.cache_classes && RailsAdmin.config.reload_between_requests
       end
     end
   end
 end
+  

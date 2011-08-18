@@ -12,12 +12,13 @@
 
   visible = !scope_adapter || !scope_adapter.models.collect{|m| m.name}.include?(associated_model.abstract_model.model.name)
   selected = current_scope(associated_model.abstract_model.model.name) if not visible
+
 %>
                 <div class="field <%= field.to_param %>" <%if not visible then %>style="display:none"<%end%>>
                   <%= label_tag field.to_param, field.label %>
                   <%= form.select field.name, collection, {:include_blank => true, :selected => selected}, field.html_attributes %>
                   <% if authorized? :new, associated_model.abstract_model %>
-                    <%= link_to "Add new #{associated_model_name}", rails_admin_new_path(current_scope_parameters.merge(:model_name => associated_model_name)), :class => "createAssociatedRecord" %>
+                    <%= link_to "Add new #{associated_model_name}", new_path(current_scope_parameters.merge(:model_name => associated_model_name)), :class => "createAssociatedRecord" %>
                   <% end %>
                   <% if field.has_errors? %>
                   <span class="errorMessage"><%= "#{field.label } #{field.errors.first}" %></span>

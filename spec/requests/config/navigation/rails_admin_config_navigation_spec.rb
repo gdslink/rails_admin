@@ -7,8 +7,8 @@ describe "RailsAdmin Config DSL Navigation Section" do
   describe "order of items" do
 
     it "should be alphabetical by default" do
-      visit rails_admin_dashboard_path
-      ["Balls", "Cms/Basic Pages", "Comments", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Teams", "Users"].each_with_index do |content, i|
+      visit dashboard_path
+      ["Balls", "Basic pages", "Comments", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Teams", "Users"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[#{i + 2}]/a").should have_content(content)
       end
     end
@@ -19,8 +19,8 @@ describe "RailsAdmin Config DSL Navigation Section" do
           weight -1
         end
       end
-      visit rails_admin_dashboard_path
-      ["Teams", "Balls", "Cms/Basic Pages", "Comments", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Users"].each_with_index do |content, i|
+      visit dashboard_path
+      ["Teams", "Balls", "Basic pages", "Comments", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Users"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[#{i + 2}]/a").should have_content(content)
       end
     end
@@ -31,11 +31,11 @@ describe "RailsAdmin Config DSL Navigation Section" do
           parent Cms::BasicPage
         end
       end
-      visit rails_admin_dashboard_path
-      ["Balls", "Cms/Basic Pages", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Teams", "Users"].each_with_index do |content, i|
+      visit dashboard_path
+      ["Balls", "Basic pages", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Teams", "Users"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[#{i + 2}]/a").should have_content(content)
       end
-      ["Cms/Basic Pages", "Comments"].each_with_index do |content, i|
+      ["Basic pages", "Comments"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[contains(@class, 'more')]/ul/li[#{i + 1}]/a").should have_content(content)
       end
     end
@@ -49,11 +49,11 @@ describe "RailsAdmin Config DSL Navigation Section" do
           navigation_label "CMS related"
         end
       end
-      visit rails_admin_dashboard_path
+      visit dashboard_path
       ["Balls", "CMS related", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Teams", "Users"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[#{i + 2}]/a").should have_content(content)
       end
-      ["Cms/Basic Pages", "Comments"].each_with_index do |content, i|
+      ["Basic pages", "Comments"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[contains(@class, 'more')]/ul/li[#{i + 1}]/a").should have_content(content)
       end
     end
@@ -68,7 +68,7 @@ describe "RailsAdmin Config DSL Navigation Section" do
           weight 1
         end
       end
-      visit rails_admin_dashboard_path
+      visit dashboard_path
       ["Balls", "Divisions", "Drafts", "Fans", "Leagues", "Players", "Teams", "Users", "CMS related"].each_with_index do |content, i|
         find(:xpath, "//ul[@id='nav']/li[#{i + 2}]/a").should have_content(content)
       end
@@ -78,7 +78,7 @@ describe "RailsAdmin Config DSL Navigation Section" do
   describe "label for a model" do
 
     it "should be visible and sane by default" do
-      visit rails_admin_dashboard_path
+      visit dashboard_path
       within("#nav") do
         should have_selector("li a", :text => "Fan")
       end
@@ -86,11 +86,11 @@ describe "RailsAdmin Config DSL Navigation Section" do
 
     it "should be editable" do
       RailsAdmin.config Fan do
-        label "Fan test 1"
+        label_plural "Fan tests"
       end
-      visit rails_admin_dashboard_path
+      visit dashboard_path
       within("#nav") do
-        should have_selector("li a", :text => "Fan test 1")
+        should have_selector("li a", :text => "Fan tests")
       end
     end
 
@@ -98,7 +98,7 @@ describe "RailsAdmin Config DSL Navigation Section" do
       RailsAdmin.config Fan do
         hide
       end
-      visit rails_admin_dashboard_path
+      visit dashboard_path
       within("#nav") do
         should have_no_selector("li a", :text => "Fan")
       end

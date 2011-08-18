@@ -89,7 +89,7 @@ module RailsAdmin
         end
         @authorization_adapter.authorize(:new, @abstract_model, @object)
       end
-      if object_params = params[@abstract_model.model.name.underscore.to_sym]
+      if object_params = params[@abstract_model.to_param]
         @object.attributes = @object.attributes.merge(object_params)
       end
       @page_name = t("admin.actions.create").capitalize + " " + @model_config.label.downcase
@@ -161,7 +161,7 @@ module RailsAdmin
       @page_name = t("admin.actions.update").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
 
-      @old_object = @object.clone
+      @old_object = @object.dup
 
       @model_config.update.fields.each {|f| f.parse_input(@attributes) if f.respond_to?(:parse_input) }
 
@@ -210,7 +210,7 @@ module RailsAdmin
 
       respond_to do |format|
         format.js {render :json => {}}
-        format.any {redirect_to rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))}
+        format.any {redirect_to list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param))}
       end
     end
 
@@ -236,12 +236,12 @@ module RailsAdmin
     end
 
     def bulk_action
-      redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
+      redirect_to list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
 
       case params[:bulk_action]
       when "delete" then bulk_delete
       when "export" then export
-      else redirect_to(rails_admin_list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction"))
+      else redirect_to(list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction"))
       end
     end
 
@@ -277,8 +277,7 @@ module RailsAdmin
       unless not_destroyed.empty?
         flash[:error] = t("admin.flash.error", :name => pluralize(not_destroyed.count, @model_config.label), :action => t("admin.actions.deleted"))
       end
-
-      redirect_to rails_admin_list_path(@current_scope_parameters)
+      redirect_to list_path(@current_scope_parameters)
     end
 
     def handle_error(e)
@@ -345,6 +344,9 @@ module RailsAdmin
 
       #  LATER
       #   find a way for complex request (OR/AND)?
+      #   _type should be a dropdown with possible values
+      #   belongs_to should be filtering boxes
+      #   so that we can create custom engines through the DSL (list.filter = [list of columns])
       #   multiple words queries
       #   find a way to force a column nonetheless?
 
@@ -412,9 +414,12 @@ module RailsAdmin
     end
 
     def build_statement(column, type, value, operator)
-      if operator == '_discard' || value == '_discard'
-        return
-      elsif operator == '_blank' || value == '_blank'
+      
+      # this operator/value has been discarded (but kept in the dom to override the one stored in the various links of the page)
+      return if operator == '_discard' || value == '_discard'
+      
+      # filtering data with unary operator, not type dependent
+      if operator == '_blank' || value == '_blank'
         return ["(#{column} IS NULL OR #{column} = '')"]
       elsif operator == '_present' || value == '_present'
         return ["(#{column} IS NOT NULL AND #{column} != '')"]
@@ -427,13 +432,17 @@ module RailsAdmin
       elsif operator == '_not_empty' || value == '_not_empty'
         return ["(#{column} != '')"]
       end
-
+      
+      # now we go type specific
       case type
       when :boolean
-         ["(#{column} = ?)", ['true', 't', '1'].include?(value)] if ['true', 'false', 't', 'f', '1', '0'].include?(value)
+        return if value.blank?
+        ["(#{column} = ?)", ['true', 't', '1'].include?(value)] if ['true', 'false', 't', 'f', '1', '0'].include?(value)
       when :integer, :belongs_to_association
-         ["(#{column} = ?)", value.to_i] if value.to_i.to_s == value
+        return if value.blank?
+        ["(#{column} = ?)", value.to_i] if value.to_i.to_s == value
       when :string, :text
+        return if value.blank?
         value = case operator
         when 'default', 'like'
           "%#{value}%"
@@ -457,12 +466,15 @@ module RailsAdmin
         when 'last_week'
           [1.week.ago.to_date.beginning_of_week.beginning_of_day, 1.week.ago.to_date.end_of_week.end_of_day]
         when 'less_than'
+          return if value.blank?
           [value.to_i.days.ago, DateTime.now]
         when 'more_than'
+          return if value.blank?
           [2000.years.ago, value.to_i.days.ago]
         end
         ["(#{column} BETWEEN ? AND ?)", *values]
       when :enum
+        return if value.blank?  
         ["(#{column} = ?)", value]
       end
     end
@@ -482,11 +494,11 @@ module RailsAdmin
     def redirect_to_on_success
       notice = t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.#{params[:action]}d"))
       if params[:_add_another]
-        redirect_to rails_admin_new_path(@current_scope_parameters), :notice => notice
+        redirect_to new_path(@current_scope_parameters), :notice => notice
       elsif params[:_add_edit]
-        redirect_to rails_admin_edit_path(@current_scope_parameters.merge(:id => @object.id)), :notice => notice
+        redirect_to edit_path(@current_scope_parameters.merge(:id => @object.id)), :notice => notice
       else
-        redirect_to rails_admin_list_path(@current_scope_parameters), :notice => notice
+        redirect_to list_path(@current_scope_parameters), :notice => notice
       end
     end
 
@@ -502,7 +514,7 @@ module RailsAdmin
     end
 
     def check_for_cancel
-      redirect_to rails_admin_list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") if params[:_continue]
+      redirect_to list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") if params[:_continue]
     end
 
     def list_entries(other = {})
@@ -546,7 +558,7 @@ module RailsAdmin
 
     def check_for_injections(schema)
       check_injections_for(@model_config, (schema[:only] || []) + (schema[:methods] || []))
-      allowed_associations = @model_config.export.visible_fields.select{ |f| f.association? && !f.association[:options][:polymorphic] }.map(&:association)
+      allowed_associations = @model_config.export.visible_fields.select{ |f| f.association? && !f.association[:polymorphic] }.map(&:association)
       (schema[:include] || []).each do |association_name, schema|
         association = allowed_associations.find { |aa| aa[:name] == association_name }
         raise("Security Exception: #{association[:name]} association not available for #{@model_config.abstract_model.pretty_name}") unless association
@@ -556,9 +568,9 @@ module RailsAdmin
     end
 
     def check_injections_for(model_config, methods_name)
-      available_fields = model_config.export.visible_fields.select{ |f| !f.association? || f.association[:options][:polymorphic] }.map do |field|
-        if field.association? && field.association[:options][:polymorphic]
-          [field.name, model_config.abstract_model.properties.find {|p| field.association[:options][:foreign_type] == p[:name].to_s }[:name]]
+      available_fields = model_config.export.visible_fields.select{ |f| !f.association? || f.association[:polymorphic] }.map do |field|
+        if field.association? && field.association[:polymorphic]
+          [field.method_name, model_config.abstract_model.properties.find {|p| field.association[:foreign_type] == p[:name] }[:name]]
         else
           field.name
         end

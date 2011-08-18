@@ -14,13 +14,13 @@
   <div class="ra-block-content">
     <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
 
-    <%= form_tag rails_admin_export_path(params.merge(:all => true)), :method => 'post' do %>
+    <%= form_tag export_path(params.merge(:all => true)), :method => 'post' do %>
 
       <input type="hidden" name="send_data" value="true"></input>
 
       <fieldset>
         <legend><%= t('admin.export.fields_from', :name => @abstract_model.pretty_name) %></legend>
-        <% visible_fields.select{ |f| !f.association? || f.association[:options][:polymorphic] }.each do |field| %>
+        <% visible_fields.select{ |f| !f.association? ||  f.association[:polymorphic]  }.each do |field| %>
         
           <% list = field.type != :virtual ? 'only' : 'methods' %>
           <div class='field'>
@@ -45,7 +45,7 @@
         <% end %>
       </fieldset>
       
-      <% visible_fields.select{ |f| f.association? && !f.association[:options][:polymorphic] }.each do |field| %>
+      <% visible_fields.select{ |f| f.association? && !f.association[:polymorphic] }.each do |field| %>
       
         <% 
           association = field.association

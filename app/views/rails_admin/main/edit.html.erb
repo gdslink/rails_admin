@@ -8,19 +8,21 @@
         <div class="ra-block-content">
           <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>        
           <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
-            <%= render :partial => 'submit_buttons' %>
+            <div id='submit_buttons'>
+              <%= render :partial => 'submit_buttons' %>
+            </div>
             <ul>
               <li>
-               <%= link_to t("admin.history.name"), rails_admin_history_object_path(current_scope_parameters.merge(:id => params[:id])), :class => 'ra-button' %>
+               <%= link_to t("admin.history.name"), history_object_path(current_scope_parameters.merge(:id => params[:id])), :class => 'ra-button' %>
               </li>
               <% if authorized? :delete, @abstract_model, @object %>
               <li>
-               <%= link_to t("admin.list.delete_action"), rails_admin_delete_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => params[:id])), :class => 'ra-button' %>
+               <%= link_to t("admin.list.delete_action"), delete_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => params[:id])), :class => 'ra-button' %>
               </li>
               <% end %>
             </ul>
           </div>
-          <%= send(@model_config.update.form_builder, @object, :url => rails_admin_update_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => @object.id)), :html => { :method => "put", :multipart => true }) do |form| %>
+          <%= send(@model_config.update.form_builder, @object, :url => update_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => @object.id)), :html => { :method => "put", :multipart => true }) do |form| %>
             <% @model_config.edit.with(:object => @object).visible_groups.each do |fieldset| %>
               <%= render :partial => 'form_fieldset', :locals => { :fieldset => fieldset, :form => form, :object => @object } -%>
             <% end %>

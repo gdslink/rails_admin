@@ -59,7 +59,7 @@ module RailsAdmin
       RailsAdmin::History.create(
                                  :message => message,
                                  :item => object.id,
-                                 :table => abstract_model.pretty_name,
+                                 :table => abstract_model.model.name,
                                  :username => user ? user.email : "",
                                  :month => date.month,
                                  :year => date.year
@@ -70,19 +70,19 @@ module RailsAdmin
     # the page count and an AR query result containing the history
     # items.
 
-    def self.history_for_model(model, query, sort, sort_reverse, all, page, scope_adapter,authorization_adapter, per_page = RailsAdmin::Config.default_items_per_page || 20)
+    def self.history_for_model(abstract_model, query, sort, sort_reverse, all, page, scope_adapter,authorization_adapter, per_page=20)
       page ||= "1"
 
       # apply scope
-      scope = authorization_adapter.query(:list, model)
-      scoped_records = scope_adapter.apply_scope(scope, model)
+      scope = authorization_adapter.query(:list, abstract_model)
+      scoped_records = scope_adapter.apply_scope(scope, abstract_model)
     
       id_list = Array.new
       scoped_records.each { |record|
         id_list << record.id
       }
       
-      history = History.where :table => model.pretty_name, :item => id_list
+      history = History.where :table => abstract_model.model.name, :item => id_list
 
       if query
         history = history.where "#{History.connection.quote_column_name(:message)} LIKE ? OR #{History.connection.quote_column_name(:username)} LIKE ?", "%#{query}%", "%#{query}%"
@@ -101,8 +101,8 @@ module RailsAdmin
     end
 
     # Fetch the history items for a specific object instance.
-    def self.history_for_object(model, object, query, sort, sort_reverse)
-      history = History.where :table => model.pretty_name, :item => object.id
+    def self.history_for_object(abstract_model, object, query, sort, sort_reverse)
+      history = History.where :table => abstract_model.model.name, :item => object.id
 
       if query
         history = history.where "#{History.connection.quote_column_name(:message)} LIKE ? OR #{History.connection.quote_column_name(:username)} LIKE ?", "%#{query}%", "%#{query}%"
@@ -168,11 +168,10 @@ module RailsAdmin
         other_tables << row.table
       }
       other_tables.uniq!
-      Rails.logger.debug "debuggin: " +  other_tables.join("-")
 
       table_data = {}
       other_tables.each { |table_name|
-        tbl_name_formatted = translate_table_name(table_name)
+        tbl_name_formatted = table_name#translate_table_name(table_name)
         table_data[table_name] = tbl_name_formatted.constantize.find(:all) rescue nil
         # apply scope
         scope = authorization_adapter.query(:list, AbstractModel.new( tbl_name_formatted.constantize ))

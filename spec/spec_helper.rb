@@ -19,7 +19,6 @@ require 'generators/rails_admin/install_migrations_generator'
 require File.dirname(__FILE__) + '/../lib/rails_admin/tasks/install'
 require File.dirname(__FILE__) + '/../lib/rails_admin/tasks/uninstall'
 require 'generators/rails_admin/uninstall_migrations_generator'
-require 'generators/rails_admin/rails_admin_generator'
 require 'rspec/rails'
 require 'factory_girl'
 require 'factories'
@@ -41,20 +40,39 @@ migrate_database
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each{|f| require f}
 
+# Don't need passwords in test DB to be secure, but we would like 'em to be
+# fast -- and the stretches mechanism is intended to make passwords
+# computationally expensive.
+module Devise
+  module Models
+    module DatabaseAuthenticatable
+      protected
+
+      def password_digest(password)
+        password
+      end
+    end
+  end
+end
+Devise.setup do |config|
+  config.stretches = 0
+end
+
 RSpec.configure do |config|
   require 'rspec/expectations'
 
   config.include RSpec::Matchers
   config.include DatabaseHelpers
   config.include GeneratorHelpers
+  config.include RailsAdmin::Engine.routes.url_helpers
 
   config.include Warden::Test::Helpers
 
   config.before(:each) do
     RailsAdmin.setup
     RailsAdmin::Config.excluded_models = [RelTest, FieldTest]
-    RailsAdmin::AbstractModel.instance_variable_get("@models").clear
-
+    RailsAdmin::AbstractModel.all_models = nil
+    RailsAdmin::AbstractModel.all_abstract_models = nil
     RailsAdmin::AbstractModel.new("Division").destroy_all!
     RailsAdmin::AbstractModel.new("Draft").destroy_all!
     RailsAdmin::AbstractModel.new("Fan").destroy_all!

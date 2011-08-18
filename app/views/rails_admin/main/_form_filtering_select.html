@@ -4,6 +4,7 @@
   
   visible = !scope_adapter || !scope_adapter.models.collect{|m| m.name}.include?(config.abstract_model.model.name)
   selected = current_scope(config.abstract_model.model.name) if not visible
+
   selected_id = selected.to_i rescue field.selected_id if selected
 
   xhr = field.associated_collection_count(authorization_adapter, scope_adapter) > 100
@@ -13,13 +14,14 @@
   else
     collection = field.associated_collection(authorization_adapter, scope_adapter)
   end
+
 %>
 
               <div class="field <%= "#{field.dom_id}" %>" <%if not visible then %>style="display:none"<%end%>>
                 <%= form.label field.method_name, field.label %>
                 <%= form.select field.method_name, collection, { :selected => selected_id, :include_blank => true }, field.html_attributes %>
                 <% if authorized? :new, config.abstract_model %>
-                  <%= link_to "Add new #{config.abstract_model.to_param}", rails_admin_new_path(current_scope_parameters.merge(:model_name => config.abstract_model.to_param)), :class => "createAssociatedRecord" %>
+                  <%= link_to "Add new #{config.abstract_model.to_param}", new_path(current_scope_parameters.merge(:model_name => config.abstract_model.to_param)), :class => "createAssociatedRecord" %>
                 <% end %>
                 <% if field.has_errors? %>
                 <span class="errorMessage"><%= "#{field.label } #{field.errors.first}" %></span>
@@ -35,7 +37,7 @@
                         createQuery: function(query) {
                           return { query: query }
                         },
-                        source: "<%= rails_admin_list_path(current_scope_parameters.merge(config.abstract_model.to_param), :compact => true) %>"
+                        source: "<%= list_path(current_scope_parameters.merge(config.abstract_model.to_param), :compact => true) %>"
                       <% end %>
                     });
                   });
