@@ -151,13 +151,6 @@ module RailsAdmin
       self.history_summaries(from, to, scope_adapter, authorization_adapter)
     end
     
-    def self.translate_table_name(tbl_name)
-      new_name = ""
-      tbl_name.split.each { |tkn|
-        new_name += tkn.capitalize
-      }
-      new_name
-    end
     
     # Fetch detailed history for one month.
     def self.history_for_month(month, year, scope_adapter, authorization_adapter)
@@ -171,21 +164,17 @@ module RailsAdmin
 
       table_data = {}
       other_tables.each { |table_name|
-        tbl_name_formatted = table_name#translate_table_name(table_name)
-        table_data[table_name] = tbl_name_formatted.constantize.find(:all) rescue nil
-        # apply scope
-        scope = authorization_adapter.query(:list, AbstractModel.new( tbl_name_formatted.constantize ))
-        table_data[table_name] = scope_adapter.apply_scope(scope, AbstractModel.new(tbl_name_formatted.constantize))
+        table_data[table_name] = table_name.constantize.limit_scope(authorization_adapter, scope_adapter).find(:all) rescue nil
       }
       
       history_rows.each { |row|
         table_data[row.table].each { |t|
+          next if not t
           if t.id == row.item
             filtered << row
           end
         }
       }
-    
       filtered
     end
 
