@@ -26,7 +26,7 @@ module RailsAdmin
         # Second argument is the base_model that is used in the select statement.
         # Example: select field from table (table is the base_model).
         def apply_scope(query, base_abstract_model)
-          tree = nil
+          join, tree = nil
           
           #Treat the User model as a special case since we want to see all the users if they are not hierarchically
           #assigned (ex: User not being associated to a company)
@@ -36,21 +36,27 @@ module RailsAdmin
           
           @controller.current_scope.each do |key, value|
             next if base_abstract_model.model.name == key
+            
             tree = retrieve_associations_tree(base_abstract_model, key)
+            
             next if not tree
             
-            #remove the first element since it's always going to be the abstract base model
-            tree.shift
-            
-            #build the joins query
-            tree.pop() if not @controller.scope_adapter.models.map{|m| m.name}.include?(tree.last.name)
-            query = query.includes([tree.collect{|model| model.table_name.singularize.to_sym}.reverse.inject { |a, b| {b => a}}])
-            
+            join = generate_join_query(key, tree[base_abstract_model.model.name])
+
+            query = query.includes(join)
+
+            if join.size > 0 and join.first.is_a?(Hash)
+              tree = extract_all_tables(join.first)
+            else              
+              tree = join
+            end
+
             #build the conditions based on the selected scope
             predicate     = []
             predicate_or  = []
-            predicate_and = []            
-            if(tree.collect{|model| model.name}.include?(key))
+            predicate_and = []
+
+            if(tree.collect{|model| model.to_s.classify}.include?(key))
               predicate << {key.constantize.table_name.to_sym => {:id => value[:selected]}}
             end
             base_abstract_model.belongs_to_associations.each do |assoc|
@@ -84,16 +90,46 @@ module RailsAdmin
         # Ex: let's assume a model is defined as followed :
         # Field belongs_to Table belongs_to Company
         # The tree will return [Field, Table, Company]
+        # We only return one association relevant to the current scope model
         #
-        def retrieve_associations_tree(abstract_model, association_name, tree = [])
-          tree << abstract_model.model
+        def retrieve_associations_tree(abstract_model, association_name)
+          tree = {}
+          current_association_name   = abstract_model.model.name
+          current_model_associations = {current_association_name => []}
           abstract_model.belongs_to_associations.each do |assoc|
-            abstract_model = RailsAdmin::AbstractModel.new(assoc[:parent_model].name)
-            next if not check_associations(abstract_model)
-            retrieve_associations_tree(abstract_model, association_name, tree) if not tree.include?(abstract_model.model)
+            current_abstract_model = RailsAdmin::AbstractModel.new(assoc[:parent_model].name)
+            if not check_associations(current_abstract_model)            
+              current_model_associations[current_association_name] << current_abstract_model.model.name
+            else
+              current_model_associations[current_association_name] << retrieve_associations_tree(current_abstract_model, current_abstract_model.model.name)
+            end
           end
-          tree = nil if not tree.include?(association_name.constantize) rescue nil
-          tree
+          current_model_associations
+        end
+
+        def extract_all_tables(h, keys = [])
+          keys = keys || []
+          h.each do |k, v|
+            keys << k
+            if v.is_a?(Array) and v.size > 0
+              extract_all_tables(v.first, keys)
+            elsif v.is_a?(Hash)
+              extract_all_tables(v, keys)
+            elsif v.is_a?(Symbol)
+              keys << v
+            end
+          end
+          keys
+        end
+
+        def generate_join_query(scope_model_name, associations_tree)
+          associations_tree.each do |sub_association_tree|
+            tree = extract_all_tables(sub_association_tree)
+            if tree.include?(scope_model_name) then
+              return [tree.collect{|model| model.tableize.singularize.to_sym}.reverse.inject { |a, b| {b => a}}]
+            end
+          end
+          return {}
         end
                         
         module ControllerExtension
