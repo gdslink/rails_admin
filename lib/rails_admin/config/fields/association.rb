@@ -49,8 +49,10 @@ module RailsAdmin
         # Reader for a collection of association's child models in an array of
         # [label, id] arrays.
         def associated_collection(authorization_adapter, scope_adapter)
-          scope = authorization_adapter && authorization_adapter.query(:list, associated_model_config.abstract_model)
-          scope = scope_adapter.apply_scope(scope, associated_model_config.abstract_model) if scope_adapter
+          scope = authorization_adapter && authorization_adapter.query(:list_via_association, associated_model_config.abstract_model)
+          if scope_adapter and not scope_adapter.is_root_managing_users?(associated_model_config.abstract_model)
+            scope = scope_adapter.apply_scope(scope, associated_model_config.abstract_model) 
+          end
           associated_model_config.abstract_model.all({}, scope).map do |object|
             [object.send(associated_model_config.object_label_method), object.id]
           end
@@ -58,7 +60,7 @@ module RailsAdmin
 
         # Reader how many records the associated model has
         def associated_collection_count(authorization_adapter, scope_adapter)
-          scope = authorization_adapter && authorization_adapter.query(:read, associated_model_config.abstract_model)
+          scope = authorization_adapter && authorization_adapter.query(:list_via_association, associated_model_config.abstract_model)
           scope = scope_adapter.apply_scope(scope, associated_model_config.abstract_model) if scope_adapter
           associated_model_config.abstract_model.count({}, scope)
         end

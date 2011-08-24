@@ -18,33 +18,34 @@ module RailsAdmin
 
           create_route
           
-          puts "Also you need a new migration. We'll generate it for you now."
+          puts "Also you need new migrations. We'll generate it for you now."
           `rails g rails_admin:install_migrations`
 
+          puts "Finally you need cancan ability class to support roles and permissions"
+          `rails g cancan:ability`
+          
           puts "Done."
         end
 
         def copy_locales_files
-          print "Now copying locales files! "
-          locales_path = gem_path + "/config/locales/*.yml"
+          print "Now copying locale files "
+          origin = File.join(gem_path, 'config/locales')
+          destination = Rails.root.join('config/locales')
+          puts copy_files(%w( . ), origin, destination)
+        end
 
-          app_path = Rails.root.join("config/locales")
-
-          unless File.directory?(app_path)
-            app_path.mkdir
-          end
-
-          puts
-          Dir.glob(locales_path).each do |file|
-            copier.copy_file file, File.join(app_path, File.basename(file))
-          end
+        def copy_model_files
+          print "Now copying model files "
+          origin = File.join(gem_path, 'app/models')
+          destination = Rails.root.join('app/models')
+          puts copy_files(%w( . ), origin, destination)
         end
 
         def copy_view_files
           print "Now copying view files "
-          origin = File.join(gem_path, 'app/views')
-          destination = Rails.root.join('app/views')
-          puts copy_files(%w( layouts . ), origin, destination)
+          origin = File.join(gem_path, 'app/views/')
+          destination = Rails.root.join('app/views/')
+          puts copy_files(%w( rails_admin/**/* layouts/**/* ), origin, destination)
         end
         
         def create_route
@@ -56,7 +57,7 @@ module RailsAdmin
 
         def copy_files(directories, origin, destination)
           directories.each do |directory|
-            Dir[File.join(origin, directory, 'rails_admin', '**/*')].each do |file|
+            Dir[File.join(origin, directory, '/*')].each do |file|
               relative  = file.gsub(/^#{origin}\//, '')
               dest_file = File.join(destination, relative)
               dest_dir  = File.dirname(dest_file)

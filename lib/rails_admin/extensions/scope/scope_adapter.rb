@@ -45,11 +45,7 @@ module RailsAdmin
 
             query = query.includes(join)
 
-            if join.size > 0 and join.first.is_a?(Hash)
-              tree = extract_all_tables(join.first)
-            else              
-              tree = join
-            end
+            tree = extract_all_tables(join)
 
             #build the conditions based on the selected scope
             predicate     = []
@@ -73,6 +69,14 @@ module RailsAdmin
           end
           query
         end
+
+        #if the current user is root and the table is user we do not want to apply the scope
+        #because the root user should see all users everytime.
+        def is_root_managing_users?(abstract_model)
+          return true if @controller.current_user.is?(:root) and abstract_model.model.name == 'User'
+          return false
+        end
+
         
         private
         
@@ -107,7 +111,12 @@ module RailsAdmin
           current_model_associations
         end
 
-        def extract_all_tables(h, keys = [])
+        def extract_all_tables(associations, keys = [])
+          h = associations
+          if  associations.is_a? Array then
+            return associations if not associations.first.is_a?(Hash)
+            h = associations.first
+          end
           keys = keys || []
           h.each do |k, v|
             keys << k

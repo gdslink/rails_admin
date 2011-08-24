@@ -14,6 +14,12 @@ module RailsAdmin
 
     def create_migration_file
       migration_template 'migration.rb', 'db/migrate/create_rails_admin_histories_table.rb' rescue p $!.message
+      migrations = "#{File.expand_path(File.dirname(__FILE__))}/templates/multi_tenants_support/*.rb"
+      Dir.glob(migrations).each do |file|
+        sleep 1
+        migration = Pathname.new(file).basename
+        migration_template file, "db/migrate/#{migration}" rescue p $!.message
+      end      
     end
   end
 end

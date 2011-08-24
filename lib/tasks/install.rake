@@ -15,5 +15,10 @@ namespace :rails_admin do
   task :copy_views do
     RailsAdmin::Tasks::Install.copy_view_files
   end
+
+  desc "Copy models"
+  task :copy_models do
+    RailsAdmin::Tasks::Install.copy_model_files
+  end
 end
 
