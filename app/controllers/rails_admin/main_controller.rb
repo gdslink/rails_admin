@@ -28,7 +28,8 @@ module RailsAdmin
       @count = {}
       @max = 0
       @abstract_models.each do |t|
-        current_count = t.count
+        scope = @authorization_adapter && @authorization_adapter.query(:list, t)
+        current_count = t.count({}, scope)
         @max = current_count > @max ? current_count : @max
         @count[t.pretty_name] = current_count
         @most_recent_changes[t.pretty_name] = t.model.order("updated_at desc").first.try(:updated_at) rescue nil
@@ -217,7 +218,7 @@ module RailsAdmin
     def export
       # todo
       #   limitation: need to display at least one real attribute ('only') so that the full object doesn't get displayed, a way to fix this? maybe force :only => [""]
-      #   model_config#with for :methods inside csv content? Perf-optimize it first? Optionnal? Right-now raw data is outputed.
+      #   use send_file instead of send_data to leverage the x-sendfile header set by rails 3 (generate and let the front server handle the rest)
       # maybe
       #   n-levels (backend: possible with xml&json, frontend: not possible, injections check: quite easy)
       @authorization_adapter.authorize(:export, @abstract_model) if @authorization_adapter
@@ -225,7 +226,6 @@ module RailsAdmin
       if format = params[:json] && :json || params[:csv] && :csv || params[:xml] && :xml
         request.format = format
         @schema = params[:schema].symbolize if params[:schema] # to_json and to_xml expect symbols for keys AND values.
-        check_for_injections(@schema)
         list
       else
         @page_name = t("admin.actions.export").capitalize + " " + @model_config.label.downcase
@@ -414,10 +414,10 @@ module RailsAdmin
     end
 
     def build_statement(column, type, value, operator)
-      
+
       # this operator/value has been discarded (but kept in the dom to override the one stored in the various links of the page)
       return if operator == '_discard' || value == '_discard'
-      
+
       # filtering data with unary operator, not type dependent
       if operator == '_blank' || value == '_blank'
         return ["(#{column} IS NULL OR #{column} = '')"]
@@ -432,7 +432,7 @@ module RailsAdmin
       elsif operator == '_not_empty' || value == '_not_empty'
         return ["(#{column} != '')"]
       end
-      
+
       # now we go type specific
       case type
       when :boolean
@@ -474,7 +474,7 @@ module RailsAdmin
         end
         ["(#{column} BETWEEN ? AND ?)", *values]
       when :enum
-        return if value.blank?  
+        return if value.blank?
         ["(#{column} = ?)", value]
       end
     end
@@ -554,29 +554,6 @@ module RailsAdmin
         end
       end
       associations
-    end
-
-    def check_for_injections(schema)
-      check_injections_for(@model_config, (schema[:only] || []) + (schema[:methods] || []))
-      allowed_associations = @model_config.export.visible_fields.select{ |f| f.association? && !f.association[:polymorphic] }.map(&:association)
-      (schema[:include] || []).each do |association_name, schema|
-        association = allowed_associations.find { |aa| aa[:name] == association_name }
-        raise("Security Exception: #{association[:name]} association not available for #{@model_config.abstract_model.pretty_name}") unless association
-        associated_model = association[:type] == :belongs_to ? association[:parent_model] : association[:child_model]
-        check_injections_for(RailsAdmin.config(AbstractModel.new(associated_model)), (schema[:only] || []) + (schema[:methods] || []))
-      end
-    end
-
-    def check_injections_for(model_config, methods_name)
-      available_fields = model_config.export.visible_fields.select{ |f| !f.association? || f.association[:polymorphic] }.map do |field|
-        if field.association? && field.association[:polymorphic]
-          [field.method_name, model_config.abstract_model.properties.find {|p| field.association[:foreign_type] == p[:name] }[:name]]
-        else
-          field.name
-        end
-      end.flatten
-      unallowed_fields = (methods_name - available_fields)
-      raise("Security Exception: #{unallowed_fields.inspect} methods not available for #{@model_config.abstract_model.pretty_name}") unless unallowed_fields.empty?
     end
   end
 end

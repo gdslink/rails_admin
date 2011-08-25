@@ -21,4 +21,3 @@ namespace :rails_admin do
     RailsAdmin::Tasks::Install.copy_model_files
   end
 end
-

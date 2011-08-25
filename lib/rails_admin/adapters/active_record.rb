@@ -14,8 +14,8 @@ module RailsAdmin
         # Added here for backward compatibility after a refactoring, but it does belong to ActiveRecord IMO.
         # Support is hackish at best. Atomicity is respected for creation, but not while updating.
         # It means a failed validation at update on the parent object could still modify target belongs_to foreign ids.
-        # 
-        # 
+        #
+        #
         abstract_model.model.reflect_on_all_associations.select{|assoc| assoc.macro.to_s == 'has_one'}.each do |association|
           abstract_model.model.send(:define_method, "#{association.name}_id") do
             self.send(association.name).try(:id)
@@ -27,7 +27,7 @@ module RailsAdmin
       end
 
       def self.polymorphic_parents(name)
-        
+
         @@polymorphic_parents ||= {}.tap do |hash|
           RailsAdmin::AbstractModel.all_models.each do |klass|
             klass.reflect_on_all_associations.select{|r| r.options[:as] }.each do |reflection|
@@ -52,23 +52,19 @@ module RailsAdmin
       end
 
       def get_bulk(ids, scope = nil)
-        scope ||= model.unscoped
-        scope.find_all_by_id(ids)
+        (scope || model).find_all_by_id(ids)
       end
 
       def count(options = {}, scope = nil)
-        scope ||= model.unscoped
-        scope.count(options.except(:sort, :sort_reverse))
+        (scope || model).count(options.except(:sort, :sort_reverse))
       end
 
       def first(options = {}, scope = nil)
-        scope ||= model.unscoped
-        scope.first(merge_order(options))
+        (scope || model).reorder(extract_ordering!(options)).first(options)
       end
-
+      
       def all(options = {}, scope = nil)
-        scope ||= model.unscoped
-        scope.all(merge_order(options))
+        (scope || model).reorder(extract_ordering!(options)).all(options)
       end
 
       def paginated(options = {}, scope = nil)
@@ -173,17 +169,17 @@ module RailsAdmin
 
       private
 
-      def merge_order(options)
+      def extract_ordering!(options)
         @sort ||= options.delete(:sort) || "id"
         @sort = (@sort.to_s.include?('.') ? @sort : "#{model.table_name}.#{@sort}")
         @sort_order ||= options.delete(:sort_reverse) ? "asc" : "desc"
-        options.merge(:order => "#{@sort} #{@sort_order}")
+        "#{@sort} #{@sort_order}"
       end
-      
+
       def association_options(association)
         if association.options[:polymorphic]
-          { 
-            :polymorphic => true, 
+          {
+            :polymorphic => true,
             :foreign_type => association.options[:foreign_type] || "#{association.name}_type"
           }
         elsif association.options[:as]
@@ -209,7 +205,7 @@ module RailsAdmin
           raise "Unknown association type: #{association.macro.inspect}"
         end
       end
-      
+
       def association_foreign_type_lookup(association)
         if association.options[:polymorphic]
           association.options[:foreign_type].try(:to_sym) || :"#{association.name}_type"
@@ -227,11 +223,11 @@ module RailsAdmin
       def association_parent_key_lookup(association)
         [:id]
       end
-      
+
       def association_inverse_of_lookup(association)
         association.options[:inverse_of].try :to_sym
       end
-      
+
       def association_read_only_lookup(association)
         association.options[:readonly]
       end
