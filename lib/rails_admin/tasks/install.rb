@@ -16,14 +16,14 @@ module RailsAdmin
             puts "Please put gem 'devise' into your Gemfile"
           end
 
-          create_route
+          #create_route
           
           puts "Also you need new migrations. We'll generate it for you now."
 
-          `rails g rails_admin:install_migrations`
+          system("rails g rails_admin:install_migrations")
 
           puts "Finally you need cancan ability class to support roles and permissions"
-          `rails g cancan:ability`
+          system("rails g cancan:ability")
           
           puts "Done."
         end
@@ -102,7 +102,7 @@ module RailsAdmin
 
         def set_devise
           puts "Setting up devise for you!
-    ======================================================"
+======================================================"
           `rails g devise #{@@model_name}`
         end
 
