@@ -16,6 +16,11 @@
 
 <% head_javascript do %>
   $j(document).ready(function($) {
+
+    $j(document).ready(function($){
+      $(".ra-button").not(".ui-button").button({});
+    });
+  
     $("form").one("ajax:success", function(e, data, status, xhr) {
       $("#content").html(data);
     });
