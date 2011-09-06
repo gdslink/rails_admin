@@ -73,7 +73,7 @@ module RailsAdmin
         #if the current user is root and the table is user we do not want to apply the scope
         #because the root user should see all users everytime.
         def is_root_managing_users?(abstract_model)
-          return true if @controller.current_user.is?(:root) and abstract_model.model.name == 'User'
+          return true if @controller.current_user.is_root? and abstract_model.model.name == 'User'
           return false
         end
 

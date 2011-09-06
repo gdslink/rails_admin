@@ -8,9 +8,6 @@
         <div class="ra-block-content">
           <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>        
           <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
-            <div id='submit_buttons'>
-              <%= render :partial => 'submit_buttons' %>
-            </div>
             <ul>
               <% if authorized? :see_history %>
               <li>
@@ -28,9 +25,6 @@
             <% @model_config.edit.with(:object => @object).visible_groups.each do |fieldset| %>
               <%= render :partial => 'form_fieldset', :locals => { :fieldset => fieldset, :form => form, :object => @object } -%>
             <% end %>
-            <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
-              <%= render :partial => 'submit_buttons' %>
-            </div>
           <% end %>
         </div>
       </div>

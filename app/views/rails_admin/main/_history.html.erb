@@ -2,16 +2,18 @@
   <%= month_names[month - 1] %> <%= year %> <%= t("admin.history.name").downcase %>
 </div>
 <div class="ra-block-content">
-  <table class="grid">
-    <tbody>
-      <% history.each do |t|%>
-      <tr class="<%= cycle 'odd', 'even' %>">
-         <td style="text-align: left;"><%= t.created_at.localtime  %></td> 
-         <td style="text-align: left;"><%= t.try(:username)%></td>
-         <td style="text-align: left;"><%= history_output(t) %></td>
-         <td style="text-align: left;"><%= t.table %></td> 
-      </tr>
-      <% end %>
-    </tbody>
-  </table>
+  <% if authorized? :see_history %>
+    <table class="grid">
+      <tbody>
+        <% history.each do |t|%>
+        <tr class="<%= cycle 'odd', 'even' %>">
+           <td style="text-align: left;padding-right: 15px"><%= t.created_at.localtime  %></td> 
+           <td style="text-align: left;padding-right: 15px"><%= t.try(:username)%></td>
+           <td style="text-align: left;padding-right: 15px"><%= history_output(t) %></td>
+           <td style="text-align: left;padding-right: 15px"><%= t.table %></td> 
+        </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <%end%>
 </div>

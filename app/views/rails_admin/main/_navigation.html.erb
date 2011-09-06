@@ -43,21 +43,23 @@
           <%end%>
           <%if section[:sections] then%>
             <%section[:sections].each do |sub_section|%>
-              <li>
-              <%=image_tag sub_section[:image]%>
-              <%=link_to sub_section[:label],  "#" %>
-              <%sub_section[:links].each do |link| %>
-              </li>
-                <ul>
+              <%if sub_section[:links].size > 0%>
                 <li>
-                  <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for].include?(:model)%>              
-                    <%if link[:image] then%>
-                      <%=image_tag link[:image]%>
-                    <%end%>
-                    <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model])%>
-                  <%end%>
+                <%=image_tag sub_section[:image]%>
+                <%=link_to sub_section[:label],  "#" %>
+                <%sub_section[:links].each do |link| %>
                 </li>
-                </ul>
+                  <ul>
+                  <li>
+                    <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for].include?(:model)%>              
+                      <%if link[:image] then%>
+                        <%=image_tag link[:image]%>
+                      <%end%>
+                      <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model])%>
+                    <%end%>
+                  </li>
+                  </ul>
+                <%end%>
               <%end%>            
             <%end%>
           <%end%>

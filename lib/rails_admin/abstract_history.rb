@@ -170,9 +170,9 @@ module RailsAdmin
       history_rows.each { |row|
         table_data[row.table].each { |t|
           next if not t
-          if t.id == row.item
+          #if t.id == row.item
             filtered << row
-          end
+          #end
         }
       }
       filtered

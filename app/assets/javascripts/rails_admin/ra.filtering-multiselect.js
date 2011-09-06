@@ -111,7 +111,7 @@
 
       /* Remove all from selection */
       this.removeAll.click(function(e){
-        widget._deSelect($('option', widget.selection));
+        widget._deSelect($('option:not(:disabled)', widget.selection).filter(function(){ return $(this).css('visibility') != 'hidden'}));
       });
 
       /* Remove from selection */
@@ -174,7 +174,7 @@
       options.each(function(i, option) {
         widget.element.find("option[value=" + option.value + "]").removeAttr("selected");
       });
-      $(options).appendTo(this.collection).attr('selected', false);
+      options.appendTo(this.collection).attr('selected', false);
     },
 
     _query: function(query, success) {
@@ -232,7 +232,7 @@
           widget.element.append($('<option value="' + option.value + '" selected="selected"></option>'));
         }
       });
-      $(options).appendTo(this.selection).attr('selected', false);
+      $(options).prependTo(this.selection).attr('selected', false);
     },
 
     _move: function(direction, options) {

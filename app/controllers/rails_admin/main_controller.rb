@@ -137,9 +137,6 @@ module RailsAdmin
       @authorization_adapter.authorize(:show, @abstract_model, @object) if @authorization_adapter
       @page_name = t("admin.show.page_name", :name => @model_config.label.downcase)
       @page_type = @abstract_model.pretty_name.downcase
-      respond_to do |format|
-        format.js { render :json => @object.to_json };
-      end
     end
 
     def edit
