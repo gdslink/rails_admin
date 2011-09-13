@@ -33,7 +33,7 @@ module RailsAdmin
             extend RailsAdmin::Config::Fields::Groupable
           end
         end
-
+        
         register_instance_option(:css_class) do
           self.class.instance_variable_get("@css_class")
         end
@@ -51,7 +51,11 @@ module RailsAdmin
         end
 
         register_instance_option(:read_only) do
-          false
+          role = bindings[:view].controller.send(:_attr_accessible_role)
+          klass = bindings[:object].class
+          whitelist = klass.accessible_attributes(role).map(&:to_s)
+          blacklist = klass.protected_attributes(role).map(&:to_s)
+          self.method_name.to_s.in?(blacklist) || (whitelist.any? ? !self.method_name.to_s.in?(whitelist) : false)
         end
 
         register_instance_option(:truncated?) do
@@ -171,17 +175,12 @@ module RailsAdmin
           bindings[:view].render :partial => partial.to_s, :locals => {:field => self, :form => bindings[:form] }
         end
 
-        # Accessor for whether this is field is mandatory.  This is
-        # based on two factors: whether the field is nullable at the
-        # database level, and whether it has an ActiveRecord validation
-        # that requires its presence.
+        # Accessor for whether this is field is mandatory.
         #
         # @see RailsAdmin::AbstractModel.properties
         register_instance_option(:required?) do
-          @required ||= begin
-            validators = abstract_model.model.validators_on(@name)
-            required_by_validator = validators.find{|v| (v.class == ActiveModel::Validations::PresenceValidator) || (v.class == ActiveModel::Validations::NumericalityValidator && !v.options[:allow_nil])} && true || false
-            properties && !properties[:nullable?] || required_by_validator
+          @required ||= !!abstract_model.model.validators_on(name).find do |v|
+            v.is_a?(ActiveModel::Validations::PresenceValidator) || !v.options[:allow_nil]
           end
         end
 

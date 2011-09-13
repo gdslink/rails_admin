@@ -10,7 +10,6 @@ describe "RailsAdmin Basic Create" do
       fill_in "player[name]", :with => "Jackie Robinson"
       fill_in "player[number]", :with => "42"
       fill_in "player[position]", :with => "Second baseman"
-      check "player[suspended]"
       click_button "Save"
 
       @player = RailsAdmin::AbstractModel.new("Player").first
@@ -20,7 +19,6 @@ describe "RailsAdmin Basic Create" do
       @player.name.should eql("Jackie Robinson")
       @player.number.should eql(42)
       @player.position.should eql("Second baseman")
-      @player.should be_suspended
     end
   end
 
@@ -31,7 +29,6 @@ describe "RailsAdmin Basic Create" do
       fill_in "player[name]", :with => "Jackie Robinson"
       fill_in "player[number]", :with => "42"
       fill_in "player[position]", :with => "Second baseman"
-      check "player[suspended]"
       click_button "Save and edit"
 
       @player = RailsAdmin::AbstractModel.new("Player").first
@@ -41,7 +38,6 @@ describe "RailsAdmin Basic Create" do
       @player.name.should eql("Jackie Robinson")
       @player.number.should eql(42)
       @player.position.should eql("Second baseman")
-      @player.should be_suspended
     end
   end
 
@@ -52,7 +48,6 @@ describe "RailsAdmin Basic Create" do
       fill_in "player[name]", :with => "Jackie Robinson"
       fill_in "player[number]", :with => "42"
       fill_in "player[position]", :with => "Second baseman"
-      check "player[suspended]"
       click_button "Save and add another"
 
       @player = RailsAdmin::AbstractModel.new("Player").first
@@ -62,7 +57,6 @@ describe "RailsAdmin Basic Create" do
       @player.name.should eql("Jackie Robinson")
       @player.number.should eql(42)
       @player.position.should eql("Second baseman")
-      @player.should be_suspended
     end
   end
 
@@ -90,7 +84,7 @@ describe "RailsAdmin Basic Create" do
 
   describe "create with has-many association" do
     before(:each) do
-      @divisions = 3.times.map { FactoryGirl.create :division }
+      @divisions = 3.times.map { Division.create!(:name => "div #{Time.now.to_f}", :league => League.create!(:name => "league #{Time.now.to_f}")) }
 
       visit new_path(:model_name => "league")
 

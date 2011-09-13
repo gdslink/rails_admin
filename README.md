@@ -1,7 +1,10 @@
 # RailsAdmin
+
 RailsAdmin is a Rails engine that provides an easy-to-use interface for managing your data.
 
 [![Build Status](https://secure.travis-ci.org/sferik/rails_admin.png)](http://travis-ci.org/sferik/rails_admin)
+
+[![Click here to lend your support to: RailsAdmin and make a donation at www.pledgie.com !](https://www.pledgie.com/campaigns/15917.png?skin_name=chrome)](http://www.pledgie.com/campaigns/15917)
 
 RailsAdmin started as a port of [MerbAdmin](https://github.com/sferik/merb-admin) to Rails 3
 and was implemented as a [Ruby Summer of Code project](http://www.rubysoc.org/projects)
@@ -28,6 +31,11 @@ Supported ORMs:
 * ActiveRecord
 
 ## <a name="notices">Notices</a>
+
+`Virtual` Class is no more. :(
+Just use `String` instead, or another type. There is a `virtual?` method on `Fields::Base`, that can be used to detect whereas field has properties.
+
+`:attr_accessible` is now taken into account: restricted fields are not editable anymore, and mass-assignement security isn't bypassed anymore. Be careful if you whitelist attributes, you'll need to whitelist association 'id' methods as well : `division_id`, `player_ids`, `commentable_type`, `commentable_id`, etc.
 
 Default scopes are now fully *active* in list views (ordering is overriden, obvisously) as they used to a while ago. This is not configurable (that would bring consistency issues with cancan scoping which brings default scope). If you don't want some default scopes in RailsAdmin, either move your scoping rules to cancan, or activate your default scope conditionnaly on user/url prefix.
 
@@ -108,9 +116,6 @@ exist anymore.
 `RailsAdmin::Config::Sections::List.default_items_per_page` has been moved to
 `RailsAdmin::Config.default_items_per_page`.
 
-`RailsAdmin::Config::Sections::Export.default_hidden_fields` has been moved to
-`RailsAdmin::Config.default_hidden_fields_for_export`.
-
 `RailsAdmin::Config::Sections::Update.default_hidden_fields` has been moved to
 `RailsAdmin::Config.default_hidden_fields`, it now affects show, create and
 update views.
@@ -168,7 +173,6 @@ issue](https://github.com/sferik/rails_admin#issues).
 In your `Gemfile`, add the following dependencies:
 
     gem 'fastercsv' # Only required on Ruby 1.8 and below
-    gem 'devise' # Devise must be required before RailsAdmin
     gem 'rails_admin', :git => 'git://github.com/sferik/rails_admin.git'
 
 Run:
@@ -177,22 +181,16 @@ Run:
 
 And then run:
 
-    $ rake rails_admin:install
+    $ rails g rails_admin:install
 
-This task will install RailsAdmin and [Devise](https://github.com/plataformatec/devise) if you
+This generator will install RailsAdmin and [Devise](https://github.com/plataformatec/devise) if you
 don't already have it installed. [Devise](https://github.com/plataformatec/devise) is strongly
 recommended to protect your data from anonymous users.
-It will also modify your `config/routes.rb`, adding:
+It will modify your `config/routes.rb`, adding:
 
     mount RailsAdmin::Engine => '/admin', :as => 'rails_admin'
 
-You are free to change `/admin` to any location you want.
-
-If you plan to use Devise, but want to use a custom model for authentication
-(default is User) you can provide that as an argument for the installer. For example
-to override the default with a Member model run:
-
-    $ rake rails_admin:install model_name=member
+And add an intializer that will help you getting started. (head for config/initializers/rails_admin.rb)
 
 To use the CKEditor with Upload function, add [Rails-CKEditor](https://github.com/galetahub/ckeditor) to your Gemfile (`gem 'ckeditor'`) and follow [Rails-CKEditor](https://github.com/galetahub/ckeditor) installation instructions.
 
@@ -471,7 +469,7 @@ You can also configure it per model:
 
 By default, rows sorted by the field `id` in reverse order
 
-You can change default behavior with use two options: `sort_by` and `sort_reverse?`
+You can change default behavior with use two options: `sort_by` and `sort_reverse`
 
 **Default sorting - Configure globally**
 
@@ -513,7 +511,7 @@ Belongs_to associations :
           field :name do # (2)
             sortable :last_name # imagine there is a :last_name column and that :name is virtual
           end
-          field :team_id do # (3)
+          field :team do # (3)
             # Will order by players playing with the best teams,
             # rather than the team name (by default),
             # or the team id (dull but default if object_label is not a column name)
@@ -582,7 +580,7 @@ Belongs_to associations :
             searchable [:first_name, :last_name]
           end
 
-          field :team_id do # (4)
+          field :team do # (4)
             searchable [:name, :id]
             # eq. to [Team => :name, Team => :id]
             # or even [:name, Player => :team_id] will search on teams.name and players.team_id
@@ -692,7 +690,7 @@ The field's output can be modified:
             pretty_value do # used in list view columns and show views, defaults to formatted_value for non-association fields
               value.titleize
             end
-            
+
             export_value do
               value.camelize # used in exports, where no html/data is allowed
             end
@@ -1104,7 +1102,6 @@ RailsAdmin ships with the following field types:
 * text
 * time
 * timestamp
-* virtual *(useful for displaying data that is calculated a runtime [for example a method call on model instance])*
 
 **Fields - Creating a custom field type**
 
@@ -1421,6 +1418,37 @@ Or even scope it like this:
     end
 
 ## <a name="authorization">Authorization</a>
+
+`:attr_accessible` and `:attr_protected` are taken into account: restricted fields are not editable (read_only).
+If you whitelist attributes, don't forget to whitelist accessible associations' 'id' methods as well : `division_id`, `player_ids`, `commentable_type`, `commentable_id`, etc.
+`:attr_accessible` specifies a list of accessible methods for mass-assignment in your ActiveModel models. By default, RailsAdmin uses role `:default` (default in ActiveModel).
+If the role you specify isn't used in your whitelist declarations, you'll free access to all attributes.
+Keep in mind that `'key' != :key`
+You can change role with a block evaluated in the context of the controller (you'll have access to the view and your current_user) :
+
+    RailsAdmin.config do |config|
+      config.attr_accessible_role do
+        current_user.roles.first
+      end
+    end
+
+If you don't want read_only fields to be visible in your forms:
+
+    RailsAdmin.config do |c|
+      c.reload_between_requests = false # strongly advised, since mass-assignement slows things down a lot.
+      c.models do
+        edit do
+          fields do
+            visible do
+              visible && !read_only
+            end
+          end
+        end
+      end
+    end
+
+
+
 Authorization can be added using the `authorize_with` method. If you pass a block
 it will be triggered through a before filter on every action in Rails Admin.
 
@@ -1454,6 +1482,7 @@ Here are some ways *you* can contribute:
 * by refactoring code
 * by resolving [issues](https://github.com/sferik/rails_admin/issues)
 * by reviewing patches
+* [financially](http://pledgie.com/campaigns/15917)
 
 ## <a name="issues">Submitting an Issue</a>
 We use the [GitHub issue tracker](https://github.com/sferik/rails_admin/issues) to track bugs and

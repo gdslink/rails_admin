@@ -32,6 +32,8 @@ module RailsAdmin
         end
       end
     end
+    
+    DEFAULT_ATTR_ACCESSIBLE_ROLE = Proc.new { :default }
 
     DEFAULT_AUTHORIZE = Proc.new {}
     
@@ -47,9 +49,12 @@ module RailsAdmin
         raise "See RailsAdmin::Config.current_user_method or setup Devise / Warden"
       end
     end
+  
 
     class << self
-
+      # Application title, can be an array of two elements
+      attr_accessor :main_app_name
+      
       # in development mode, setting this to true will make rails_admin reload the whole configuration at each request
       attr_accessor :reload_between_requests
 
@@ -65,9 +70,6 @@ module RailsAdmin
 
       # Fields to be hidden in show, create and update views
       attr_accessor :default_hidden_fields
-
-      # Fields to be hidden in export views
-      attr_accessor :default_hidden_fields_for_export
 
       # Default items per page value used if a model level option has not
       # been configured
@@ -118,7 +120,13 @@ module RailsAdmin
         @authenticate = blk if blk
         @authenticate || DEFAULT_AUTHENTICATION
       end
-
+      
+      
+      def attr_accessible_role(&blk)
+        @attr_accessible_role = blk if blk
+        @attr_accessible_role || DEFAULT_ATTR_ACCESSIBLE_ROLE
+      end
+      
       # Setup authorization to be run as a before filter
       # This is run inside the controller instance so you can setup any authorization you need to.
       #
@@ -274,19 +282,19 @@ module RailsAdmin
       #
       # @see RailsAdmin::Config.registry
       def reset
-        @reload_between_requests = true
+        @reload_between_requests = false
         @compact_show_view = true
         @authenticate = nil
         @authorize = nil
         @current_user = nil
         @default_hidden_fields = [:id, :created_at, :created_on, :deleted_at, :updated_at, :updated_on, :deleted_on]
-        @default_hidden_fields_for_export = []
         @default_items_per_page = 20
         @default_search_operator = 'default'
         @excluded_models = []
         @included_models = []
         @total_columns_width = 697
         @label_methods = [:name, :title]
+        @main_app_name = Proc.new { [Rails.application.engine_name.titleize.chomp(' Application'), 'Admin'] }
         @registry = {}
       end
 

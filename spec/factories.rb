@@ -31,11 +31,6 @@ FactoryGirl.define do
     sequence(:name) { |n| "League #{n}" }
   end
 
-  factory :division do
-    sequence(:name) { |n| "Division #{n}" }
-    association :league
-  end
-
   factory :fan do
     sequence(:name) { |n| "Fan #{n}" }
   end
@@ -44,6 +39,10 @@ FactoryGirl.define do
     sequence(:email) { |n| "username_#{n}@example.com" }
     sequence(:password) { |n| "password" }
   end
+
+  factory :field_test do
+  end
+
 
   factory :comment do
     sequence(:content) do |n| <<-EOF

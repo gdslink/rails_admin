@@ -8,10 +8,11 @@ module RailsAdmin
     before_filter :_authorize!
     before_filter :_scope!    
     before_filter :set_plugin_name
+
     before_filter :_get_scope_models!
     before_filter :_get_scope_parameters!
-    
-    helper_method :_current_user
+
+    helper_method :_current_user, :_attr_accessible_role
 
     def get_model
       model_name = to_model_name(params[:model_name])
@@ -76,9 +77,14 @@ module RailsAdmin
     def _current_user
       instance_eval &RailsAdmin::Config.current_user_method
     end
-
+    
+    def _attr_accessible_role
+      instance_eval &RailsAdmin::Config.attr_accessible_role
+    end
+    
     def set_plugin_name
-      @plugin_name = "Admin Center"
+      @plugin_name_array = [instance_eval(&RailsAdmin.config.main_app_name)].flatten
+      @plugin_name = @plugin_name_array.join(' ')
     end
 
     def not_found
