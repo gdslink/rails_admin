@@ -34,7 +34,7 @@ module RailsAdmin
     end
 
     def check_scope_on_query
-      return if not request.format.html?
+      return if not request.format or not request.format.html?
       return if not @scope_adapter or not @authorization_adapter
       return if @scope_adapter.models.map{|m| m.name}.include?(@abstract_model.model.name)
       @scope_adapter.models.each do |model|
