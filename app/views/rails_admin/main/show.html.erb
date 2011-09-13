@@ -14,11 +14,6 @@
                <%= link_to t("admin.history.name"), history_object_path(current_scope_parameters.merge(:id => params[:id])), :class => 'ra-button' %>
               </li>
               <%end%>
-              <% if authorized? :delete, @abstract_model, @object %>
-              <li>
-               <%= link_to t("admin.list.delete_action"), delete_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => params[:id])), :class => 'ra-button' %>
-              </li>
-              <% end %>
             </ul>
           </div>
           <%= send(@model_config.update.form_builder, @object, :url => update_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => @object.id)), :html => { :method => "put", :multipart => true }) do |form| %>

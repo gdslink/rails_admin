@@ -6,15 +6,13 @@
                 <% end %>
                 <p class="help"><%= field.help %></p>
                 <% if field.ckeditor %>
-                  <% head_javascript "ckeditor/ckeditor.js" %>
+                  <% head_javascript "/javascripts/ckeditor/ckeditor.js" %>
                   <% head_javascript do %>
-                    <% if !File.exists?(File.join(Rails.root, 'public/javascripts/ckeditor/ckeditor.js')) %>
-                      alert("Install CKEditor using rake admin:ckeditor_download");
-                    <% end %>
                     $j(document).ready(function($){
                       CKEDITOR.replace('<%= field.dom_id %>',
                         {
-                          customConfig : '<%= field.ckeditor_config_js %>'
+                          skin : 'kama',
+                          customConfig : '<%= field.ckeditor_config_js %>',
                         }
                       );
                     });

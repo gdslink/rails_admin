@@ -8,8 +8,7 @@
         <div class="ra-block-content">
           <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>        
           <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
-            <div id='submit_buttons'>
-              <%= render :partial => 'submit_buttons' %>
+            <div id='submit-buttons'>
             </div>
             <ul>
               <% if authorized? :see_history %>
