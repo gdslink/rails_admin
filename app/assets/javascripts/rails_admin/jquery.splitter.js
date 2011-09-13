@@ -77,6 +77,11 @@ var splitterCounter = 0;
 			} else 
 				resplit(pos);
 			setBarState(pos == limit? opts.barActiveClass : opts.barLimitClass);
+
+			//trigger a window resize event to make sure all panes are being
+			//resized properly. This is very important when nested splitter
+			//are on the page
+			$j(window).resize();
 		}
 		function endSplitMouse(evt) {
 			setBarState(opts.barNormalClass);
@@ -106,14 +111,14 @@ var splitterCounter = 0;
 				bar._DA = bar[0][opts.pxSplit];
 				bar._pos = null;
 				pos = Math.max(A._min, splitter._DA - B._max, 
-						Math.min(pos, A._max, splitter._DA - bar._DA - B._min));
+					  Math.min(pos, A._max, splitter._DA - bar._DA - B._min));
 			}
 			// Resize/position the two panes
 			bar.css(opts.origin, pos).css(opts.fixed, splitter._DF);
 			A.css(opts.origin, 0).css(opts.split, pos).css(opts.fixed,  splitter._DF);
 			B.css(opts.origin, pos+bar._DA)
 				.css(opts.split, splitter._DA-bar._DA-pos).css(opts.fixed,  splitter._DF);
-			// IE fires resize for us; all others pay cash
+			// IE fires resize for us; all others pay cash			
 			if ( !$.browser.msie )
 				panes.trigger("resize");
 		}
@@ -328,7 +333,7 @@ var splitterCounter = 0;
 				// Re-divvy the adjustable dimension; maintain size of the preferred pane
 				resplit(!isNaN(size)? size : (!(opts.sizeRight||opts.sizeBottom)? A[0][opts.pxSplit] :
 					splitter._DA-B[0][opts.pxSplit]-bar._DA));
-				setBarState(opts.barNormalClass);
+				setBarState(opts.barNormalClass);				
 			})
 			.trigger("resize" , [initPos]);
 	});
