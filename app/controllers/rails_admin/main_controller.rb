@@ -552,5 +552,6 @@ module RailsAdmin
       end
       associations
     end
+
   end
 end
