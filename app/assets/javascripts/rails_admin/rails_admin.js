@@ -18,4 +18,5 @@
 //= require ./jquery.cookie.js
 //= require ./jquery.splitter.js
 //= require ./jquery.pulse.js
+//= require ./jquery.pageless.js
 //= require ./application.js

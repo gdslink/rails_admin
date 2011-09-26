@@ -274,38 +274,48 @@ module RailsAdmin
 
     end
 
+    def pageless(total_pages, url=nil, container=nil)
+      opts = {
+        :totalPages => total_pages,
+        :url        => url,
+        :loaderMsg  => 'Loading more results'
+      }
+      
+      container && opts[:container] ||= container
+      
+      javascript_tag("$('#results').pageless(#{opts.to_json});")
+    end    
+
     private
 
-      def abstract_model_and_object abstract_model_or_object
-        if abstract_model_or_object.is_a?(AbstractModel)
-          abstract_model = abstract_model_or_object
-          object = nil
-        elsif abstract_model_or_object.present?
-          object = abstract_model_or_object
-          abstract_model = AbstractModel.new(object.class)
+    def abstract_model_and_object abstract_model_or_object
+      if abstract_model_or_object.is_a?(AbstractModel)
+        abstract_model = abstract_model_or_object
+        object = nil
+      elsif abstract_model_or_object.present?
+        object = abstract_model_or_object
+        abstract_model = AbstractModel.new(object.class)
+      end
+      [abstract_model, object]
+    end
+
+    def breadcrumb_for view, abstract_model_or_object, active
+      abstract_model, object = abstract_model_and_object( abstract_model_or_object )
+
+      vt = VIEW_TYPES[view]
+
+      # TODO: write tests
+      if authorized?(view, abstract_model, object)
+        css_classes = []
+        css_classes << "first" if view == :dashboard
+        css_classes << "active" if active
+
+        content_tag(:li, :class => css_classes) do
+          path_method = vt.path_method || view
+          link_to I18n.t("admin.breadcrumbs.#{view}").capitalize, self.send("#{path_method}_path")
         end
-        [abstract_model, object]
-      end
-
-      def breadcrumb_for view, abstract_model_or_object, active
-        abstract_model, object = abstract_model_and_object( abstract_model_or_object )
-
-        vt = VIEW_TYPES[view]
-
-        # TODO: write tests
-        if authorized?(view, abstract_model, object)
-          css_classes = []
-          css_classes << "first" if view == :dashboard
-          css_classes << "active" if active
-
-          content_tag(:li, :class => css_classes) do
-            path_method = vt.path_method || view
-            link_to I18n.t("admin.breadcrumbs.#{view}").capitalize, self.send("#{path_method}_path")
-          end
-         end
-      end
-
-
+       end
+    end
   end
 end
 

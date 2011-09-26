@@ -153,10 +153,11 @@ module RailsAdmin
     
     
     # Fetch detailed history for one month.
-    def self.history_for_month(month, year, scope_adapter, authorization_adapter)
+    def self.history_for_month(month, year, scope_adapter, authorization_adapter, page)
+      page ||= "1"
       filtered = Array.new
       other_tables = Array.new
-      history_rows =  RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year], :order => "created_at DESC")
+      history_rows =  RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year], :order => "created_at DESC").paginate(:per_page => 20, :page => params[:page])
       history_rows.each { |row|
         other_tables << row.table
       }

@@ -8,6 +8,7 @@ module RailsAdmin
       if params[:month].nil? or params[:year].nil?
         not_found
       else
+        @current_page = params[:page].try(:to_i) || 1
         @month = params[:month].to_i
         @year = params[:year].to_i
         @history = AbstractHistory.history_for_month(@month, @year, @scope_adapter, @authorization_adapter)
