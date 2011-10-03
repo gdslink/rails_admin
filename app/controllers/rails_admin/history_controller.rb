@@ -11,7 +11,7 @@ module RailsAdmin
         @current_page = params[:page].try(:to_i) || 1
         @month = params[:month].to_i
         @year = params[:year].to_i
-        @history = AbstractHistory.history_for_month(@month, @year, @scope_adapter, @authorization_adapter)
+        @history = AbstractHistory.history_for_month(@month, @year, @scope_adapter, @authorization_adapter, @current_page)
         render :template => 'rails_admin/main/history', :layout => false
       end
     end

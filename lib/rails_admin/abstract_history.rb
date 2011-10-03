@@ -153,30 +153,11 @@ module RailsAdmin
     
     
     # Fetch detailed history for one month.
-    def self.history_for_month(month, year, scope_adapter, authorization_adapter, page)
-      page ||= "1"
+    def self.history_for_month(month, year, scope_adapter, authorization_adapter, page = 1)
       filtered = Array.new
       other_tables = Array.new
-      history_rows =  RailsAdmin::History.find(:all, :conditions => ["month = ? and year = ?", month, year], :order => "created_at DESC").paginate(:per_page => 20, :page => params[:page])
-      history_rows.each { |row|
-        other_tables << row.table
-      }
-      other_tables.uniq!
-
-      table_data = {}
-      other_tables.each { |table_name|
-        table_data[table_name] = table_name.constantize.limit_scope(authorization_adapter, scope_adapter).find(:all) rescue nil
-      }
       
-      history_rows.each { |row|
-        table_data[row.table].each { |t|
-          next if not t
-          #if t.id == row.item
-            filtered << row
-          #end
-        }
-      }
-      filtered
+      history_rows = RailsAdmin::History.limit_scope(authorization_adapter, scope_adapter).where("month = ? and year = ?", month, year).paginate(:per_page => 60, :page => page).order("rails_admin_histories.created_at DESC")
     end
 
     # Fetch the most recent history item for a model.

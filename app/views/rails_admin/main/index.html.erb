@@ -6,29 +6,39 @@
           <div class="ra-block-content">
             <div id="timeline"></div>
             <div style="margin-top: 10px;" id="listingHistory" class="block list">
-    <%= render(:partial => 'history', :locals => {:month => Time.now.month, :year => Time.now.year, :history => @history}) -%>
+              <div class="ui-widget-header">                
+                <%= 
+                    month = Time.now.month
+                    year  = Time.now.year
+                    month_names[month - 1] %> <%= year %> <%= t("admin.history.name").downcase 
+                %>
+              </div>
+              <div class="ra-block-content">
+                <% if authorized? :see_history %>
+                  <table class="grid">
+                    <tbody id="history">
+                    </tbody>
+                  </table>
+                <%end%>
+              </div>
             </div>
             <%= javascript_tag do %>
-              $j(document).ready(function($) {
-                var cache = {};
+            $j(document).ready(function($) {              
+                 $('#history').pageless({container: '#content', currentPage: 0, url:  '<%=history_list_path%>', params: {month: 10, year: 2011},  loaderMsg: 'Loadind history'})
                  $("#timeline").timeline({
-                   url: "<%= history_slider_path %>",
+                   url: "<%= history_slider_path %>",                   
                    monthChanged: function(month, year) {
-                     if (cache[year] && cache[year][month]) {
-                       $("#listingHistory").html(cache[year][month]);
-                     } else {
-                       $j("#listingHistory").load(
-                         "<%= history_list_path %>",
-                         { month: month, year: year },
-                         function(response, status, xhr) {
-                           if (!cache[year]) { cache[year] = {}; }
-                           cache[year][month] = response;
-                         }
-                       );
-                     }
+                     $j("#history").load(
+                       "<%= history_list_path %>",
+                       { month: month, year: year },
+                       function(response, status, xhr) {
+                          $('#history').pageless({container: '#content', currentPage: 1, url:  '<%=history_list_path%>', params: {month: month, year: year},  loaderMsg: 'Loadind history'})
+                       }
+                     );
                    },
                    monthNames: <%= ActiveSupport::JSON.encode(month_names).html_safe %>
                  });
+
               });
             <% end %>
           </div>

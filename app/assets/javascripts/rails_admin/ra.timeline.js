@@ -25,6 +25,7 @@
         alert("Timeline widget needs to be initialized with url option");
       }
 
+      this.cache = [];
       this._build();
       this._bindEvents();
       this.refresh();
@@ -120,12 +121,13 @@
     },
 
     redraw: function() {
+      
       this.months.find("li").remove();
 
       var i = this.options.range,
           date = this._getCurrentDate();
 
-      this.monthWidth = Math.floor(this.months.width() / this.options.range) - 1;
+      this.monthWidth = Math.floor(this.months.width() / this.options.range) - 10;
 
       while (i--) {
         this.months.prepend(
@@ -141,6 +143,44 @@
       // FIXME should really be keeping the handle in the same place
       // proportionally, but this keeps it from looking too broken:
       this._moveHandleToRight();
+
+
+      this.drawBars();
+    },
+
+    drawBars: function(){
+      
+      var widget = this;
+
+      var getHistoryIndicator = function(history) {
+        return widget.months.find("li[data-year=" + history.year + "][data-month=" + history.month + "] .bar span").first();
+      };
+
+      var maxHeight = widget.months.find(".bar").first().height(), max = 0;
+
+      $(this.cache).each(function(i, e) {
+        if (getHistoryIndicator(e.history).length && e.history.record_count > max) {
+          max = e.history.record_count;
+        }
+      });
+
+      $(this.cache).each(function(i, e) {
+        var className = "",
+            el = getHistoryIndicator(e.history),
+            height = 0,
+            percent = 0;
+
+        if (el.length) {
+          if (e.history.record_count > 0) {
+            percent = parseFloat(e.history.record_count / max);
+            className = widget.getBarClass(percent);
+            height = Math.floor(maxHeight * percent);
+          }
+
+          el.toggleClass(className, 300)
+            .animate( { height: height }, 1000, 'easeOutBounce');
+        }
+      });      
     },
 
     refresh: function() {
@@ -165,35 +205,12 @@
           xhr.setRequestHeader("Accept", "application/json");
         },
         success: function(data, status, xhr) {
-          var maxHeight = widget.months.find(".bar").first().height(), max = 0;
 
-          var getHistoryIndicator = function(history) {
-            return widget.months.find("li[data-year=" + history.year + "][data-month=" + history.month + "] .bar span").first();
-          };
+          widget.cache = data;
 
-          $(data).each(function(i, e) {
-            if (getHistoryIndicator(e.history).length && e.history.record_count > max) {
-              max = e.history.record_count;
-            }
-          });
 
-          $(data).each(function(i, e) {
-            var className = "",
-                el = getHistoryIndicator(e.history),
-                height = 0,
-                percent = 0;
+          widget.drawBars();
 
-            if (el.length) {
-              if (e.history.record_count > 0) {
-                percent = parseFloat(e.history.record_count / max);
-                className = widget.getBarClass(percent);
-                height = Math.floor(maxHeight * percent);
-              }
-
-              el.toggleClass(className, 300)
-                .animate( { height: height }, 1000, 'easeOutBounce');
-            }
-          });
         },
         error: function(xhr, status, error) {
           dialog.html(xhr.responseText);
