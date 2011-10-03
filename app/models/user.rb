@@ -7,7 +7,7 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
 
   # Setup accessible (or protected) attributes for your model
-  attr_accessible :email, :password, :password_confirmation, :remember_me
+  attr_accessible :email, :password, :password_confirmation, :remember_me, :company_id
 
   def is_root?
     self.is_root
@@ -18,7 +18,7 @@ class User < ActiveRecord::Base
       field :email
       field :password
       field :password_confirmation
-
+      field :company
       group :roles do        
         field :is_root do
           label "Enable root"

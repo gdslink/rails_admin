@@ -62,7 +62,8 @@ module RailsAdmin
                                  :table => abstract_model.model.name,
                                  :username => user ? user.email : "",
                                  :month => date.month,
-                                 :year => date.year
+                                 :year => date.year,
+                                 :application_id => (object.application_id rescue nil)
                                  )
     end
 
@@ -154,9 +155,9 @@ module RailsAdmin
     
     # Fetch detailed history for one month.
     def self.history_for_month(month, year, scope_adapter, authorization_adapter, page = 1)
-      filtered = Array.new
+      filtered = Array.new      
       other_tables = Array.new
-      
+
       history_rows = RailsAdmin::History.limit_scope(authorization_adapter, scope_adapter).where("month = ? and year = ?", month, year).paginate(:per_page => 60, :page => page).order("rails_admin_histories.created_at DESC")
     end
 
