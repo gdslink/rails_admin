@@ -115,7 +115,7 @@
       $el.append(loader);
       // if we use the default loader, set the message
       if (!opts.loaderHtml) {
-        $('#pageless-loader .msg').html(opts.loaderMsg);
+        $('#pageless-loader .msg').html(settings.loaderMsg);
       }
     }
   };
@@ -151,7 +151,7 @@
   
   var watch = function() {
     // listener was stopped or we've run out of pages
-    if (settings.totalPages <= settings.currentPage) {
+    if (typeof settings.totalPages !== 'undefined' && (settings.totalPages <= settings.currentPage)) {
       stopListener();
       // if there is a afterStopListener callback we call it
       if (settings.end) settings.end.call();
@@ -173,19 +173,26 @@
                $.isFunction(settings.scrape) ? settings.scrape(data) : data;
                loader ? loader.before(data) : element.append(data);
 
-               if (settings.currentPage <= 1 && $.trim(data).length == 0){
-                  $('#pageless-loader .msg').html(settings.noDataMsg);
-                  $('#pageless-loader img').hide();
-                  loader.fadeIn('normal');
-               }else{
-                  $('#pageless-loader .msg').html(settings.loaderMsg);
-                  $('#pageless-loader img').show();
-                  loading(FALSE);
-               }
+               $('#pageless-loader .msg').html(settings.loaderMsg);
+               $('#pageless-loader img').show();
+               loading(FALSE);
 
                // if there is a complete callback we call it
                if (settings.complete) settings.complete.call();
-           }, 'html');
+           }, 'html')
+           .success(function(data) {
+             if($(settings.dataCondition).size() == 0 && $.trim(data).length == 0){
+               $('#pageless-loader .msg').html(settings.noDataMsg);
+               $('#pageless-loader img').hide();
+               loader.fadeIn('normal');
+             }
+
+             //don't increase the currentpage if there is no more data
+             if($.trim(data).length == 0){
+               settings.currentPage--;
+             }
+
+           })
     }
   };
 })(jQuery);
