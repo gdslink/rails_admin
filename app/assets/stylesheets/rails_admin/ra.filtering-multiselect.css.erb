@@ -33,7 +33,7 @@
 }
 
 .ra-multiselect-column {
-  width: 190px;
+  width: auto;
   float: left;
 }
 
@@ -109,8 +109,6 @@
   background-image: url("<%= asset_path('rails_admin/multiselect/ui-icon-circle-triangle-s-dark.png') %>");
 }
 
-
-
 .ra-multiselect-collection, .ra-multiselect-selection {
   height: 130px;
   margin-bottom: 5px;
@@ -118,6 +116,7 @@
   font-family: Verdana, Geneva, sans-serif;
   font-size: 12px;
   width: 100%;
+  min-width: 100px;
   border-left: 1px solid #e2e3ea;
   border-top: 1px solid #abadb3;
   border-bottom: 1px solid #e3e9ef;
