@@ -235,10 +235,12 @@ module RailsAdmin
     def bulk_action
       redirect_to list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
 
-      case params[:bulk_action]
-      when "delete" then bulk_delete
-      when "export" then export
-      else redirect_to(list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction"))
+      if params.include? :bulk_delete
+        bulk_delete 
+      elsif params.include? :bulk_export
+        export
+      else 
+        redirect_to(list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction"))
       end
     end
 
