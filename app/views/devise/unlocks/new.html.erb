@@ -1,12 +1,30 @@
-<h2>Resend unlock instructions</h2>
+<%= stylesheet_link_tag 'application'%>
+
+<%if resource.errors.size > 0 %>
+  <div id='flash-alert'>
+    <%= devise_error_messages! %>
+  </div>
+<%end%>
+
+
+<div id="main-login">
 
 <%= form_for(resource, :as => resource_name, :url => unlock_path(resource_name), :html => { :method => :post }) do |f| %>
-  <%= devise_error_messages! %>
 
-  <p><%= f.label :email %><br />
-  <%= f.email_field :email %></p>
+  <table class="vedit">
+  <tbody><tr>
+      <td>
+      <div class="head_title">E-mail</div>
+      <div class="small">&nbsp;</div><br class="clear">
+      <%=f.email_field :email, :class => "lg_log", :size => '30'%>
+      </td>
+  </tr>
+  </tbody></table>
 
-  <p><%= f.submit "Resend unlock instructions" %></p>
+  <div class='button'>
+    <%= f.submit "Resend unlock instructions", :class => "ra-button ui-state-highlight" %>
+    <p><%= render :partial => "devise/shared/links" %></p>
+  </div>
 <% end %>
 
-<%= render :partial => "devise/shared/links" %>
+</div>
