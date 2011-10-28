@@ -158,7 +158,7 @@ module RailsAdmin
       filtered = Array.new      
       other_tables = Array.new
 
-      history_rows = RailsAdmin::History.limit_scope(authorization_adapter, scope_adapter).where("month = ? and year = ?", month, year).paginate(:per_page => 60, :page => page).order("rails_admin_histories.created_at DESC")
+      history_rows = RailsAdmin::History.limit_scope(nil, scope_adapter).where("month = ? and year = ?", month, year).paginate(:per_page => 60, :page => page).order("rails_admin_histories.created_at DESC")
     end
 
     # Fetch the most recent history item for a model.
