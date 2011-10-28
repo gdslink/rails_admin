@@ -8,7 +8,14 @@ module RailsAdmin
       # authorization_adapter and scope_adapter are instance variables set at the controller level.
       def limit_scope(authorization_adapter, scope_adapter)
         abstract_model = RailsAdmin::AbstractModel.new(self.name)
-        scope = authorization_adapter && authorization_adapter.query(:read, abstract_model)
+        if authorization_adapter
+          scope = authorization_adapter.query(:read, abstract_model)
+        else
+          scope = abstract_model.model
+        end
+
+        scope = where("1 = 0") if scope == nil #prevent the query to work if someone something went wrong and the scope gets nil
+
         scope = scope_adapter.apply_scope(scope, abstract_model) if scope_adapter
       end
     end
