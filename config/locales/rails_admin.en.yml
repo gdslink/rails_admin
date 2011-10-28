@@ -3,7 +3,7 @@
 
 en:
   errors:
-    invalid_name_alpha_only: "This field should contain alpha numeric characters only"
+    invalid_name_alpha_only: "should contain alpha numeric characters only"
   home:
     name: "home"
   admin:
