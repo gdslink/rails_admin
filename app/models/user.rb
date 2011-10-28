@@ -21,12 +21,19 @@ class User < ActiveRecord::Base
       field :company
       group :roles do        
         field :is_root do
-          label "Enable root"
+          label "Root user"
+          help "Allow user to administer any company and any application."
           visible do
             bindings[:view].current_user.is_root? if bindings and bindings.include?(:view)
           end
         end
-
+        field :is_admin do
+          label "Admin User"
+          help "Allow user to administer any application under the company he belongs to."
+          visible do
+            bindings[:view].current_user.is_root? or bindings[:view].current_user.is_admin? if bindings and bindings.include?(:view)
+          end
+        end        
         field :roles
       end
     end
