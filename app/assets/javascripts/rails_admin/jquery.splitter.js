@@ -255,7 +255,8 @@ var splitterCounter = 0;
 		if ( opts.resizeTo ) {
 			splitter._hadjust = dimSum(splitter, "borderTopWidth", "borderBottomWidth", "marginBottom");
 			splitter._hmin = Math.max(dimSum(splitter, "minHeight"), 20);
-			$(window).bind("resize"+opts.eventNamespace, function(){
+			$(window).bind("resize"+opts.eventNamespace, function(e){
+				if ( e.target != this ) return;
 				var top = splitter.offset().top;
 				var eh = $(opts.resizeTo).height();
 				splitter.css("height", Math.max(eh-top-splitter._hadjust, splitter._hmin)+"px");
