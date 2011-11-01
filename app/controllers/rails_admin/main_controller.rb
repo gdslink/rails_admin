@@ -137,6 +137,7 @@ module RailsAdmin
       @authorization_adapter.authorize(:show, @abstract_model, @object) if @authorization_adapter
       @page_name = t("admin.show.page_name", :name => @model_config.label.downcase)
       @page_type = @abstract_model.pretty_name.downcase
+      flash[:error] = "You are in view mode. No change will be saved."
     end
 
     def edit
