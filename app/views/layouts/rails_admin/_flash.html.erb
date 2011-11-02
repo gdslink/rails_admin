@@ -2,13 +2,15 @@
       <div class="ra-message ui-state-error ui-corner-all model-error">
         <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
         <%= flash[:error] %>
-        <ul>
+        <%if @object%>
+          <ul>            
             <%@object.errors.full_messages.each do |m|%>
             <li>
               <%=m%>
             </li>
             <%end%>
-        <ul>
+          <ul>
+        <%end%>
       </div>
       <% end %>
       <% if flash && flash[:notice] %>
