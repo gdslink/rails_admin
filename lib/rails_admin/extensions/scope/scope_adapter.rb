@@ -56,6 +56,7 @@ module RailsAdmin
               predicate << {key.constantize.table_name.to_sym => {:id => value[:selected]}}
             end
             base_abstract_model.belongs_to_associations.each do |assoc|
+              next if not assoc[:parent_model].respond_to? :name
               if(@controller.current_scope.include?(assoc[:parent_model].name)) then
                 predicate_and << ({assoc[:child_key].to_s => @controller.current_scope[assoc[:parent_model].name][:selected]})
               else
@@ -101,6 +102,7 @@ module RailsAdmin
           current_association_name   = abstract_model.model.name
           current_model_associations = {current_association_name => []}
           abstract_model.belongs_to_associations.each do |assoc|
+            next if not assoc[:parent_model].respond_to? :name
             current_abstract_model = RailsAdmin::AbstractModel.new(assoc[:parent_model].name)
             if not check_associations(current_abstract_model)            
               current_model_associations[current_association_name] << current_abstract_model.model.name

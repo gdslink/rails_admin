@@ -37,7 +37,7 @@ module RailsAdmin
       render :index
     end
 
-    def list      
+    def list
       @authorization_adapter.authorize(:list, @abstract_model) if @authorization_adapter
 
       @page_type = @abstract_model.pretty_name.downcase
@@ -47,7 +47,12 @@ module RailsAdmin
       @schema ||= { :only => @model_config.list.visible_fields.map {|f| f.name } }
 
       respond_to do |format|
-        format.html
+        format.html{
+          if @abstract_model.model.name == "Ckeditor::Asset" then
+            @iframe_url = "/ckeditor/pictures?CKEditorFuncNum=2&mode=standalone&company_id=#{params[:Company]}"
+            render "iframe"
+          end
+        }
         format.js { render :layout => 'rails_admin/plain.html.erb' }
         format.json do
           output = if params[:compact]
