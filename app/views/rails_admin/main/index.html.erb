@@ -24,7 +24,7 @@
             </div>
             <%= javascript_tag do %>
             $j(document).ready(function($) {              
-                 $('#history').pageless({container: '#content', currentPage: 0, url:  '<%=history_list_path%>', params: {month: 10, year: 2011},  loaderMsg: 'Loading history', noDataMsg: 'No History', dataCondition: "#history tr:gt(0)"})
+                 $('#history').pageless({container: '#content', currentPage: 0, url:  '<%=history_list_path%>', params: {month: <%=month%>, year: <%=year%>},  loaderMsg: 'Loading history', noDataMsg: 'No History', dataCondition: "#history tr:gt(0)"})
                  $("#timeline").timeline({
                    url: "<%= history_slider_path %>",                   
                    monthChanged: function(month, year) {
