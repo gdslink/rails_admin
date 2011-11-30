@@ -497,3 +497,35 @@ margin-right:5px;
   padding-left: 20px;
   padding-top: 10px;  
 }
+
+* { margin:0; padding:0; } 
+
+
+/* footer */
+
+html, body, #wrap { height: 100%; }
+
+body > #wrapper {height: auto; min-height: 100%;}
+
+#footer {
+        position: relative;
+        margin-top: -55px; /* negative value of footer height */
+        clear:both;
+        height: 20px;
+        text-align: center;
+        background: url(<%=asset_path 'rails_admin/bg-footer.png'%>) repeat 0 0;
+        color: #4F4F4F;
+        font-size: 10px;
+        padding-top:5px;
+} 
+
+/* CLEAR FIX*/
+.clearfix:after {content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;}
+.clearfix {display: inline-block;}
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%;}
+.clearfix {display: block;}
