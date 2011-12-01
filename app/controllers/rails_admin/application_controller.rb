@@ -51,7 +51,7 @@ module RailsAdmin
 
     def _get_scope_parameters!
       @current_scope_parameters = {}
-      return if not session.include? 'scope'      
+      return if not session.include? :scope
       session[:scope].each do |model, value|
         @current_scope_parameters[model] = value
       end
