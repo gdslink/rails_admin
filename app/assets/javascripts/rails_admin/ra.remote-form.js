@@ -15,7 +15,7 @@
     dialog: null,
     options: {
       dialogClass: "",
-      width: 720
+      width: 850
     },
 
     _create: function() {
