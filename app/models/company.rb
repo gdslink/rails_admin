@@ -1,5 +1,8 @@
 class Company < ActiveRecord::Base
-  image_accessor :logo_image
+  has_attached_file :logo_image
+  attr_accessor :delete_logo_image
+  before_validation { self.logo_image.clear if self.delete_logo_image == '1' }
+
   has_many :users
 
   validates_presence_of   :name
