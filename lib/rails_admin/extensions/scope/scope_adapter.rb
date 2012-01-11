@@ -32,8 +32,8 @@ module RailsAdmin
           #assigned (ex: User not being associated to a company)
           # if @controller.current_user.class.name == base_abstract_model.model.name then
           #   return query if !@authorization_adapter || @authorization_adapter.authorized?(:list, nil, @controller.current_user.class.name)
-          # end
-          
+          # end        
+
           @controller.current_scope.each do |key, value|
             next if base_abstract_model.model.name == key
             
@@ -190,8 +190,11 @@ module RailsAdmin
                 selection = params[model.name].to_s.length > 0 ? params[model.name] : entries.first.id rescue nil
                 update_session_for_model(model, selection)
               end
-              @current_scope[model_name] = {:entries => entries, :selected  => selection }
               
+              @current_scope[model_name] = {:entries => entries, :selected  => selection, :selected_record => (entries[entries.index{|e| e.id == selection.to_i}] rescue nil)}
+                            
+              self.instance_variable_set("@#{model.to_s.underscore}", @current_scope[model_name][:selected_record] )
+                                          
               #save the parent information so we can cascade reset if needed
               parent_model = model
               parent_entries = entries
