@@ -6,7 +6,7 @@
     <% 
       company = Company.find_by_id(current_user.company_id)
       if company and company.logo_image.file? then
-        avatar = company.logo_image
+        avatar = company.logo_image.url(:thumb)
       else
         avatar = "rails_admin/no_image_icon.png"
       end
