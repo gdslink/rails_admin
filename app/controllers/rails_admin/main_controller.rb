@@ -6,7 +6,7 @@ module RailsAdmin
     layout "rails_admin/dashboard"
 
     before_filter :get_model, :except => [:index, :update_scope]
-    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy]
+    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy, :clone, :copy]
     before_filter :check_scope_on_query, :except => [:index, :update_scope]    
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :export, :bulk_destroy]
@@ -155,6 +155,60 @@ module RailsAdmin
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
       end      
     end
+
+    def clone
+      @authorization_adapter.authorize(:clone, @abstract_model, @object) if @authorization_adapter
+      @page_name = t("admin.actions.clone").capitalize + " " + @model_config.label.downcase
+      @page_type = @abstract_model.pretty_name.downcase
+      
+      respond_to do |format|
+        format.html { render :layout => 'rails_admin/form' }
+        format.js   { render :layout => 'rails_admin/plain.html.erb' }
+      end      
+    end
+
+
+    def copy      
+      @authorization_adapter.authorize(:clone, @abstract_model, @object) if @authorization_adapter
+
+      redirect_to main_app.copy_path(:format => :json)
+
+      #s = Application.new(@object.attributes)
+
+      # s = @object.dup :include => [:screen_flows, {:fields => :status_flow}, {:tables => :fields}]
+      # s.company_id = 14
+
+      # p s.save!
+
+      # p s.fields
+
+      # s.save!
+
+      #####
+
+
+
+
+      #######
+
+      # if 1 != 1
+      #   object_label = @model_config.with(:object => @object).object_label
+      #   AbstractHistory.create_update_history @abstract_model, @object, @cached_assocations_hash, associations_hash, @modified_assoc, @old_object, _current_user
+      #   respond_to do |format|
+      #     format.html do
+      #       redirect_to_on_success
+      #     end
+      #     format.js do
+      #       render :json => {
+      #         :id => @object.id,
+      #         :label => @model_config.with(:object => @object).object_label,
+      #       }
+      #     end
+      #   end
+      # else
+      #   handle_save_error :clone
+      # end
+    end    
 
     def update
       @authorization_adapter.authorize(:update, @abstract_model, @object) if @authorization_adapter

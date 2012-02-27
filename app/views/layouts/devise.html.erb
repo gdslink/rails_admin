@@ -2,7 +2,8 @@
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title><%= content_for?(:title) ? yield(:title) : Rails.application.class.to_s.split("::").first %></title>
-    <%= stylesheet_link_tag 'application'%>
+    <%= stylesheet_link_tag 'application'%>    
+    <%= javascript_include_tag 'rails_admin/jquery-1.5.1.min.js' %>
     <%= csrf_meta_tag %>
     <%= yield(:head) %>
   </head>

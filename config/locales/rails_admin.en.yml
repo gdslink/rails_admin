@@ -11,6 +11,7 @@ en:
       add: "Add"
       edit: "Edit"
       delete: "Delete"
+      clone: "Clone"
       no_content: "No %{model}"    
     dashboard:
       pagename: "Site administration"
@@ -100,6 +101,8 @@ en:
       deleted: "deleted"
       export: "export"
       exported: "exported"
+      clone: "clone"
+      copy: "clone"
     breadcrumbs:
       delete: "delete"
       history: "history"

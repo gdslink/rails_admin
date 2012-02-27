@@ -1,3 +1,33 @@
+<!--[if IE]>
+  <script type="text/javascript" 
+   src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+
+  <style>
+   .chromeFrameOverlayContent {
+      top: 60%;
+   } 
+   .chromeFrameOverlayContent iframe {
+     border: 1px solid blue;
+     height: 400px;
+   }
+  </style>
+
+  <script>
+      $(document).ready(function(){
+          if( $.browser.msie && $.browser.version < 10 ){
+              if(navigator.userAgent.indexOf("x64") >= 0){
+                alert("Internet Explorer 64 bits version is not supported. Please use Internet Explorer 32 bits instead.");
+              }else if( navigator.userAgent.indexOf('chromeframe') < 0 ){
+                      document.cookie = 'disableGCFCheck=0;path=/;';
+                      CFInstall.check({
+                          url: 'http://www.google.com/chromeframe/eula.html?user=true',
+                          mode: "overlay"
+                      });
+              }
+          }
+      });
+  </script>
+<![endif]-->
 <div id="main-login">
 
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>

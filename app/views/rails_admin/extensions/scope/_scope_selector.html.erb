@@ -22,7 +22,11 @@ models = @scope_adapter.models
         <%end%>
         <% if authorized? :destroy, nil, model %>
           <%= link_to I18n.t('admin.scope.delete'), delete_path(:model_name => model.name, :id => @current_scope[model_name][:selected]),  :id => model.name, :class => "createAssociatedRecord" %>
-        <%end%>
+        <%end%>        
+        <% if index > 0 and authorized? :clone, nil, model %>
+          <span>|</span>
+          <%= link_to I18n.t('admin.scope.clone'), clone_path(:model_name => model.name, :id => @current_scope[model_name][:selected]),  :id => model.name, :class => "createAssociatedRecord" %>
+        <%end%>        
       <%end%>
       <%= javascript_tag do %>
         $j(document).ready(function($) {
