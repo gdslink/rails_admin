@@ -11,7 +11,7 @@
 
 %>
 
-              <div class="field <%= "#{field.dom_id}" %>">
+              <div class="field <%= "#{field.dom_id}" %>" <%if not visible then %>style="display:none"<%end%>>
                 <%= form.label field.method_name, field.label %>
                 <%= form.select field.method_name, collection, { :selected => selected_id, :include_blank => true }, field.html_attributes %>
                 <% if authorized? :new, config.abstract_model %>

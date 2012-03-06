@@ -1,10 +1,11 @@
 <% head_style "rails_admin/form.css" %>
 <% head_javascript "rails_admin/application.js" %>
 <% head_javascript "rails_admin/ra.remote-form.js" %>
-      <div class="ra-block">      
+      <div class="ra-block">
         <div class="ui-widget-header">
           <%= @page_name %>
-          </div>        
+          </div>
+        <img id='loadingDiv' src='<%=asset_path "rails_admin/loading.gif"%>'></img>      
         <div class="ra-block-content">
           <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>        
           <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">

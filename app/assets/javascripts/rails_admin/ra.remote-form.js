@@ -51,6 +51,17 @@
       form.attr("data-remote", true);
       form.attr("action", form.attr("action")+'?remote=true');
       
+      $('#loadingDiv')
+          .hide()  // hide it initially
+          .ajaxStart(function() {
+              $(this).parent().find("form").hide();
+              $(this).show();              
+          })
+          .ajaxStop(function() {
+              $(this).hide();
+              $(this).parent().find("form").show();
+          });
+
       dialog.find(".submit").remove();
       dialog.find(".ra-block-content").removeClass("ra-block-content");
 
