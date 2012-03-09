@@ -9,6 +9,7 @@
     <ul>
       <% @abstract_model.has_many_associations.each do |association| %>
       <% object.send(association[:name]).reject{|child| child.nil?}.each do |child| %>
+      <% next if !child.id %>
       <li>
         One or more <%= @abstract_model.pretty_name.pluralize.downcase %> in <%= association[:pretty_name].downcase %>: <%= link_to(RailsAdmin.config(child).with(:object => child).object_label, edit_path(current_scope_parameters.merge(:model_name => association[:name].to_s.singularize.to_sym, :id => child.id))) %>
       </li>
