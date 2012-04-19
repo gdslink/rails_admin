@@ -17,7 +17,6 @@
           if( $.browser.msie && $.browser.version < 10 ){
               if(navigator.userAgent.indexOf("x64") >= 0){                
               }else if( navigator.userAgent.indexOf('chromeframe') < 0 ){
-                      document.cookie = 'disableGCFCheck=0;path=/;'
                       CFInstall.check({
                           url: 'http://www.google.com/chromeframe/eula.html?user=true',
                           mode: "overlay"
