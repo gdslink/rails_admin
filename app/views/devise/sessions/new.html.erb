@@ -15,10 +15,8 @@
   <script>
       $(document).ready(function(){
           if( $.browser.msie && $.browser.version < 10 ){
-              if(navigator.userAgent.indexOf("x64") >= 0){
-                alert("Internet Explorer 64 bits version is not supported. Please use Internet Explorer 32 bits instead.");
+              if(navigator.userAgent.indexOf("x64") >= 0){                
               }else if( navigator.userAgent.indexOf('chromeframe') < 0 ){
-                      document.cookie = 'disableGCFCheck=0;path=/;';
                       CFInstall.check({
                           url: 'http://www.google.com/chromeframe/eula.html?user=true',
                           mode: "overlay"
@@ -28,6 +26,13 @@
       });
   </script>
 <![endif]-->
+<script type="text/javascript">
+  $(document).ready(function(){
+    if( top !== self){
+      top.location = self.location
+    }
+  });
+</script>
 <div id="main-login">
 
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>

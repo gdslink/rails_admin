@@ -4,14 +4,14 @@
 
 <%= render(:partial => 'layouts/rails_admin/head') %>
 <body>
-  <div id="wrapper">
+  <div id="wrapper">    
     <%= render(:partial => 'layouts/rails_admin/header') %>
     <%if @current_scope and @current_scope.length > 0 && @current_scope[@scope_adapter.models.last.name][:entries].length == 0 %>
       <%= render :partial => 'rails_admin/main/no_content'%>
     <%else%>
       <div id="splitter">
         <%= render :partial => 'rails_admin/main/navigation'%>
-        <div id="content">      
+        <div id="content">          
           <%= yield %>
         </div>
       </div>

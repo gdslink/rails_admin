@@ -173,41 +173,6 @@ module RailsAdmin
 
       redirect_to main_app.copy_path(:format => :json)
 
-      #s = Application.new(@object.attributes)
-
-      # s = @object.dup :include => [:screen_flows, {:fields => :status_flow}, {:tables => :fields}]
-      # s.company_id = 14
-
-      # p s.save!
-
-      # p s.fields
-
-      # s.save!
-
-      #####
-
-
-
-
-      #######
-
-      # if 1 != 1
-      #   object_label = @model_config.with(:object => @object).object_label
-      #   AbstractHistory.create_update_history @abstract_model, @object, @cached_assocations_hash, associations_hash, @modified_assoc, @old_object, _current_user
-      #   respond_to do |format|
-      #     format.html do
-      #       redirect_to_on_success
-      #     end
-      #     format.js do
-      #       render :json => {
-      #         :id => @object.id,
-      #         :label => @model_config.with(:object => @object).object_label,
-      #       }
-      #     end
-      #   end
-      # else
-      #   handle_save_error :clone
-      # end
     end    
 
     def update

@@ -1,7 +1,7 @@
     <script>
-      jQuery(document).ready(function() {
+      jQuery(document).ready(function($) {
         
-        jQuery("#splitter").splitter({
+        var splitter = $("#splitter").splitter({
             splitVertical: true,
             outline: false,
             sizeLeft: 250,
@@ -15,13 +15,13 @@
             eventNamespace: ".rails-admin-splitter"
           });
         
-        jQuery("#accordion").accordion(
+        $("#accordion").accordion(
           {
             navigation: true, 
             fillSpace: true,
             animated: "bounceslide",
             navigationFilter: function(){
-              matchKeys = jQuery(this).attr("class")
+              matchKeys = $(this).attr("class")
               if(matchKeys.length == 0)
                 return false;
               matchKeys = matchKeys.split(' ');
@@ -34,9 +34,17 @@
             }
           });
 
+        splitter.bind("dock", function(){
+          $("#accordion").hide();
+        });
+
+        splitter.bind("undock", function(){
+          $("#accordion").show();
+        });        
+
         
-        jQuery(window).resize(function(){
-            jQuery("#accordion").accordion("resize");
+        $(window).resize(function(){
+            $("#accordion").accordion("resize");
         });
       });  
     </script>
