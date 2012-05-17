@@ -1,5 +1,5 @@
 class Company < ActiveRecord::Base
-  has_attached_file :logo_image, :styles => {thumb => "60x30#"}
+  has_attached_file :logo_image, :styles => {:thumb => "60x30#", :medium => "120x120#"}
   attr_accessor :delete_logo_image
   before_validation { self.logo_image.clear if self.delete_logo_image == '1' }
 
