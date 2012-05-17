@@ -36,7 +36,7 @@
                   <%if link[:image] then%>
                     <%=image_tag link[:image] %>
                   <%end%>
-                  <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model])%>
+                  <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model], :anchor => link[:label])%>
                 <%end%>
               </li>
             <%end%>
@@ -55,7 +55,7 @@
                       <%if link[:image] then%>
                         <%=image_tag link[:image]%>
                       <%end%>
-                      <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model])%>
+                      <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model], :anchor => link[:label])%>
                     <%end%>
                   </li>
                   </ul>

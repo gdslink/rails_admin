@@ -5,12 +5,12 @@ module RailsAdmin
 
     include RailsAdmin::I18nSupport
 
-    def get_url(action, model_name)
-      options = {:model_name => model_name}
+    def get_url(action, model_name, opts = {})
+      options = {:model_name => model_name}.merge(opts)
       options.merge!(current_scope_parameters)
       case action
       when :dashboard
-        dashboard_path
+        dashboard_path(options)
       when :list 
         list_path(options)
       when :new

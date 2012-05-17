@@ -46,6 +46,20 @@
         $(window).resize(function(){
             $("#accordion").accordion("resize");
         });
+
+        //highlight selected navigation item
+        $j(document).ready(function(){
+          hash = location.hash.substring(1) || "<%=t('admin.dashboard.name')%>";
+          $j("#accordion li a:contains(" + decodeURI(hash) +")").addClass("selected")
+          $j(".ra-block-content a").each(function(i, el){
+            el.href = el.href + "#" + hash
+          })
+
+          $j("form").each(function(i, el){
+            el.action = el.action + "#" + hash
+          })          
+        })
+
       });  
     </script>
     <div id="header">     
