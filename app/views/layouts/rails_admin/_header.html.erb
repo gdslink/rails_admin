@@ -51,10 +51,22 @@
         $j(document).ready(function(){
           hash = location.hash.substring(1) || "<%=t('admin.dashboard.name')%>";
           $j("#accordion li a:contains(" + decodeURI(hash) +")").addClass("selected")
-          $j(".ra-block-content a").each(function(i, el){
+
+          //toolbar buttons
+          $j(".ra-block-toolbar a").each(function(i, el){
             el.href = el.href + "#" + hash
           })
 
+          $j(".toolbar-icon").each(function(i, el){
+            el.href = el.href + hash
+          })
+
+          //grid list buttons
+          $j(".grid a").each(function(i, el){
+            el.href = el.href + "#" + hash
+          })
+
+          //form actions
           $j("form").each(function(i, el){
             el.action = el.action + "#" + hash
           })          
