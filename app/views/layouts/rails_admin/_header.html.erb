@@ -47,29 +47,15 @@
             $("#accordion").accordion("resize");
         });
 
-        //highlight selected navigation item
-        $j(document).ready(function(){
-          hash = location.hash.substring(1) || "<%=t('admin.dashboard.name')%>";
-          $j("#accordion li a:contains(" + decodeURI(hash) +")").addClass("selected")
 
-          //toolbar buttons
-          $j(".ra-block-toolbar a").each(function(i, el){
-            el.href = el.href + "#" + hash
+        //highlight selected item in accordion
+        $(document).ready(function(){
+          $j("#accordion li a").each(function(i, el){
+            if(location.href.indexOf(el.href) >= 0){
+              $j(el).addClass("selected");
+            }
           })
 
-          $j(".toolbar-icon").each(function(i, el){
-            el.href = el.href + hash
-          })
-
-          //grid list buttons
-          $j(".grid a").each(function(i, el){
-            el.href = el.href + "#" + hash
-          })
-
-          //form actions
-          $j("form").each(function(i, el){
-            el.action = el.action + "#" + hash
-          })          
         })
 
       });  
