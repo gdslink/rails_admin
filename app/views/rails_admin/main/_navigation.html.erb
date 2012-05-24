@@ -8,14 +8,14 @@
       if section[:links] then
         section[:links].delete_if do |link|
           !link[:url_for] or !link[:url_for].include?(:model) or 
-          (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].singularize.constantize))
+          (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].tableize))
         end
       end
       if section[:sections] then
         section[:sections].each do |sub_section|
           sub_section[:links].delete_if do |link|
             !link[:url_for] or !link[:url_for].include?(:model) or 
-            (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].singularize.constantize))
+            (link[:url_for][:model] != nil && !authorized?(link[:url_for][:action], nil, link[:url_for][:model].tableize))
           end          
         end
       end
@@ -32,11 +32,11 @@
           <%if section[:links] then%>      
             <%section[:links].each do |link| %>
               <li>
-                <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for].include?(:model)%>              
+                <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for][:model]%>
                   <%if link[:image] then%>
                     <%=image_tag link[:image] %>
                   <%end%>
-                  <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model])%>
+                  <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model].tableize)%>
                 <%end%>
               </li>
             <%end%>
