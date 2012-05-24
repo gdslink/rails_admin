@@ -32,11 +32,11 @@
           <%if section[:links] then%>      
             <%section[:links].each do |link| %>
               <li>
-                <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for][:model]%>
+                <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for].include? :model%>
                   <%if link[:image] then%>
                     <%=image_tag link[:image] %>
                   <%end%>
-                  <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model].tableize)%>
+                  <%=link_to link[:label], get_url(link[:url_for][:action], link[:url_for][:model] ? link[:url_for][:model].tableize : link[:url_for][:model])%>
                 <%end%>
               </li>
             <%end%>
