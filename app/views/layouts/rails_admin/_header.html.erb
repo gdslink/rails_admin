@@ -51,7 +51,7 @@
         //highlight selected item in accordion
         $(document).ready(function(){
           $j("#accordion li a").each(function(i, el){
-            if(location.href.indexOf(el.href.match(/\/\w+(?=\?)/)) >= 0){
+            if(location.href.indexOf($j(el).attr('href').match(/\/\w+(?=\?)/)) >= 0){
               $j(el).addClass("selected");
             }
           })
