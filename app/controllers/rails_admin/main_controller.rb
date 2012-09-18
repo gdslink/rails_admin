@@ -49,7 +49,7 @@ module RailsAdmin
       respond_to do |format|
         format.html{
           if @abstract_model.model.name == "Ckeditor::Asset" then
-            @iframe_url = "/ckeditor/pictures?CKEditorFuncNum=2&mode=standalone&company_id=#{params[:Company]}"
+            @iframe_url = "/ckeditor/pictures?CKEditorFuncNum=2&mode=standalone&assetable_id=#{params[:Company]}&assetable_type=Company"
             render "iframe"
           end
         }
