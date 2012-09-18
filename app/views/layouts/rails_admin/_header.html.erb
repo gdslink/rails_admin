@@ -22,7 +22,7 @@
             animated: "bounceslide",
             navigationFilter: function(){
               matchKeys = $(this).attr("class")
-              if(matchKeys.length == 0)
+              if(typeof matchKeys === 'undefined' || matchKeys.length == 0)
                 return false;
               matchKeys = matchKeys.split(' ');
               for(var i=0;i<matchKeys.length;i++){
