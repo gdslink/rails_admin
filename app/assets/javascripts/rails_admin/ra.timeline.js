@@ -177,8 +177,7 @@
             height = Math.floor(maxHeight * percent);
           }
 
-          el.toggleClass(className, 300)
-            .animate( { height: height }, 1000, 'easeOutBounce');
+          el.addClass(className).animate( { height: height }, 1000, 'easeOutBounce');
         }
       });      
     },

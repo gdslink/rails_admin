@@ -25,6 +25,7 @@
         var dialog = widget._getDialog();
         $.ajax({
           url: $(this).attr("href"),
+          dataType: 'html',
           beforeSend: function(xhr) {
             xhr.setRequestHeader("Accept", "text/javascript");
           },
