@@ -6,7 +6,6 @@
 //
 //= require ./jquery-1.5.1.min.js
 //= require ./jquery-ui-1.8.12.min.js
-//= require ./jquery.ui.timepicker.js
 //= require ./ra.filter-box.js
 //= require ./ra.filtering-multiselect.js
 //= require ./ra.filtering-select.js
