@@ -22,8 +22,8 @@
       $(".ra-button").not(".ui-button").button({});
     });
   
-    $("form").one("ajax:success", function(e, data, status, xhr) {
-      $("#content").html(data);
+    $("form").one("ajax:complete", function(e, data, status, xhr) {
+        $("#content").html(data.responseText);
     });
     
     $(".ra-button.add-button").pulse({
@@ -52,8 +52,8 @@
 
 <script>
   $j(document).ready(function($) {
-    $(this).one("ajax:success", function(e, data, status, xhr) {
-      $("#content").html(data);
+    $(this).one("ajax:complete", function(e, data, status, xhr) {
+        $("#content").html(data.responseText);
     });
     
     <%= 
