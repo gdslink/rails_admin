@@ -6,7 +6,7 @@ module RailsAdmin
     layout "rails_admin/dashboard"
 
     before_filter :get_model, :except => [:index, :update_scope]
-    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy, :clone, :copy]
+    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy]
     before_filter :check_scope_on_query, :except => [:index, :update_scope]    
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :export, :bulk_destroy]
@@ -155,25 +155,6 @@ module RailsAdmin
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
       end      
     end
-
-    def clone
-      @authorization_adapter.authorize(:clone, @abstract_model, @object) if @authorization_adapter
-      @page_name = t("admin.actions.clone").capitalize + " " + @model_config.label.downcase
-      @page_type = @abstract_model.pretty_name.downcase
-      
-      respond_to do |format|
-        format.html { render :layout => 'rails_admin/form' }
-        format.js   { render :layout => 'rails_admin/plain.html.erb' }
-      end      
-    end
-
-
-    def copy      
-      @authorization_adapter.authorize(:clone, @abstract_model, @object) if @authorization_adapter
-
-      redirect_to main_app.copy_path(:format => :json)
-
-    end    
 
     def update
       @authorization_adapter.authorize(:update, @abstract_model, @object) if @authorization_adapter
