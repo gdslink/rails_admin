@@ -6,13 +6,18 @@ module RailsAdmin
 
     before_filter :_authenticate!
     before_filter :_authorize!
-    before_filter :_scope!    
+    before_filter :_scope!
+    before_filter :set_timezone
     before_filter :set_plugin_name
 
     before_filter :_get_scope_models!
     before_filter :_get_scope_parameters!
 
     helper_method :_current_user, :_attr_accessible_role
+
+    def set_timezone
+      Time.zone = current_user.time_zone if current_user
+    end
 
     def get_model
       model_name = to_model_name(params[:model_name])
