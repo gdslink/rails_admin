@@ -1,1 +1,1 @@
-<div id="footer-build-information"><%=Rails.application.class.to_s.split("::").first%> v<%=APP_VERSION.to_s%></div>
+<div id="footer-build-information"><%=Rails.application.class.to_s.split("::").first%> v<%=APP_VERSION.to_s%> (Schema Version: <%= ActiveRecord::Migrator.current_version %>)</div>
