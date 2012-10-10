@@ -1,1 +1,1 @@
-<div id="footer-build-information"><%=Rails.application.class.to_s.split("::").first%> v<%=APP_VERSION.to_s%> (Schema Version: <%= ActiveRecord::Migrator.current_version %>)</div>
+<div id="footer-build-information"><%=Rails.application.class.to_s.split("::").first%> v<%=APP_VERSION.to_s%> (Schema Version: <%= ActiveRecord::Migrator.current_version %>) &bull; Time zone: <%= Time.zone %> &bull; Last Login: <%=current_user.last_sign_in_at.to_formatted_s(:long)%> &bull; Last IP: <%=current_user.last_sign_in_ip%> &bull; Current IP: <%=current_user.current_sign_in_ip%></div>
