@@ -1,7 +1,7 @@
 
         <% history.each do |t|%>
         <tr class="<%= cycle 'odd', 'even' %>">
-           <td style="text-align: left;padding-right: 15px"><%= t.created_at.localtime  %></td> 
+           <td style="text-align: left;padding-right: 15px"><%= t.created_at.to_formatted_s(:long)  %></td>
            <td style="text-align: left;padding-right: 15px"><%= t.try(:username)%></td>
            <td style="text-align: left;padding-right: 15px"><%= history_output(t) %></td>
            <td style="text-align: left;padding-right: 15px"><%= t.table %></td> 
