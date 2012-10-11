@@ -6,8 +6,8 @@ module RailsAdmin
     layout "rails_admin/dashboard"
 
     before_filter :get_model, :except => [:index, :update_scope]
-    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy]
-    before_filter :check_scope_on_query, :except => [:index, :update_scope]    
+    before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy, :system_export]
+    before_filter :check_scope_on_query, :except => [:index, :update_scope]
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :export, :bulk_destroy]
 
@@ -215,6 +215,134 @@ module RailsAdmin
       respond_to do |format|
         format.js {render :json => {}}
         format.any {redirect_to list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param))}
+      end
+    end
+
+    def system_export
+      mode = params["mode"] rescue nil
+      @application = ::Application.find(params['id'])
+      @company = ::Company.find(@application.company_id)
+      @model_name = params['model_name']
+
+      if mode.nil?
+        @object = @abstract_model.new #we do not have an object yet, so create one
+        @page_name = t("admin.actions.system_export").capitalize
+        @page_type = t("admin.actions.system_export").capitalize
+
+        respond_to do |format|
+          format.html { render :layout => 'rails_admin/form' }
+          format.js   { render :layout => 'rails_admin/plain.html.erb' }
+        end
+      elsif mode == 'build'
+        begin
+          target = Tempfile.new('cc')
+          target.close
+          CaseCenter::ImportExport.new.export(@company.key, @application.key, target.path)
+
+          File.open(target.path, "rb") do |f|
+            session[:temporary_file] = f.read
+          end
+          session[:temporary_file_time] = Time.now
+        rescue Exception => e
+          Rails.logger.error("Error while importing #{e.message}")
+          Rails.logger.debug("#{e.backtrace.join('\n')}")
+          @error =  e.message
+          session[:temporary_file]  = nil
+          session[:temporary_file_time] = nil
+        ensure
+          target.unlink unless target.nil?
+        end
+        render :template => 'rails_admin/main/system_export_download', :layout => nil
+      elsif mode == 'download'
+
+        f = Tempfile.new('cc')
+        begin
+          f.binmode
+          f.write(session[:temporary_file])
+          f.close();
+
+          send_file f.path,
+                    :filename => "#{@company.key}_#{@application.key}_#{Time.now.strftime('%Y%m%d')}.zip",
+                    :type => "application/zip"
+        ensure
+          session[:temporary_file]  = nil
+          session[:temporary_file_time] = nil
+          f.unlink() unless f.nil?
+        end
+      end
+    end
+
+    def system_import
+      #@authorization_adapter.authorize(:system_import, @abstract_model, @object) if @authorization_adapter
+      mode = params["mode"] rescue nil
+      @model_name = params[:model_name]
+      if mode.nil?
+        @object = @abstract_model.new #we do not have an object yet, so create one
+        @page_name = t("admin.actions.system_import").capitalize
+        @page_type = t("admin.actions.system_import").capitalize
+
+        respond_to do |format|
+          format.html { render :layout => 'rails_admin/form' }
+          format.js   { render :layout => 'rails_admin/plain.html.erb' }
+        end
+      elsif mode == "upload_iframe"
+        render :template => 'rails_admin/main/upload_file_form', :layout => nil
+      elsif mode == "upload_file"
+        begin
+          session[:temporary_file] = params["import_file"].read
+          session[:temporary_file_time] = Time.now
+          @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["import_file"].tempfile.path)
+        rescue Exception => e
+           Rails.logger.error("Error while importing #{e.message}")
+           Rails.logger.debug("#{e.backtrace.join('\n')}")
+           @error =  e.message
+           session[:temporary_file]  = nil
+           session[:temporary_file_time] = nil
+        end
+        render :template => 'rails_admin/main/upload_file_complete', :layout => nil
+      elsif mode == "install_import"
+        f = Tempfile.new('cc')
+        begin
+          @details = {
+            :application_name => params['application_name'],
+            :application_key => params['application_key']
+          }
+
+          if current_user.is_root?
+            @details[:company_key] = params['company_key']
+            @details[:company_name] = params['company_name']
+          else
+            if current_user.is_admin?
+              @company = ::Company.find(@current_user.company_id)
+
+              if(@company.key != params['company_key'])
+                  raise Exception.new("You do not have permission to update a company other than #{@company.name}, please try again as a root user")
+              end
+
+              @details[:company_key] = @company.key
+              @details[:company_name] = @company.name
+            else
+              raise Exception.new("The current user doesn't have permission to import systems")
+            end
+          end
+
+          f.binmode
+          f.write(session[:temporary_file])
+          f.close();
+          CaseCenter::ImportExport.new.import(f.path, @details)
+          @company = ::Company.where(:key => @details[:company_key]).first
+          @application = ::Application.where(:key => @details[:application_key]).where(:company_id => @company.id).first
+          @application.generate_mongoid_model(true)
+        rescue Exception => e
+          Rails.logger.error("Error while importing #{e.message}")
+          Rails.logger.debug("#{e.backtrace.join('\n')}")
+          @error =  e.message
+        ensure
+          session[:temporary_file]  = nil
+          session[:temporary_file_time] = nil
+          f.unlink() unless f.nil?
+        end
+        render :template => 'rails_admin/main/system_import_complete', :layout => nil
       end
     end
 

@@ -20,6 +20,8 @@ RailsAdmin::Engine.routes.draw do
     get "/:model_name/new", :to => :new, :as => "new"
     match "/:model_name/get_pages", :to => :get_pages, :as => "get_pages"
     post "/:model_name", :to => :create, :as => "create"
+    match "/:model_name/system_import", :to => :system_import, :as => "system_import"
+    match "/:model_name/system_export", :to => :system_export, :as => "system_export"
 
     get "/:model_name/:id", :to => :show, :as => "show"
     get "/:model_name/:id/edit", :to => :edit, :as => "edit"    

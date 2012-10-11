@@ -1,0 +1,84 @@
+<% head_style "rails_admin/form.css" %>
+<% head_javascript "rails_admin/application.js" %>
+<% head_javascript "rails_admin/ra.remote-form.js" %>
+<div class="ra-block">
+    <div class="ui-widget-header">
+        <%= @page_name %>
+    </div>
+    <div class="ra-block-content">
+        <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
+        <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
+            <div id='submit-buttons'></div>
+        </div>
+        <div id="system_import_upload_form">
+            <iframe src="<%=system_import_path(:model_name => @model_name, :mode => 'upload_iframe')%>" style="width:600px;height:100px;border:0;"/>
+        </div>
+
+        <script type="text/javascript">
+            function on_install_submit()
+            {
+                if($j("#system_import_upload_attrs input[name=company_key]").val() === "")
+                {
+                    alert("Please enter a company key");
+                    return false;
+                }
+
+                if($j("#system_import_upload_attrs input[name=application_key]").val() === "")
+                {
+                    alert("Please enter an application key");
+                    return false;
+                }
+
+                if($j("#system_import_upload_attrs input[name=company_name]").val() === "")
+                {
+                    alert("Please enter an company name");
+                    return false;
+                }
+
+                if($j("#system_import_upload_attrs input[name=application_name]").val() === "")
+                {
+                    alert("Please enter an application name");
+                    return false;
+                }
+
+                $j("#system_installing_message").show();
+                $j("#system_import_upload_attrs").hide();
+
+                return true;
+            }
+        </script>
+
+        <div id="system_installing_message" style="display:none;">The system is installing, this may take a while, please wait...</div>
+        <div id="system_import_upload_attrs" style="display:none;">
+          <form action="<%=system_import_path(@model_name)%>" enctype="multipart/form-data" method="POST">
+            <input type="hidden" name="mode" value="upload_file"/>
+            <input type="hidden" name="mode" value="install_import"/>
+            <table style="border-collapse:collapse;">
+                <tr style="height:40px;">
+                    <td style="width:120px">Company name</td>
+                    <td style="width:300px"><input type="text" name="company_name" style="width:290px"/></td>
+                </tr>
+                <tr style="height:40px;">
+                    <td style="width:120px">Company key</td>
+                    <td style="width:300px"><input type="text" name="company_key" style="width:290px"/></td>
+                </tr>
+                <tr style="height:40px;">
+                    <td style="width:120px">Application name</td>
+                    <td style="width:300px"><input type="text" name="application_name" style="width:290px"/></td>
+                </tr>
+                <tr style="height:40px;">
+                    <td style="width:120px">Application key</td>
+                    <td style="width:300px"><input type="text" name="application_key" style="width:290px"/></td>
+                </tr>
+                <tr style="height:40px;">
+                    <td/><td style="text-align:right;"><input type="submit" value="Install" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" id="system_import_install_submit" onclick="return on_install_submit();"/></td>
+                </tr>
+            </table>
+          </form>
+        </div>
+
+        <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
+          <%= render :partial => 'submit_buttons' %>
+        </div>
+    </div>
+</div>

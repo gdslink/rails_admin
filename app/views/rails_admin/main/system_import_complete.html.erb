@@ -1,0 +1,26 @@
+<html>
+<body>
+    <script type="text/javascript">
+        $j(document).ready(function(){
+            window.setTimeout(function() {
+                <%if @error %>
+                    alert("<%=@error-%>")
+                <% end %>
+                $j('div.createAssociatedRecordDialog').data("dialog").close();
+
+                <%if @error.nil? %>
+                    if($j('#Company-scope option[value=<%=@company.id.to_s-%>]').length == 0)
+                        $j('#Company-scope').append('<option value="<%=@company.id.to_s-%>"><%=@company.name-%></option>');
+
+                    if($j('#Application-scope option[value=<%=@application.id.to_s-%>]').length == 0)
+                        $j('#Application-scope').append('<option value="<%=@application.id.to_s-%>"><%=@application.name-%></option>');
+
+                    $j('#Company-scope').val('<%=@company.id.to_s-%>');
+                    $j('#Application-scope').val('<%=@application.id.to_s-%>');
+                    $j('#Company-scope').change();
+                <%end%>
+            }, 0);
+        });
+    </script>
+</body>
+</html>

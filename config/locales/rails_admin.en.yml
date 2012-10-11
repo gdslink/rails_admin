@@ -12,6 +12,8 @@ en:
       edit: "Edit"
       delete: "Delete"
       no_content: "No %{model}"    
+      system_import: "Import"
+      system_export: "Export"
     dashboard:
       pagename: "Site administration"
       name: "Dashboard"
@@ -100,6 +102,10 @@ en:
       deleted: "deleted"
       export: "export"
       exported: "exported"
+      system_import: "import"
+      system_export: "export"
+      system_imported: "imported"
+      system_exported: "exported"
     breadcrumbs:
       delete: "delete"
       history: "history"

@@ -68,14 +68,17 @@
             dialog.find(".ra-block-content").removeClass("ra-block-content");
 
             var buttons = {};
+            if($j("#system_import_upload_form").length == 0 && $j("#system_exporting_message").length == 0)
+            {
+                buttons[saveButtonText] = function() {
+                    // We need to manually update CKeditor mapped textarea before ajax submit
+                    if(typeof CKEDITOR != 'undefined') {
+                        for ( instance in CKEDITOR.instances )
+                            CKEDITOR.instances[instance].updateElement();
+                    }
 
-            buttons[saveButtonText] = function() {
-                // We need to manually update CKeditor mapped textarea before ajax submit
-                if(typeof CKEDITOR != 'undefined') {
-                    for ( instance in CKEDITOR.instances )
-                        CKEDITOR.instances[instance].updateElement();
+                    dialog.find("form").submit();
                 }
-                dialog.find("form").submit();
             };
 
             buttons[cancelButtonText] = function() {
