@@ -56,10 +56,10 @@ module RailsAdmin
         format.js { render :layout => 'rails_admin/plain.html.erb' }
         format.json do
           output = if params[:compact]
-            @objects.map{ |o| { :id => o.id, :label => o.send(@model_config.object_label_method) } }
-          else
-            @objects.to_json(@schema)
-          end
+                     @objects.map{ |o| { :id => o.id, :label => o.send(@model_config.object_label_method) } }
+                   else
+                     @objects.to_json(@schema)
+                   end
           if params[:send_data]
             send_data output, :filename => "#{params[:model_name]} #{DateTime.now.strftime("%Y-%m-%d %H:%M:%S")}.json"
           else
@@ -78,8 +78,8 @@ module RailsAdmin
           header, encoding, output = CSVConverter.new(@objects, @schema).to_csv(params[:csv_options])
           if params[:send_data]
             send_data output,
-              :type => "text/csv; charset=#{encoding}; #{"header=present" if header}",
-              :disposition => "attachment; filename=#{params[:model_name]} #{DateTime.now.strftime("%Y-%m-%d %H:%M:%S")}.csv"
+                      :type => "text/csv; charset=#{encoding}; #{"header=present" if header}",
+                      :disposition => "attachment; filename=#{params[:model_name]} #{DateTime.now.strftime("%Y-%m-%d %H:%M:%S")}.csv"
           else
             render :text => output
           end
@@ -128,8 +128,8 @@ module RailsAdmin
           end
           format.js do
             render :json => {
-              :id => @object.id,
-              :label => @model_config.with(:object => @object).object_label,
+                :id => @object.id,
+                :label => @model_config.with(:object => @object).object_label,
             }
           end
         end
@@ -149,11 +149,11 @@ module RailsAdmin
       @authorization_adapter.authorize(:edit, @abstract_model, @object) if @authorization_adapter
       @page_name = t("admin.actions.update").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
-      
+
       respond_to do |format|
         format.html { render :layout => 'rails_admin/form' }
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
-      end      
+      end
     end
 
     def update
@@ -180,8 +180,8 @@ module RailsAdmin
           end
           format.js do
             render :json => {
-              :id => @object.id,
-              :label => @model_config.with(:object => @object).object_label,
+                :id => @object.id,
+                :label => @model_config.with(:object => @object).object_label,
             }
           end
         end
@@ -195,11 +195,11 @@ module RailsAdmin
 
       @page_name = t("admin.actions.delete").capitalize + " " + @model_config.label.downcase
       @page_type = @abstract_model.pretty_name.downcase
-    
+
       respond_to do |format|
         format.html { render :layout => 'rails_admin/form' }
         format.js   { render :layout => 'rails_admin/plain.html.erb' }
-      end      
+      end
     end
 
     def destroy
@@ -254,20 +254,14 @@ module RailsAdmin
         end
         render :template => 'rails_admin/main/system_export_download', :layout => nil
       elsif mode == 'download'
-
-        f = Tempfile.new('cc')
         begin
-          f.binmode
-          f.write(session[:temporary_file])
-          f.close();
 
-          send_file f.path,
+          send_data session[:temporary_file],
                     :filename => "#{@company.key}_#{@application.key}_#{Time.now.strftime('%Y%m%d')}.zip",
                     :type => "application/zip"
         ensure
           session[:temporary_file]  = nil
           session[:temporary_file_time] = nil
-          f.unlink() unless f.nil?
         end
       end
     end
@@ -293,19 +287,19 @@ module RailsAdmin
           session[:temporary_file_time] = Time.now
           @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["import_file"].tempfile.path)
         rescue Exception => e
-           Rails.logger.error("Error while importing #{e.message}")
-           Rails.logger.debug("#{e.backtrace.join('\n')}")
-           @error =  e.message
-           session[:temporary_file]  = nil
-           session[:temporary_file_time] = nil
+          Rails.logger.error("Error while importing #{e.message}")
+          Rails.logger.debug("#{e.backtrace.join('\n')}")
+          @error =  e.message
+          session[:temporary_file]  = nil
+          session[:temporary_file_time] = nil
         end
         render :template => 'rails_admin/main/upload_file_complete', :layout => nil
       elsif mode == "install_import"
         f = Tempfile.new('cc')
         begin
           @details = {
-            :application_name => params['application_name'],
-            :application_key => params['application_key']
+              :application_name => params['application_name'],
+              :application_key => params['application_key']
           }
 
           if current_user.is_root?
@@ -316,7 +310,7 @@ module RailsAdmin
               @company = ::Company.find(@current_user.company_id)
 
               if(@company.key != params['company_key'])
-                  raise Exception.new("You do not have permission to update a company other than #{@company.name}, please try again as a root user")
+                raise Exception.new("You do not have permission to update a company other than #{@company.name}, please try again as a root user")
               end
 
               @details[:company_key] = @company.key
@@ -370,10 +364,10 @@ module RailsAdmin
       redirect_to list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") and return if params[:bulk_ids].blank?
 
       if params.include? :bulk_delete
-        bulk_delete 
+        bulk_delete
       elsif params.include? :bulk_export
         export
-      else 
+      else
         redirect_to(list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :notice => t("admin.flash.noaction"))
       end
     end
@@ -424,7 +418,7 @@ module RailsAdmin
         super
       end
     end
-    
+
     def update_scope
       super if @scope_adapter
     end
@@ -448,18 +442,18 @@ module RailsAdmin
       field = @model_config.list.fields.find{ |f| f.name.to_s == params[:sort] }
 
       column = if field.nil? || field.sortable == true # use params[:sort] on the base table
-        "#{@abstract_model.model.table_name}.#{params[:sort]}"
-      elsif field.sortable == false # use default sort, asked field is not sortable
-        "#{@abstract_model.model.table_name}.#{@model_config.list.sort_by.to_s}"
-      elsif field.sortable.is_a?(String) && field.sortable.include?('.') # just provide sortable, don't do anything smart
-        field.sortable
-      elsif field.sortable.is_a?(Hash) # just join sortable hash, don't do anything smart
-        "#{field.sortable.keys.first}.#{field.sortable.values.first}"
-      elsif field.association? # use column on target table
-        "#{field.associated_model_config.abstract_model.model.table_name}.#{field.sortable}"
-      else # use described column in the field conf.
-        "#{@abstract_model.model.table_name}.#{field.sortable}"
-      end
+                 "#{@abstract_model.model.table_name}.#{params[:sort]}"
+               elsif field.sortable == false # use default sort, asked field is not sortable
+                 "#{@abstract_model.model.table_name}.#{@model_config.list.sort_by.to_s}"
+               elsif field.sortable.is_a?(String) && field.sortable.include?('.') # just provide sortable, don't do anything smart
+                 field.sortable
+               elsif field.sortable.is_a?(Hash) # just join sortable hash, don't do anything smart
+                 "#{field.sortable.keys.first}.#{field.sortable.values.first}"
+               elsif field.association? # use column on target table
+                 "#{field.associated_model_config.abstract_model.model.table_name}.#{field.sortable}"
+               else # use described column in the field conf.
+                 "#{@abstract_model.model.table_name}.#{field.sortable}"
+               end
 
       reversed_sort = (field ? field.sort_reverse? : @model_config.list.sort_reverse?)
       {:sort => column, :sort_reverse => (params[:sort_reverse] == reversed_sort.to_s)}
@@ -538,8 +532,8 @@ module RailsAdmin
       end
 
       unless filters_statements.empty?
-       conditions[0] += " AND " unless conditions == [""]
-       conditions[0] += "#{filters_statements.join(" AND ")}" # filters should all be true
+        conditions[0] += " AND " unless conditions == [""]
+        conditions[0] += "#{filters_statements.join(" AND ")}" # filters should all be true
       end
 
       conditions += values.flatten
@@ -568,47 +562,47 @@ module RailsAdmin
 
       # now we go type specific
       case type
-      when :boolean
-        return if value.blank?
-        ["(#{column} = ?)", ['true', 't', '1'].include?(value)] if ['true', 'false', 't', 'f', '1', '0'].include?(value)
-      when :integer, :belongs_to_association
-        return if value.blank?
-        ["(#{column} = ?)", value.to_i] if value.to_i.to_s == value
-      when :string, :text
-        return if value.blank?
-        value = case operator
-        when 'default', 'like'
-          "%#{value}%"
-        when 'starts_with'
-          "#{value}%"
-        when 'ends_with'
-          "%#{value}"
-        when 'is', '='
-          "#{value}"
-        end
-        ["(#{column} #{@like_operator} ?)", value]
-      when :datetime, :timestamp, :date
-        return unless operator != 'default'
-        values = case operator
-        when 'today'
-          [Date.today.beginning_of_day, Date.today.end_of_day]
-        when 'yesterday'
-          [Date.yesterday.beginning_of_day, Date.yesterday.end_of_day]
-        when 'this_week'
-          [Date.today.beginning_of_week.beginning_of_day, Date.today.end_of_week.end_of_day]
-        when 'last_week'
-          [1.week.ago.to_date.beginning_of_week.beginning_of_day, 1.week.ago.to_date.end_of_week.end_of_day]
-        when 'less_than'
+        when :boolean
           return if value.blank?
-          [value.to_i.days.ago, DateTime.now]
-        when 'more_than'
+          ["(#{column} = ?)", ['true', 't', '1'].include?(value)] if ['true', 'false', 't', 'f', '1', '0'].include?(value)
+        when :integer, :belongs_to_association
           return if value.blank?
-          [2000.years.ago, value.to_i.days.ago]
-        end
-        ["(#{column} BETWEEN ? AND ?)", *values]
-      when :enum
-        return if value.blank?
-        ["(#{column} = ?)", value]
+          ["(#{column} = ?)", value.to_i] if value.to_i.to_s == value
+        when :string, :text
+          return if value.blank?
+          value = case operator
+                    when 'default', 'like'
+                      "%#{value}%"
+                    when 'starts_with'
+                      "#{value}%"
+                    when 'ends_with'
+                      "%#{value}"
+                    when 'is', '='
+                      "#{value}"
+                  end
+          ["(#{column} #{@like_operator} ?)", value]
+        when :datetime, :timestamp, :date
+          return unless operator != 'default'
+          values = case operator
+                     when 'today'
+                       [Date.today.beginning_of_day, Date.today.end_of_day]
+                     when 'yesterday'
+                       [Date.yesterday.beginning_of_day, Date.yesterday.end_of_day]
+                     when 'this_week'
+                       [Date.today.beginning_of_week.beginning_of_day, Date.today.end_of_week.end_of_day]
+                     when 'last_week'
+                       [1.week.ago.to_date.beginning_of_week.beginning_of_day, 1.week.ago.to_date.end_of_week.end_of_day]
+                     when 'less_than'
+                       return if value.blank?
+                       [value.to_i.days.ago, DateTime.now]
+                     when 'more_than'
+                       return if value.blank?
+                       [2000.years.ago, value.to_i.days.ago]
+                   end
+          ["(#{column} BETWEEN ? AND ?)", *values]
+        when :enum
+          return if value.blank?
+          ["(#{column} = ?)", value]
       end
     end
 
