@@ -240,11 +240,11 @@ module RailsAdmin
           CaseCenter::ImportExport.new.export(@company.key, @application.key, target.path)
 
           File.open(target.path, "rb") do |f|
-            session[:temporary_file] = f.read
+            session[:temporary_file] = Base64.encode64(f.read)
           end
           session[:temporary_file_time] = Time.now
         rescue Exception => e
-          Rails.logger.error("Error while importing #{e.message}")
+          Rails.logger.error("Error while exporting #{e.message}")
           Rails.logger.debug("#{e.backtrace.join('\n')}")
           @error =  e.message
           session[:temporary_file]  = nil
@@ -256,7 +256,7 @@ module RailsAdmin
       elsif mode == 'download'
         begin
 
-          send_data session[:temporary_file],
+          send_data Base64.decode64(session[:temporary_file]),
                     :filename => "#{@company.key}_#{@application.key}_#{Time.now.strftime('%Y%m%d')}.zip",
                     :type => "application/zip"
         ensure
@@ -271,7 +271,7 @@ module RailsAdmin
       mode = params["mode"] rescue nil
       @model_name = params[:model_name]
       if mode.nil?
-        @object = @abstract_model.new #we do not have an object yet, so create one
+        @object = @abstract_model. new #we do not have an object yet, so create one
         @page_name = t("admin.actions.system_import").capitalize
         @page_type = t("admin.actions.system_import").capitalize
 
@@ -322,7 +322,7 @@ module RailsAdmin
 
           f.binmode
           f.write(session[:temporary_file])
-          f.close();
+          f.close()
           CaseCenter::ImportExport.new.import(f.path, @details)
           @company = ::Company.where(:key => @details[:company_key]).first
           @application = ::Application.where(:key => @details[:application_key]).where(:company_id => @company.id).first
