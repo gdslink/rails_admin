@@ -283,7 +283,7 @@ module RailsAdmin
         render :template => 'rails_admin/main/upload_file_form', :layout => nil
       elsif mode == "upload_file"
         begin
-          session[:temporary_file] = params["import_file"].read
+          session[:temporary_file] = Base64.encode64(params["import_file"].read)
           session[:temporary_file_time] = Time.now
           @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["import_file"].tempfile.path)
         rescue Exception => e
@@ -321,7 +321,7 @@ module RailsAdmin
           end
 
           f.binmode
-          f.write(session[:temporary_file])
+          f.write(Base64.decode64(session[:temporary_file]))
           f.close()
           CaseCenter::ImportExport.new.import(f.path, @details)
           @company = ::Company.where(:key => @details[:company_key]).first
