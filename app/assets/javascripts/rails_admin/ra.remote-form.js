@@ -81,9 +81,12 @@
                 }
             };
 
-            buttons[cancelButtonText] = function() {
-                dialog.dialog("close");
-            };
+            if($j("#system_exporting_message").length == 0)
+            {
+                buttons[cancelButtonText] = function() {
+                    dialog.dialog("close");
+                };
+            }
 
             dialog.dialog("option", "buttons", buttons);
 

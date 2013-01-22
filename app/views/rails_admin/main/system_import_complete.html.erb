@@ -1,26 +1,63 @@
 <html>
 <body>
     <script type="text/javascript">
-        $j(document).ready(function(){
-            window.setTimeout(function() {
-                <%if @error %>
-                    alert("<%=@error-%>")
-                <% end %>
-                $j('div.createAssociatedRecordDialog').data("dialog").close();
 
-                <%if @error.nil? %>
-                    if($j('#Company-scope option[value=<%=@company.id.to_s-%>]').length == 0)
-                        $j('#Company-scope').append('<option value="<%=@company.id.to_s-%>"><%=@company.name-%></option>');
+        var checker = function()
+        {
+            $j.ajax("<%=system_import_path(:model_name => @model_name, :mode => 'check_complete')%>", {
+                complete: function(xhr, status) {
+                    var dlg = $j('div.createAssociatedRecordDialog').data("dialog");
+                    if(status != 'success')
+                    {
+                        alert("a failure occurred while checking import status, import may have continued in background");
+                        dlg.close();
+                    }
+                    else
+                    {
+                        json = JSON.parse(xhr.responseText);
+                        if(json.error === true)
+                        {
+                            alert(json['error_description']);
+                            dlg.close();
+                        }
+                        else
+                        {
+                            if(json['status'] == "In Progress")
+                            {
+                                setTimeout(checker, 2000);
+                            }
+                            else if(json['status'] == 'Import Complete')
+                            {
+                                alert("Import completed successfully");
+                                dlg.close();
 
-                    if($j('#Application-scope option[value=<%=@application.id.to_s-%>]').length == 0)
-                        $j('#Application-scope').append('<option value="<%=@application.id.to_s-%>"><%=@application.name-%></option>');
+                                if($j('#Company-scope option[value=' + json.company_id + ']').length == 0)
+                                    $j('#Company-scope').append('<option value="' + json.company_id + '">'+ json.company_name +'</option>');
 
-                    $j('#Company-scope').val('<%=@company.id.to_s-%>');
-                    $j('#Application-scope').val('<%=@application.id.to_s-%>');
-                    $j('#Company-scope').change();
-                <%end%>
-            }, 0);
-        });
+                                if($j('#Application-scope option[value='+json.application_id+']').length == 0)
+                                    $j('#Application-scope').append('<option value="'+json.application_id+'">'+json.application_name+'</option>');
+
+                                $j('#Company-scope').val(json.company_id);
+                                $j('#Application-scope').val(json.application_id);
+                                $j('#Company-scope').change();                               
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        var dlg = window.parent.$j('div.createAssociatedRecordDialog').data("dialog");
+        window.parent.setTimeout(function(){            
+            dlg._setOption('title', 'Importing...')
+            var buttons = $j('div.ui-dialog-buttonpane');
+            buttons.hide();
+        }, 100);        
+
+        window.parent.setTimeout(checker, 1000);
+
     </script>
+
+    <div id="system_installing_message">The system is installing, this may take a while, please wait...</div>
 </body>
 </html>

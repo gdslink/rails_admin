@@ -2,14 +2,15 @@
 <head>
 <script type="text/javascript">
     window.setTimeout(function() {
+        var dlg = window.parent.$j('div.createAssociatedRecordDialog').data("dialog");
+        window.parent.setTimeout(function(){
+                dlg.close();
+            }, 1000);        
         <%if @error%>
             alert("<%=@error-%>")
         <%else%>
             window.parent.$j('#system_export_build_frame').html('<iframe src=' + '<%="#{system_export_path(@model_name)}?id=#{@application.id}&mode=download&model_name=#{@model_name}"-%>' + '/>');
         <%end%>
-        window.setTimeout(function() {
-            window.parent.$j('div.createAssociatedRecordDialog').data("dialog").close();
-        }, 1000);
     });
 </script>
 </head>

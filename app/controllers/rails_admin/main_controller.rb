@@ -240,29 +240,27 @@ module RailsAdmin
           CaseCenter::ImportExport.new.export(@company.key, @application.key, target.path)
 
           File.open(target.path, "rb") do |f|
-            session[:temporary_file] = Base64.encode64(f.read)
+            Rails.cache.write(:export_temporary_file, Base64.encode64(f.read), :expires_in => 1.minutes)
           end
-          session[:temporary_file_time] = Time.now
         rescue Exception => e
           Rails.logger.error("Error while exporting #{e.message}")
           Rails.logger.debug("#{e.backtrace.join('\n')}")
           @error =  e.message
-          session[:temporary_file]  = nil
-          session[:temporary_file_time] = nil
         ensure
           target.unlink unless target.nil?
         end
         render :template => 'rails_admin/main/system_export_download', :layout => nil
       elsif mode == 'download'
-        begin
+          temp_file = Rails.cache.fetch(:export_temporary_file)
 
-          send_data Base64.decode64(session[:temporary_file]),
+          if temp_file.nil?
+            Rails.logger.error("Export file download request - file was missing from cache")
+            render :text =>"Export file has expired", :status => 500
+          else
+            send_data Base64.decode64(temp_file),
                     :filename => "#{@company.key}_#{@application.key}_#{Time.now.strftime('%Y%m%d')}.zip",
                     :type => "application/zip"
-        ensure
-          session[:temporary_file]  = nil
-          session[:temporary_file_time] = nil
-        end
+          end
       end
     end
 
@@ -283,23 +281,23 @@ module RailsAdmin
         render :template => 'rails_admin/main/upload_file_form', :layout => nil
       elsif mode == "upload_file"
         begin
-          session[:temporary_file] = Base64.encode64(params["import_file"].read)
-          session[:temporary_file_time] = Time.now
+          if Rails.cache.exist?(:import_in_progress)
+            raise Exception.new("Another import is currently in progress, please try again later.")
+          end
+
           @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["import_file"].tempfile.path)
+          Rails.cache.write(:import_temporary_file, Base64.encode64(params["import_file"].read), :expires_in => 5.minutes)
         rescue Exception => e
           Rails.logger.error("Error while importing #{e.message}")
           Rails.logger.debug("#{e.backtrace.join('\n')}")
           @error =  e.message
-          session[:temporary_file]  = nil
-          session[:temporary_file_time] = nil
         end
         render :template => 'rails_admin/main/upload_file_complete', :layout => nil
       elsif mode == "install_import"
-        f = Tempfile.new('cc')
         begin
           @details = {
-              :application_name => params['application_name'],
-              :application_key => params['application_key']
+            :application_name => params['application_name'],
+            :application_key => params['application_key']
           }
 
           if current_user.is_root?
@@ -320,24 +318,72 @@ module RailsAdmin
             end
           end
 
-          f.binmode
-          f.write(Base64.decode64(session[:temporary_file]))
-          f.close()
-          CaseCenter::ImportExport.new.import(f.path, @details)
-          @company = ::Company.where(:key => @details[:company_key]).first
-          @application = ::Application.where(:key => @details[:application_key]).where(:company_id => @company.id).first
-          @application.generate_mongoid_model(true)
+          if Rails.cache.exist?(:import_in_progress)
+            raise Exception.new("An import is already in progress, please try again later")
+          end
+
+          in_file = Rails.cache.fetch(:import_temporary_file)
+          if in_file.nil?
+            raise Exception.new("The import file has expired, or a duplicate request has been please try you import again")
+          end
+
+          Thread.new(@details, Base64.decode64(in_file)) do |details, file_data|
+            f = Tempfile.new('cc')
+            begin
+              Rails.cache.write(:import_in_progress, true)
+              Rails.cache.delete(:import_last_error)
+
+              f.binmode
+              f.write(file_data)
+              f.close()
+
+              CaseCenter::ImportExport.new.import(f.path, details)
+              company = ::Company.where(:key => details[:company_key]).first
+              application = ::Application.where(:key => details[:application_key]).where(:company_id => company.id).first
+              application.generate_mongoid_model(true)
+              Rails.cache.write(:import_company_data, {
+                  :company_name => company.name,
+                  :company_id => company.id,
+                  :application_name => application.name,
+                  :application_id => application.id,
+                })
+            rescue Exception => e
+              Rails.logger.error("Error while importing #{e.message}")
+              Rails.cache.write(:import_last_error, "Error while importing #{e.message}")
+            ensure
+              Rails.cache.delete(:import_in_progress)
+              f.unlink() unless f.nil?
+            end
+          end
+
         rescue Exception => e
           Rails.logger.error("Error while importing #{e.message}")
           Rails.logger.debug("#{e.backtrace.join('\n')}")
           @error =  e.message
-        ensure
-          session[:temporary_file]  = nil
-          session[:temporary_file_time] = nil
-          f.unlink() unless f.nil?
         end
         render :template => 'rails_admin/main/system_import_complete', :layout => nil
+      elsif mode == "check_complete"
+        json = {}
+        if Rails.cache.exist?(:import_in_progress)
+          json[:status] = "In Progress" 
+          json[:error] = false
+        else
+          if Rails.cache.exist?(:import_last_error)
+            json[:status] = "Import Error"
+            json[:error] = true
+            json[:error_description] = Rails.cache.fetch(:import_last_error)
+          else
+            json[:status] = "Import Complete"
+            json[:error] = false
+            icd = Rails.cache.fetch(:import_company_data)
+            icd.each_pair do |k, v|
+              json[k] = v
+            end
+          end
+        end
+        render :json => json.to_json
       end
+
     end
 
     def export
