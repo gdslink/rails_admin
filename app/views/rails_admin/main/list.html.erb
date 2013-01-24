@@ -1,6 +1,6 @@
 <%
    query = params[:query]
-   params = request.params.except(:action, :controller, :model_name, :utf8, :bulk_export, :query)
+   params = request.params.except(:action, :controller, :model_name, :utf8, :bulk_export)
    params.merge!(current_scope_parameters)
 
    sort = params[:sort]
