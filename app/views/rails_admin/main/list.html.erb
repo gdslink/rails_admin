@@ -99,7 +99,7 @@
             </li>
         <% end %>
       </ul>
-      <%= form_tag(list_post_path(params.merge(:model_name => @abstract_model.to_param).reject{|key, value| key.to_sym == :page || key.to_sym == :filters}), :method => :post, :remote => true) do %>
+      <%= form_tag(list_post_path(params.merge(:model_name => @abstract_model.to_param).reject{|key, value| key.to_sym == :page || key.to_sym == :filters || key.to_sym == :query}), :method => :post, :remote => true) do %>
           <fieldset>
             <input type="text" name="query" value="<%= query %>" size="32" placeholder='<%="#{t("admin.list.placeholder")}"%>' />
             <input type="submit" class="ra-button" value="<%= t("admin.list.search").upcase %>" />
