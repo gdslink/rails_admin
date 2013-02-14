@@ -9,6 +9,12 @@ class User < ActiveRecord::Base
   # Setup accessible (or protected) attributes for your model
   attr_accessible :email, :password, :password_confirmation, :remember_me, :company_id, :authentication_token
 
+  before_save :reset_roles
+
+  def reset_roles
+    self.roles = self.roles.reject{|r| r.application.company != self.company}
+  end
+
   def is_root?
     self.is_root
   end
