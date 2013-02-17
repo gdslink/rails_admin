@@ -187,7 +187,8 @@ module RailsAdmin
                 selection = params[model.name] || session[:scope][model_name]
                 update_session_for_model(model, selection)
               else #reset
-                selection = params[model.name].to_s.length > 0 ? params[model.name] : (current_user.company || entries.first).id rescue nil
+                model_value = current_user.respond_to?(model.name.downcase.to_sym) ? current_user.send(model.name.downcase) : nil
+                selection = params[model.name].to_s.length > 0 ? params[model.name] : (model_value || entries.first).id rescue nil
                 update_session_for_model(model, selection)
               end
 
