@@ -1,25 +1,51 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<%= stylesheet_link_tag 'application'%>
 
-<%= form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => { :method => :put }) do |f| %>
-  <%= devise_error_messages! %>
+<%if resource.errors.size > 0 %>
+    <div id='flash-alert'>
+      <%= devise_error_messages! %>
+    </div>
+<%end%>
 
-  <p><%= f.label :email %><br />
-  <%= f.email_field :email %></p>
 
-  <p><%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
-  <%= f.password_field :password %></p>
+<div id="main-login">
 
-  <p><%= f.label :password_confirmation %><br />
-  <%= f.password_field :password_confirmation %></p>
+  <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => { :method => :put }) do |f| %>
 
-  <p><%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
-  <%= f.password_field :current_password %></p>
+      <table class="vedit">
+        <tbody>
+        <tr>
+          <td>
+            <div class="head_title">Your e-mail</div>
+            <div class="small">&nbsp;</div><br class="clear">
+            <%=f.email_field :email, :class => "lg_log", :size => '30'%>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="head_title">Current Password</div>
+            <div class="small">&nbsp;</div><br class="clear">
+            <%=f.password_field :current_password, :class => "lg_log", :size => '30'%>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="head_title">New Password</div>
+            <div class="small">&nbsp;</div><br class="clear">
+            <%=f.password_field :password, :class => "lg_log", :size => '30'%>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="head_title">Password confirmation</div>
+            <div class="small">&nbsp;</div><br class="clear">
+            <%=f.password_field :password_confirmation, :class => "lg_log", :size => '30'%>
+          </td>
+        </tr>
+        </tbody></table>
 
-  <p><%= f.submit "Update" %></p>
-<% end %>
+      <div class='button'>
+        <%= f.submit "Submit", :class => "ra-button ui-state-highlight" %>
+      </div>
+  <% end %>
 
-<h3>Cancel my account</h3>
-
-<p>Unhappy? <%= link_to "Cancel my account", registration_path(resource_name), :confirm => "Are you sure?", :method => :delete %>.</p>
-
-<%= link_to "Back", :back %>
+</div>
