@@ -238,6 +238,7 @@ module RailsAdmin
           target = Tempfile.new('cc')
           target.close
           CaseCenter::ImportExport.new.export(@company.key, @application.key, target.path)
+          Rails.cache.delete(:export_temporary_file)
 
           File.open(target.path, "rb") do |f|
             Rails.cache.write(:export_temporary_file, Base64.encode64(f.read), :expires_in => 1.minutes)
