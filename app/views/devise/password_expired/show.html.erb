@@ -1,14 +1,5 @@
 <%= stylesheet_link_tag 'application'%>
 
-<% error_msg = devise_error_messages! %>
-
-<% unless error_msg.empty? %>
-    <div id='flash-alert'>
-      <%= error_msg %>
-    </div>
-<% end %>
-
-
 <div id="main-login">
 
   <%= form_for(resource, :as => resource_name, :url => [resource_name, :password_expired], :html => { :method => :put }) do |f| %>
