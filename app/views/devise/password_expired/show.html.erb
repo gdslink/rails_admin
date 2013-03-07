@@ -1,10 +1,12 @@
 <%= stylesheet_link_tag 'application'%>
 
-<%if resource.errors.size > 0 %>
+<% error_msg = devise_error_messages! %>
+
+<% unless error_msg.empty? %>
     <div id='flash-alert'>
-      <%= devise_error_messages! %>
+      <%= error_msg %>
     </div>
-<%end%>
+<% end %>
 
 
 <div id="main-login">
