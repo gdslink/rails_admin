@@ -9,12 +9,9 @@
     <%if @current_scope and @current_scope.length > 0 && @current_scope[@scope_adapter.models.last.name][:entries].length == 0 %>
       <%= render :partial => 'rails_admin/main/no_content'%>
     <%else%>
-    <div id="splitter">
-      <%= render :partial => 'rails_admin/main/navigation'%>
       <div id="content">
       <%= yield %>
       </div>
-    </div>
     <%end%>
   </div>
   <div id="footer">

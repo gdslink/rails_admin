@@ -25,7 +25,7 @@ class User < ActiveRecord::Base
       field :password
       field :password_confirmation
       field :company
-      group :roles do        
+      group :roles do
         field :is_root do
           label "Root user"
           help "Allow user to administer any company and any application."
@@ -39,7 +39,7 @@ class User < ActiveRecord::Base
           visible do
             bindings[:view].current_user.is_root? or bindings[:view].current_user.is_admin? if bindings and bindings.include?(:view)
           end
-        end        
+        end
         field :roles
       end
     end

@@ -19,25 +19,25 @@
             {
                 if($j("#system_import_upload_attrs input[name=company_key]").val() === "")
                 {
-                    alert("Please enter a company key");
+                    alert('<%=t('admin.import_export.company_key_missing')%>');
                     return false;
                 }
 
                 if($j("#system_import_upload_attrs input[name=application_key]").val() === "")
                 {
-                    alert("Please enter an application key");
+                    alert('<%=t('admin.import_export.application_key_missing')%>');
                     return false;
                 }
 
                 if($j("#system_import_upload_attrs input[name=company_name]").val() === "")
                 {
-                    alert("Please enter an company name");
+                    alert('<%=t('admin.import_export.company_name_missing')%>');
                     return false;
                 }
 
                 if($j("#system_import_upload_attrs input[name=application_name]").val() === "")
                 {
-                    alert("Please enter an application name");
+                    alert('<%=t('admin.import_export.application_name_missing')%>');
                     return false;
                 }
 
@@ -54,23 +54,23 @@
             <input type="hidden" name="mode" value="install_import"/>
             <table style="border-collapse:collapse;">
                 <tr style="height:40px;">
-                    <td style="width:120px">Company name</td>
+                    <td style="width:120px"><%=t('admin.import_export.company_name')%></td>
                     <td style="width:300px"><input type="text" name="company_name" style="width:290px"/></td>
                 </tr>
                 <tr style="height:40px;">
-                    <td style="width:120px">Company key</td>
+                    <td style="width:120px"><%=t('admin.import_export.company_key')%></td>
                     <td style="width:300px"><input type="text" name="company_key" style="width:290px"/></td>
                 </tr>
                 <tr style="height:40px;">
-                    <td style="width:120px">Application name</td>
+                    <td style="width:120px"><%=t('admin.import_export.application_name')%></td>
                     <td style="width:300px"><input type="text" name="application_name" style="width:290px"/></td>
                 </tr>
                 <tr style="height:40px;">
-                    <td style="width:120px">Application key</td>
+                    <td style="width:120px"><%=t('admin.import_export.application_key')%></td>
                     <td style="width:300px"><input type="text" name="application_key" style="width:290px"/></td>
                 </tr>
                 <tr style="height:40px;">
-                    <td/><td style="text-align:right;"><input type="submit" value="Install" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" id="system_import_install_submit" onclick="return on_install_submit();"/></td>
+                    <td/><td style="text-align:right;"><input type="submit" value="<%=t('admin.import_export.install')%>" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" id="system_import_install_submit" onclick="return on_install_submit();"/></td>
                 </tr>
             </table>
           </form>

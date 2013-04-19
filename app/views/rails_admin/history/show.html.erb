@@ -30,14 +30,14 @@
                 <% sort_direction = selected ? (sort_reverse ? "ascending" : "descending") : nil %>
                 <th class="dateTime <%= sort == property_name.to_s ? "selected" : nil %>" >
                   <% sort_location = history_model_path(params.merge(:model_name => @abstract_model.to_param, :sort => :created_at).reject{|key, value| key.to_sym == :sort_reverse}.merge(selected && sort_reverse != "true" ? {:sort_reverse => "true"} : {})) %>
-                  <%= link_to("DATE/TIME", sort_location, :class => sort_direction) %>
+                  <%= link_to(t('history.date_time'), sort_location, :class => sort_direction) %>
                 </th>
                 <% property_name = "username"%>
                 <% selected = sort == property_name.to_s %>
                 <% sort_direction = selected ? (sort_reverse ? "ascending" : "descending") : nil %>
                 <th class="smallString <%= sort == property_name.to_s ? "selected" : nil %>" >
                   <% sort_location = history_model_path(params.merge(:model_name => @abstract_model.to_param, :sort => property_name).reject{|key, value| key.to_sym == :sort_reverse}.merge(selected && sort_reverse != "true" ? {:sort_reverse => "true"} : {})) %>
-                  <%= link_to("USER", sort_location, :class => sort_direction) %>
+                  <%= link_to(t('history.user'), sort_location, :class => sort_direction) %>
                 </th>
                 <% if @general %>
                 <% property_name = "item"%>
@@ -45,7 +45,7 @@
                 <% sort_direction = selected ? (sort_reverse ? "ascending" : "descending") : nil %>
                 <th class="int <%= sort == property_name.to_s ? "selected" : nil %>" >
                   <% sort_location = history_model_path(params.merge(:model_name => @abstract_model.to_param, :sort => property_name).reject{|key, value| key.to_sym == :sort_reverse}.merge(selected && sort_reverse != "true" ? {:sort_reverse => "true"} : {})) %>
-                  <%= link_to("ITEM", sort_location, :class => sort_direction) %>
+                  <%= link_to(t('history.item'), sort_location, :class => sort_direction) %>
                 </th>
                 <% end %>
                 <% property_name = "message"%>
@@ -53,7 +53,7 @@
                 <% sort_direction = selected ? (sort_reverse ? "ascending" : "descending") : nil %>
                 <th class="smallString <%= sort == property_name.to_s ? "selected" : nil %>" >
                   <% sort_location = history_model_path(params.merge(:model_name => @abstract_model.to_param, :sort => property_name).reject{|key, value| key.to_sym == :sort_reverse}.merge(selected && sort_reverse != "true" ? {:sort_reverse => "true"} : {})) %>
-                  <%= link_to("ACTION", sort_location, :class => sort_direction) %>
+                  <%= link_to(t('history.action'), sort_location, :class => sort_direction) %>
                 </th>
               </tr>
             </thead>
@@ -78,7 +78,7 @@
               <tr class="<%= index % 2 == 0 ? "odd" : "even" %>">
                 <td class="dateTime">
                   <% unless object.created_at.nil? %>
-                  <%= l(object.created_at, :format => :long, :default => l(object.created_at, :format => :long, :locale => :en)) %>
+                  <%= l(object.created_at, :format => :long, :default => l(object.created_at, :format => :long)) %>
                   <% end %>
                 </td>
                 <td class="smallString">

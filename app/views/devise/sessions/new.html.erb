@@ -1,31 +1,3 @@
-<!--[if IE]>
-  <script type="text/javascript" 
-   src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
-
-  <style>
-   .chromeFrameOverlayContent {
-      top: 60%;
-   } 
-   .chromeFrameOverlayContent iframe {
-     border: 1px solid blue;
-     height: 400px;
-   }
-  </style>
-
-  <script>
-      $(document).ready(function(){
-          if( $.browser.msie && $.browser.version < 10 ){
-              if(navigator.userAgent.indexOf("x64") >= 0){                
-              }else if( navigator.userAgent.indexOf('chromeframe') < 0 ){
-                      CFInstall.check({
-                          url: 'http://www.google.com/chromeframe/eula.html?user=true',
-                          mode: "overlay"
-                      });
-              }
-          }
-      });
-  </script>
-<![endif]-->
 <script type="text/javascript">
   $(document).ready(function(){
     if( top !== self){
@@ -40,14 +12,14 @@
   <table class="vedit">
   <tbody><tr>
       <td>
-      <div class="head_title">E-mail</div>
+      <div class="head_title"><%=t('devise.sessions.email')%></div>
       <div class="small">&nbsp;</div><br class="clear">
       <%=f.email_field :email, :class => "lg_log", :size => '30'%>
       </td>
   </tr>
   <tr>
       <td>
-      <div class="head_title">Password</div>
+      <div class="head_title"><%=t('devise.sessions.password')%></div>
       <div class="small">&nbsp;</div><br class="clear">
       <%=f.password_field :password, :class => "lg_log", :size => '30'%>
       </td>
@@ -55,10 +27,10 @@
   </tbody></table>
 
   <% if devise_mapping.rememberable? -%>
-    <p><%= f.check_box :remember_me %> <%= f.label :remember_me %></p>
+    <p><%= f.check_box :remember_me %> <%= f.label :remember_me, t('devise.sessions.remember_me') %></p>
   <% end -%>
   <div class='button'>
-    <%= f.submit "Sign in", :class => "ra-button ui-state-highlight" %>
+    <%= f.submit t('devise.sessions.sign_in'), :class => "ra-button ui-state-highlight" %>
     <p><%= render :partial => "devise/shared/links" %></p>
   </div>
 <% end %>

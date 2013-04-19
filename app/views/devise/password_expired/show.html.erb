@@ -16,21 +16,21 @@
             <tbody>
             <tr>
               <td>
-                <div class="head_title">Current Password</div>
+                <div class="head_title"><%=t('devise.passwords.current_password')%></div>
                 <div class="small">&nbsp;</div><br class="clear">
                 <%=f.password_field :current_password, :class => "lg_log", :size => '30'%>
               </td>
             </tr>
             <tr>
               <td>
-                <div class="head_title">New Password</div>
+                <div class="head_title"><%=t('devise.passwords.new_password')%></div>
                 <div class="small">&nbsp;</div><br class="clear">
                 <%=f.password_field :password, :class => "lg_log", :size => '30'%>
               </td>
             </tr>
             <tr>
               <td>
-                <div class="head_title">Password confirmation</div>
+                <div class="head_title"><%=t('devise.passwords.password_confirmation')%></div>
                 <div class="small">&nbsp;</div><br class="clear">
                 <%=f.password_field :password_confirmation, :class => "lg_log", :size => '30'%>
               </td>
@@ -38,7 +38,7 @@
             </tbody></table>
 
           <div class='button'>
-            <%= f.submit "Change my password", :class => "ra-button ui-state-highlight" %>
+            <%= f.submit t('devise.passwords.change_my_password'), :class => "ra-button ui-state-highlight" %>
           </div>
       <% end %>
 
@@ -46,6 +46,6 @@
 <% else %>
     <%
        flash.clear
-       flash[:alert] = "Your password has expired. Please logon and change it!"
+       flash[:alert] = t('devise.passwords.expired_message')
     %>
 <% end %>

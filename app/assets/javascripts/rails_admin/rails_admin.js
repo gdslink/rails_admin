@@ -4,8 +4,11 @@
 // It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
 // the compiled file.
 //
-//= require ./jquery-1.6.4.min.js
-//= require ./jquery-ui-1.8.12.min.js
+//= require i18n
+//= require i18n/translations
+//= require ./jquery-1.9.1.min.js
+//= require ./jquery-ui-1.9.2.min.js
+//= require ./jquery-migrate-1.1.1
 //= require ./ra.filter-box.js
 //= require ./ra.filtering-multiselect.js
 //= require ./ra.filtering-select.js
@@ -17,4 +20,5 @@
 //= require ./jquery.splitter.js
 //= require ./jquery.pulse.js
 //= require ./jquery.pageless.js
+//= require ./jquery.menu-aim.js
 //= require ./application.js

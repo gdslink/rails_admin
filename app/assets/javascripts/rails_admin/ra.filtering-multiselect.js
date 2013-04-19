@@ -41,6 +41,8 @@
     _build: function() {
       var i;
 
+      this.element.parent().addClass("ra-multiselect-field");
+
       this.wrapper = $('<div class="input ra-multiselect">');
 
       this.wrapper.insertAfter(this.element);
@@ -70,10 +72,8 @@
 
       this.collection.addClass("ra-multiselect-collection");
 
-      this.addAll = $('<a class="ra-multiselect-item-add-all"><span class="ui-icon ui-icon-circle-triangle-e"></span>' + this.options.regional.chooseAll + '</a>');
 
-      this.columns.left.append(this.collection)
-                          .append(this.addAll);
+      this.columns.left.append(this.collection);
 
       this.add = $('<a class="ui-icon ui-icon-circle-triangle-e ra-multiselect-item-add">' + this.options.regional.add + '</a>');
 
@@ -88,10 +88,7 @@
 
       this.selection = $('<select class="ra-multiselect-selection" multiple="multiple"></select>');
 
-      this.removeAll = $('<a class="ra-multiselect-item-remove-all"><span class="ui-icon ui-icon-circle-triangle-w"></span>' + this.options.regional.clearAll + '</a>');
-
-      this.columns.right.append(this.selection)
-                           .append(this.removeAll);
+      this.columns.right.append(this.selection);
 
       this.element.css({display: "none"});
     },
@@ -99,20 +96,11 @@
     _bindEvents: function() {
       var widget = this;
 
-      /* Add all to selection */
-      this.addAll.click(function(e){
-        widget._select($('option', widget.collection));
-      });
-
       /* Add to selection */
       this.add.click(function(e){
         widget._select($(':selected', widget.collection));
       });
 
-      /* Remove all from selection */
-      this.removeAll.click(function(e){
-        widget._deSelect($('option:not(:disabled)', widget.selection).filter(function(){ return $(this).css('visibility') != 'hidden'}));
-      });
 
       /* Remove from selection */
       this.remove.click(function(e){

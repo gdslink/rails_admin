@@ -75,7 +75,7 @@
             v = document.getElementById('system_import_upload_file').value;
             if(v == undefined || v === '')
             {
-                alert("Please browse for a file before uploading");
+                alert("<%=t('admin.import_export.missing_file')%>");
                 return false;
             }
 
@@ -85,15 +85,15 @@
         }
     </script>
 <body>
-    <div id="uploading" class="ui-widget-content" style="display:none;">Uploading and validating input file, please wait...</div>
+    <div id="uploading" class="ui-widget-content" style="display:none;"><%=t('admin.import_export.uploading_wait')%></div>
     <form action="<%=system_import_path(@model_name)%>" enctype="multipart/form-data" method="POST" id="upload_form">
         <input type="hidden" name="mode" value="upload_file"/>
         <input type="hidden" name="authenticity_token" value="<%=form_authenticity_token%>"/>
         <table style="border-collapse:collapse;" class="ui-widget-content">
           <tr>
-            <td style="width:120px">Import File</td>
+            <td style="width:120px"><%=t('admin.import_export.import_file')%></td>
             <td style="width:300px"><input type="file" size="32" name="import_file" style="width:290px" id="system_import_upload_file"/></td>
-            <td style="width:100px"><input type="submit" value="Upload" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" id="system_import_upload_submit" onclick="return on_upload_submit();"/></td>
+            <td style="width:100px"><input type="submit" value="<%=t('admin.import_export.upload')%>" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" id="system_import_upload_submit" onclick="return on_upload_submit();"/></td>
           </tr>
         </table>
     </form>

@@ -9,7 +9,7 @@
                     var dlg = $j('div.createAssociatedRecordDialog').data("dialog");
                     if(status != 'success')
                     {
-                        alert("a failure occurred while checking import status, import may have continued in background");
+                        alert('<%=t('admin.import_export.failed_checking_for_status')%>');
                         dlg.close();
                     }
                     else
@@ -28,7 +28,7 @@
                             }
                             else if(json['status'] == 'Import Complete')
                             {
-                                alert("Import completed successfully");
+                                alert('<%=t('admin.import_export.import_successful')%>');
                                 dlg.close();
 
                                 if($j('#Company-scope option[value=' + json.company_id + ']').length == 0)

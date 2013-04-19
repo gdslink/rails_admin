@@ -48,6 +48,8 @@
                 cancelButtonText = dialog.find("input[name=_continue]").val();
             dialog.dialog("option", "title", $(".ui-widget-header", dialog).remove().text());
             dialog.find(".remove-for-form").remove();
+            dialog.find("fieldset").css({"float": "none", "width":"100%"});
+            dialog.find("fieldset legend").css({"width":"100%"});
 
             form.attr("data-remote", true);
             form.attr("data-type", 'json');

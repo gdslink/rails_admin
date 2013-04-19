@@ -4,9 +4,9 @@ models = @scope_adapter.models
 
 <div id='scopeSelector'>
   <ul>
-  <%models.each_with_index do |model, index|%>  
+  <%models.each_with_index do |model, index|%>
     <%model_name = model.name%>
-    <li><%=label_tag RailsAdmin.config(RailsAdmin::AbstractModel.new(model.name)).label + ":"%>
+    <li><%=label_tag model.model_name.human + ":"%>
       <%=select_tag model_name, 
                     options_for_select(@current_scope[model_name][:entries].collect{|o| [o.name, o.id]}.sort, @current_scope[model_name][:selected]),
                     :id => "#{model_name}-scope"

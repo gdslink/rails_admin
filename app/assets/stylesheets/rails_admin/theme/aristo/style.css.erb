@@ -1,549 +1,663 @@
 * {
-margin:0;
-padding:0;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-background:#fff url("<%=asset_path 'rails_admin/background.png'%>") repeat-x;
-font-family:Verdana, Geneva, sans-serif;
-font-size:12px;
+    background: #fff url("<%=asset_path 'rails_admin/background.png'%>") repeat-x;
+    font-family: proxima-nova, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
 }
 
-#loadingDiv{
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  height: 30px;
-  width: 30px;
-  display:none;
+#loadingDiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    height: 30px;
+    width: 30px;
+    display: none;
 }
 
 a img {
-border:0;
+    border: 0;
 }
 
 .clear {
-clear:both;
-display:block;
-overflow:hidden;
-visibility:hidden;
-width:0;
-height:0;
+    clear: both;
+    display: block;
+    overflow: hidden;
+    visibility: hidden;
+    width: 0;
+    height: 0;
 }
 
 .clearfix:after {
-clear:both;
-content:' ';
-display:block;
-font-size:0;
-line-height:0;
-visibility:hidden;
-width:0;
-height:0;
+    clear: both;
+    content: ' ';
+    display: block;
+    font-size: 0;
+    line-height: 0;
+    visibility: hidden;
+    width: 0;
+    height: 0;
 }
 
 * html .clearfix {
-height:1%;
+    height: 1%;
 }
 
 .image_replacement {
-background-repeat:no-repeat;
-text-indent:-9999px;
-display:block;
-overflow:hidden;
+    background-repeat: no-repeat;
+    text-indent: -9999px;
+    display: block;
+    overflow: hidden;
 }
 
 #wrapper {
-width:99%;
-text-align:left;
-margin:0 auto;
+    width: 99%;
+    text-align: left;
+    margin: 0 auto;
 }
 
 #header {
-font-size:10px;
-height:50px;
+    font-size: 10px;
+    height: 50px;
+    background-color: #f2f2f2;
 }
 
 #header a {
-color:#666;
+    color: #666;
+    font-weight: bold;
 }
 
 ul.breadcrumb {
-height:50px;
-list-style-type:none;
-position:absolute;
+    height: 50px;
+    list-style-type: none;
+    position: absolute;
 }
 
 ul.breadcrumb li {
-margin-top:12px;
-font-size:200%;
-text-transform:lowercase;
-float:left;
-margin-right:3px;
-color:#ccc;
+    margin-top: 12px;
+    font-size: 200%;
+    text-transform: lowercase;
+    float: left;
+    margin-right: 3px;
+    color: #ccc;
 }
 
 ul.breadcrumb li a {
-text-decoration:none;
-color:#999 !important;
+    text-decoration: none;
+    color: #999 !important;
 }
 
 ul.breadcrumb li:last-child span {
-color:#666 !important;
+    color: #666 !important;
 }
 
 ul.breadcrumb li a:hover {
-text-decoration:underline;
-color:#666;
+    text-decoration: underline;
+    color: #666;
 }
 
 .user_info {
-margin-top:9px;
-float:right;
+    margin-top: 9px;
+    float: right;
 }
 
 .user_info img {
-float:left;
+    float: left;
 }
 
 .user_info ul {
-margin-left:5px;
-float:left;
+    margin-left: 5px;
+    float: left;
 }
 
 .user_info li {
-font-size:90%;
-list-style-type:none;
+    font-size: 90%;
+    list-style-type: none;
 }
 
 .user_info li strong {
-font-size:120%;
+    font-size: 120%;
 }
 
 .user_info li a {
-text-decoration:none;
-color:#333;
+    text-decoration: none;
+    color: #333;
 }
 
 #headerLeft {
-float:left;
-width:20%;
+    float: left;
+    width: 20%;
 }
 
 h1#logo {
-float:left;
-padding-top:2px;
-font-weight:400;
-font-size:22px;
-width:64px;
+    float: left;
+    padding-top: 2px;
+    font-weight: 400;
+    font-size: 22px;
+    width: 64px;
 }
 
 h1#logo span.image_replacement {
-background-image:url("<%=asset_path('rails_admin/logo.png')%>");
-width:64px;
-height:46px;
-float:left;
-margin-top: 4px;
+    background-image: url("<%=asset_path('rails_admin/logo.png')%>");
+    width: 64px;
+    height: 46px;
+    float: left;
+    margin-top: 4px;
 }
 
 #headerRight {
-float:right;
-width:80%;
+    float: right;
+    width: 80%;
 }
 
 #header2 {
-font-size:10px;
-height:70px;
+    font-size: 10px;
+    height: 70px;
 }
 
 #content {
-background:#FFF;
-overflow: auto;
-padding-bottom: 1px;
+    background: #FFF;
+    overflow: auto;
+    padding-bottom: 1px;
+    width: 100%;
 }
 
 .ra-block .ui-widget-header {
-padding:8px;
+    padding: 8px;
 }
 
 .ra-block-content {
-border-left:1px solid #e6e6e6;
-border-right:1px solid #e6e6e6;
-border-bottom:1px solid #e6e6e6;
-padding:10px;
-height: 100%;
+    border-left: 1px solid #e6e6e6;
+    border-right: 1px solid #e6e6e6;
+    border-bottom: 1px solid #e6e6e6;
+    padding: 10px;
+    height: 100%;
 }
 
 .ra-block .ra-block-toolbar {
-border-top:1px solid #e6e6e6;
-border-bottom:1px solid #e6e6e6;
-border-left:none;
-border-right:none;
-margin-bottom:10px;
-padding:5px;
+    border-top: 1px solid #e6e6e6;
+    border-bottom: 1px solid #e6e6e6;
+    border-left: none;
+    border-right: none;
+    margin-bottom: 10px;
+    padding: 5px;
+    clear: both;
+    height: 28px;
 }
 
 .ra-block-toolbar ul {
-list-style-type:none;
-float:right;
+    list-style-type: none;
+    float: right;
 }
 
 .ra-block-toolbar ul li {
-float:left;
-margin-left:3px;
+    float: left;
+    margin-left: 3px;
 }
 
 .ra-message {
-margin-bottom:10px;
-padding:10px;
+    margin-bottom: 10px;
+    padding: 10px;
 }
 
-/* 
-  Buttons fine-tweacking for FF/Webkit 
-  All values are dependent, and should not be side-effected from anywhere else, hence the ugly '!important' flags
-*/
-input.ui-button, .ui-button-text-only .ui-button-text {
-  font-family: Helvetica,Arial,sans-serif !important;
-  font-size:14px !important;
+    /*
+      Buttons fine-tweacking for FF/Webkit
+      All values are dependent, and should not be side-effected from anywhere else, hence the ugly '!important' flags
+    */
+input.ui-button, .ui-button-text-only .ui-button-text  {
+    font-family: Helvetica, Arial, sans-serif !important;
+    font-size: 14px !important;
 }
+
 input.ui-button {
-  height: 28px !important;
-  padding-top: 5px !important; 
-  padding-bottom: 7px !important;
+    height: 28px !important;
+    padding-top: 5px !important;
+    padding-bottom: 7px !important;
 }
+
 .ui-button-text-only .ui-button-text {
-  height: 20px !important;
-  padding-top: 4px !important;
-  padding-bottom: 2px !important;
+    height: 20px !important;
+    padding-top: 4px !important;
+    padding-bottom: 2px !important;
 }
 
 input {
-font-family:Verdana, Geneva, sans-serif;
-font-size:12px;
-padding:5px;
-border-left:1px solid #e2e3ea;
-border-top:1px solid #abadb3;
-border-bottom:1px solid #e3e9ef;
-border-right:1px solid #dbdfe6;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+    padding: 5px;
+    border-left: 1px solid #e2e3ea;
+    border-top: 1px solid #abadb3;
+    border-bottom: 1px solid #e3e9ef;
+    border-right: 1px solid #dbdfe6;
 }
 
 ul#nav {
-float:left;
-list-style-type:none;
-margin-top:38px;
-margin-left:20px;
+    float: left;
+    list-style-type: none;
+    margin-top: 38px;
+    margin-left: 20px;
 }
 
 #nav li {
-display:block;
-float:left;
-font-size:12px;
-padding-bottom:8px;
-padding-top:8px;
-margin-right:2px;
+    display: block;
+    float: left;
+    font-size: 12px;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    margin-right: 2px;
 }
 
 #nav li a {
-border:1px solid #ededed;
-color:#000;
-text-decoration:none;
-background:#fff url("<%=asset_path('rails_admin/menu_hover.png')%>") bottom repeat-x;
-padding:8px 12px;
+    border: 1px solid #ededed;
+    color: #000;
+    text-decoration: none;
+    background: #fff url("<%=asset_path('rails_admin/menu_hover.png')%>") bottom repeat-x;
+    padding: 8px 12px;
 }
 
 #nav li a:hover {
-background:#fff;
+    background: #fff;
 }
 
 #nav li.active a {
-border-bottom-color:#fff;
-background:#fff;
+    border-bottom-color: #fff;
+    background: #fff;
 }
 
 #nav li a.addnew {
-position:relative;
-right:9px;
-top:1px;
-color:#000;
-text-decoration:none;
-padding:0;
+    position: relative;
+    right: 9px;
+    top: 1px;
+    color: #000;
+    text-decoration: none;
+    padding: 0;
 }
 
 #nav li.more {
-margin-top:-9px;
+    margin-top: -9px;
 }
 
 ul#nav li.more ul {
-display:none;
-width:120px;
-position:absolute;
-margin:-1px 0 0;
+    display: none;
+    width: 120px;
+    position: absolute;
+    margin: -1px 0 0;
 }
 
 ul#nav li.more ul li {
-float:none;
-margin:0;
-padding:0;
+    float: none;
+    margin: 0;
+    padding: 0;
 }
 
 #nav li.more a {
-background:url("<%=asset_path('rails_admin/navigation_more.png')%>") no-repeat;
-display:block;
-text-indent:-9999px;
+    background: url("<%=asset_path('rails_admin/navigation_more.png')%>") no-repeat;
+    display: block;
+    text-indent: -9999px;
 }
 
 ul#nav li.more a {
-border:1px solid #ededed;
-width:25px;
-height:31px;
-margin:0;
-padding:0;
+    border: 1px solid #ededed;
+    width: 25px;
+    height: 31px;
+    margin: 0;
+    padding: 0;
 }
 
 ul#nav li.more ul li a {
-background:#dedede;
-text-indent:0;
-height:15px;
-font-size:10px;
-width:110px;
-padding:7px 5px 4px;
+    background: #dedede;
+    text-indent: 0;
+    height: 15px;
+    font-size: 10px;
+    width: 110px;
+    padding: 7px 5px 4px;
 }
 
 .submit {
-margin-top:15px;
-display:block;
-list-style-type:none;
+    margin-top: 15px;
+    display: block;
+    list-style-type: none;
 }
 
 .submit li {
-float:left;
-margin-right:4px;
+    float: left;
+    margin-right: 4px;
 }
 
 ul.items {
-margin:10px 10px 10px 14px;
+    margin: 10px 10px 10px 14px;
 }
 
 ul.items li {
-margin-bottom:3px;
-margin-left:5px;
+    margin-bottom: 3px;
+    margin-left: 5px;
 }
 
 ul.items li a {
-color:#000;
+    color: #000;
 }
 
 ul.items li a:hover {
-text-decoration:none;
+    text-decoration: none;
 }
 
 .splitter {
-border: 0px;
-min-width:200px;
-min-height:300px;
-height:90%;
-margin-top:10px;
-margin-bottom:30px;
+    border: 0px;
+    min-width: 200px;
+    min-height: 300px;
+    height: 90%;
+    margin-top: 10px;
+    margin-bottom: 30px;
 }
 
 .splitter-bar.hover {
-opacity: 0.5;
-width:5px;
-background-color: #b8b8b8;
-margin-bottom:10px;  
+    opacity: 0.5;
+    width: 5px;
+    background-color: #b8b8b8;
+    margin-bottom: 10px;
 }
 
 .splitter-bar.highlight {
-width:5px;
-background-color: #b8b8b8;
-margin-bottom:10px;  
+    width: 5px;
+    background-color: #b8b8b8;
+    margin-bottom: 10px;
 }
 
 .splitter-bar-vertical {
-  width: 5px;
+    width: 5px;
 }
 
 .splitter-bar-vertical-docked.hover {
-opacity: 1;
-width:5px;
-background-color: #b8b8b8;
-margin-bottom:10px;  
+    opacity: 1;
+    width: 5px;
+    background-color: #b8b8b8;
+    margin-bottom: 10px;
 }
 
 .splitter-bar-vertical-docked {
-width:5px;
-background-color: #b8b8b8;
-margin-bottom:10px;  
+    width: 5px;
+    background-color: #b8b8b8;
+    margin-bottom: 10px;
 }
 
 .splitter-iframe-hide {
-  visibility: hidden;
+    visibility: hidden;
 }
 
-#accordion {
-font-family:Verdana, Geneva, sans-serif;
-width:200px;
-bottom:1px;
-height:90%;
-min-width: 200px;
+.model_name {
+    font-family: 'Lucida Grande', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 60px;
+    margin-top: 2px;
+    text-align: center;
+    width: 150px;
+    opacity: 0.7;
 }
 
-#accordion .selected{
-  color: red;
+.dropdown {
+    width: 100%;
 }
 
-#accordion h3 img {
-float:right;
-width:16px;
-margin-top:5px;
-margin-right:5px;
+.dropdown li:hover {
+    text-decoration: underline;
+    font-weight: bold !important;
 }
 
-#accordion li.selected{
-  margin: 5px 3px 5px 0;
-  padding: 0 15px;
-  -webkit-border-radius: 15px;
-  -moz-border-radius: 15px;
-  border-radius: 15px;
-  background: #FCEEC1;
-  color: white;
+.wrapper-dropdown {
+    z-index: 99;
+    background-image: url("<%=asset_path('rails_admin/logo.png')%>");
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+    position: absolute;
+    width: 230px;
+    margin: 0 auto;
+    padding: 10px 15px;
+    background-color: #f2f2f2;
+    border-left: 5px solid #4183C4;
+    cursor: pointer;
+    outline: none;
+    left: 0;
+    height: 29px;
 }
 
-#accordion li {
-list-style-type:none;
-padding-bottom:5px;
+.wrapper-dropdown:after {
+    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    margin-top: -3px;
+    border-width: 6px 6px 0 6px;
+    border-style: solid;
+    border-color: grey transparent;
 }
 
-#accordion ul a {
-font-family:"Lucida Grande",Verdana,"Bitstream Vera Sans",Arial,sans-serif;
-font-weight:400;
-text-decoration:none;
-font-size:13px;
-color:#21759B;
-font-weight: bold;
+.wrapper-dropdown .dropdown {
+    /* Size & position */
+    position: absolute;
+    top: 100%;
+    left: -5px;
+    right: 0px;
+
+    /* Styles */
+    background: #f3f3f3;
+    list-style: none;
+
+    /* Hiding */
+    opacity: 0;
+    pointer-events: none;
 }
 
-#accordion ul a:hover {
-color:#d54e21;
+.wrapper-dropdown .dropdown.submenu {
+    display: none;
+    position: fixed;
+    width: 175px;
+    list-style: none;
 }
 
-#accordion ul img {
-float:left;
-margin-right:5px;
+.wrapper-dropdown .dropdown.submenu li a {
+    background-color: #f3f3f3;
 }
 
-#accordion ul ul {
-  margin-left: 15px;
-  font-size: 11px;
-  text-decoration: none;
-  color:#21759B;
+.wrapper-dropdown .dropdown li a {
+    display: block;
+    text-decoration: none;
+    font-size: 12px;
+    color: #333;
+    border-left: 5px solid;
+    border-right: 1px solid white;
+    padding: 10px;
+    font-weight: 400;
+    border-right: 1px solid lightgray;
 }
 
-#accordion ul ul img{
-  width: 13px;
+.wrapper-dropdown .dropdown li:nth-child(1) a {
+    border-left-color: #00ACED;
+    border-top: 1px solid lightgray;
 }
 
-#accordion ul ul a{
-	font-size: 11px;
-	font-weight: normal;
+.wrapper-dropdown .dropdown li:nth-child(2) a {
+    border-left-color: #4183C4;
 }
 
-#accordion ul ul li {
-	padding-top: 2px;
+.wrapper-dropdown .dropdown li:nth-child(3) a {
+    border-left-color: #3B5998;
+}
+
+.wrapper-dropdown .dropdown li:nth-child(4) a {
+    border-left-color: #4183C4;
+}
+
+.wrapper-dropdown .dropdown li:nth-child(5) a {
+    border-left-color: #3B5998;
+}
+
+.wrapper-dropdown .dropdown li:nth-child(6) a {
+    border-left-color: #4183C4;
+}
+
+.wrapper-dropdown .dropdown li:nth-last-child(1) a {
+    border-left-color: #3B5998;
+    border-bottom: 1px solid lightgray;
+}
+
+.wrapper-dropdown .dropdown li i {
+    margin-right: 5px;
+    color: inherit;
+    vertical-align: middle;
+}
+
+    /* Hover state */
+
+.wrapper-dropdown .dropdown li:hover a {
+    color: grey;
+}
+
+    /* Active state */
+
+.wrapper-dropdown.active:after {
+    border-width: 0 6px 6px 6px;
+}
+
+.wrapper-dropdown.active .dropdown {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+    /* No CSS3 support */
+
+.no-opacity       .wrapper-dropdown .dropdown,
+.no-pointerevents .wrapper-dropdown .dropdown {
+    display: none;
+    opacity: 1; /* If opacity support but no pointer-events support */
+    pointer-events: auto; /* If pointer-events support but no pointer-events support */
+}
+
+.no-opacity       .wrapper-dropdown.active .dropdown,
+.no-pointerevents .wrapper-dropdown.active .dropdown {
+    display: block;
 }
 
 .ra-block-toolbar ul.submit.clearfix {
-	margin-top: 0px;
-	float: left;
+    margin-top: 0px;
+    float: left;
 }
 
-/* scope adapter specific css */
+    /* scope adapter specific css */
 
 #noContent {
-  margin-left: -5px;
-  height: 100%;
-  width: 100%;
-  position: fixed;
-  background: #f5f5f5;
-  overflow: auto;
-  text-align: center;
+    margin-left: -5px;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    background: #f5f5f5;
+    overflow: auto;
+    text-align: center;
 }
 
 #noContent #label {
-  background: #f5f5f5;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  margin-top: -50px;
-  margin-left: -100px;
+    background: #f5f5f5;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -100px;
 }
 
 #noContent #label .icon {
-  background: #f5f5f5;
-  display: inline-block;
-  vertical-align: middle;
-  padding: 0;
-  margin: 0;
-  margin-right: 2px;
+    background: #f5f5f5;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+    margin-right: 2px;
 }
 
 #noContent #label .text {
-  background: #f5f5f5;
-  display: inline-block;
-  vertical-align: middle;
-  padding: 0;
-  margin: 0;
-  font: 24px "Lucida Grande", Lucida, Verdana, sans-serif;
+    background: #f5f5f5;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+    font: 24px "Lucida Grande", Lucida, Verdana, sans-serif;
 }
 
 .help {
-  font-size: 11px;
-  display: block;
-  color: #999;
-  margin-bottom: 0;
-  font-style: italic;
-  text-align: left;
-  margin-left: 2px;
+    font-size: 11px;
+    display: block;
+    color: #999;
+    margin-bottom: 0;
+    font-style: italic;
+    text-align: left;
+    margin-left: 2px;
 }
 
-.model-error ul{
-  list-style: disc; 
-  list-style-position: inside;
-  padding-left: 20px;
-  padding-top: 10px;  
+.model-error ul {
+    list-style: disc;
+    list-style-position: inside;
+    padding-left: 20px;
+    padding-top: 10px;
 }
 
-* { margin:0; padding:0; } 
+* {
+    margin: 0;
+    padding: 0;
+}
 
+    /* footer */
 
-/* footer */
+html, body, #wrap {
+    height: 100%;
+}
 
-html, body, #wrap { height: 100%; }
-
-body > #wrapper {height: auto; min-height: 100%;}
+body > #wrapper {
+    height: auto;
+    min-height: 100%;
+}
 
 #footer {
-        position: relative;
-        margin-top: -55px; /* negative value of footer height */
-        clear:both;
-        height: 20px;
-        text-align: center;
-        background: url(<%=asset_path 'rails_admin/bg-footer.png'%>) repeat 0 0;
-        color: #4F4F4F;
-        font-size: 10px;
-        padding-top:5px;
-} 
+    position: fixed;
+    clear: both;
+    height: 20px;
+    text-align: center;
+    background: url(<%=asset_path 'rails_admin/bg-footer.png'%>) repeat 0 0;
+    color: #4F4F4F;
+    font-size: 10px;
+    padding-top: 5px;
+    width: 100%;
+    font-size: 11px;
+}
 
-/* CLEAR FIX*/
-.clearfix:after {content: ".";
-        display: block;
-        height: 0;
-        clear: both;
-        visibility: hidden;}
-.clearfix {display: inline-block;}
-/* Hides from IE-mac \*/
-* html .clearfix { height: 1%;}
-.clearfix {display: block;}
+    /* CLEAR FIX*/
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+    /* Hides from IE-mac \*/
+* html .clearfix {
+    height: 1%;
+}
+
+.clearfix {
+    display: block;
+}
+
+.dateTime{
+    width: 200px;
+}

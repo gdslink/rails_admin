@@ -35,8 +35,32 @@ div.field{
   overflow:hidden;
   margin-bottom:12px;
   margin-top:12px;
+  padding-right: 20px;
 }
 
 div.fieldset {
   margin-bottom: 20px;
+}
+
+fieldset .field{
+    float: left;
+    width: 500px;
+}
+
+fieldset:nth-child(2){
+  float: left;
+  width:50%;
+}
+
+fieldset:nth-child(2) legend{
+    width:80%;
+}
+
+fieldset:nth-child(3){
+  width:50%;
+  clear: right;
+}
+
+fieldset:nth-child(3) legend{
+    width:90%;
 }

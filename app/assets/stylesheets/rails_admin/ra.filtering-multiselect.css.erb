@@ -28,26 +28,33 @@
 
 .ra-multiselect-header .ui-icon {
   position: relative;
-  top: 10px;
+  top: 5px;
   left: 3px;
+  margin: 5px auto;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(-90deg);
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
 }
 
 .ra-multiselect-column {
-  width: auto;
-  float: left;
+  width: 350px;
+  clear: both;
 }
 
 .ra-multiselect-left {
 }
 
 .ra-multiselect-center {
-  width: 30px;
-  padding-top: 15px;
   text-align: center;
 }
 
 .ra-multiselect-center .ui-icon {
   margin: 5px auto;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(-90deg);
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
 }
 
 .ra-multiselect a {
@@ -121,4 +128,13 @@
   border-top: 1px solid #abadb3;
   border-bottom: 1px solid #e3e9ef;
   border-right: 1px solid #dbdfe6;
+}
+
+.ra-multiselect-field{
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.ra-multiselect-field:nth-child(2n+1){
+    clear: left;
 }

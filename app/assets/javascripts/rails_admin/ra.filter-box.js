@@ -73,7 +73,7 @@
     }
   }
 
-  $("#filter_select").live('change', function() {
+  $(document).on('change', "#filter_select", function() {
     var option = $(this).find('option:selected')
     $(this).val(''); // reset select
     //this.selectedIndex = 0;
@@ -88,12 +88,12 @@
     );
   });
 
-  $('#filters_box .delete').live('click', function() {
+  $(document).on('change', '#filters_box .delete', function() {
     $(this).parents('.filter').hide();
     $(this).append('<input type="hidden" name="' + $(this).data('disabler-name') + '" value="true" />')
   });
 
-  $('#filters_box .switch-additionnal-fieldsets').live('change', function() {
+  $(document).on('change', '#filters_box .switch-additionnal-fieldsets', function() {
     var selected_option = $(this).find('option:selected');
 
     if($(selected_option).data('additional-fieldset')) {

@@ -25,7 +25,7 @@ module RailsAdmin
       model.associations.each do |t|
         assoc = changed_property_list.index(t[:child_key].to_param)
         if assoc
-          changed_property_list[assoc] = "associated #{t[:pretty_name]}"
+          changed_property_list[assoc] = "associated #{t[ :pretty_name]}"
         end
       end
 

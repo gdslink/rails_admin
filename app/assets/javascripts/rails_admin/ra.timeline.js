@@ -228,7 +228,7 @@
     },
 
     getMonthName: function(date) {
-      return this.options.months[date.getMonth()];
+      return this.options.monthNames[date.getMonth()];
     }
   });
 })(jQuery);

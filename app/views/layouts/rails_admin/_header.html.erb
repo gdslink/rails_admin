@@ -1,78 +1,76 @@
-    <script>
-      jQuery(document).ready(function($) {
-        
-        var splitter = $("#splitter").splitter({
-            splitVertical: true,
-            outline: false,
-            sizeLeft: 250,
-            minLeft: 150,
-            dock: 'left',
-            dockSpeed: 1,
-            accessKey: "I",
-            anchorToWindow: true,
-            cookie: "rails-admin-splitter",
-            cookiePath: "/",
-            eventNamespace: ".rails-admin-splitter"
-          });
-        
-        $("#accordion").accordion(
-          {
-            navigation: true, 
-            fillSpace: true,
-            animated: "bounceslide",
-            navigationFilter: function(){
-              matchKeys = $(this).attr("class")
-              if(typeof matchKeys === 'undefined' || matchKeys.length == 0)
-                return false;
-              matchKeys = matchKeys.split(' ');
-              for(var i=0;i<matchKeys.length;i++){
-                var regex = new RegExp('/' + matchKeys[i] + 's?\\b', 'i');
-                if(this.href.toLowerCase().match(regex) != null)
-                  return true;
-              }
-              return false;
-            }
-          });
+<script>
 
-        splitter.bind("dock", function(){
-          $("#accordion").hide();
+
+    function DropDown(el) {
+        this.dd = el;
+        this.initEvents();
+    }
+
+    DropDown.prototype = {
+        initEvents : function() {
+            var obj = this;
+
+            obj.dd.on('click', function(event){
+                $j(this).toggleClass('active');
+                event.stopPropagation();
+            });
+        }
+    }
+
+    $j(function($) {
+
+        var dd = new DropDown( $('#dd') );
+
+        $(document).click(function() {
+            // all dropdowns
+            $('.wrapper-dropdown').removeClass('active');
         });
 
-        splitter.bind("undock", function(){
-          $("#accordion").show();
-        });        
+    });
 
-        
-        $(window).resize(function(){
-            $("#accordion").accordion("resize");
+    $j(function($){
+        $(window).resize(function(e){
+            placeFooter();
+        });
+        placeFooter();
+        // hide it before it's positioned
+        $('#footer').css('display','inline');
+    });
+
+    function placeFooter() {
+        var windHeight = $j(window).height();
+        var footerHeight = $j('#footer').height();
+        var offset = parseInt(windHeight) - parseInt(footerHeight);
+        $j('#footer').css('top',offset);
+    }
+
+
+
+    jQuery(document).ready(function ($) {
+
+
+        $("#accordion").menuAim({
+            activate: $.noop,  // fired on row activation
+            deactivate: $.noop  // fired on row deactivation
         });
 
 
-        //highlight selected item in accordion
-        $(document).ready(function(){
-          $j("#accordion li a").each(function(i, el){
-            if(location.href.indexOf($j(el).attr('href').match(/\/\w+(?=\?)/)) >= 0){
-              $j(el).addClass("selected");
-            }
-          })
-
-        })
-
-      });  
-    </script>
-    <div id="header">     
-      <div id="headerLeft">
-        <h1 id="logo">
-          <%= link_to dashboard_path do %>
-            <span class="image_replacement"><%= @plugin_name %></span>
-          <% end -%>
-        </h1>        
-      </div>
-      <div id="headerRight">      
-        <%= render(:partial => 'rails_admin/main/user_info', :locals => {:current_user => _current_user}) %>        
-        <%if @scope_adapter %>
-          <%= image_tag('rails_admin/3dots-separator.png', :id => 'separator')%>
-          <%= render(:partial => 'rails_admin/extensions/scope/scope_selector')%>
-        <%end%>        
-      </div>
-    </div>
+    });
+</script>
+<div id="header">
+  <%= render :partial => 'rails_admin/main/navigation'%>
+  <div id="headerLeft">
+    <h1 id="logo">
+      <%= link_to dashboard_path do %>
+          <span class="image_replacement"><%= @plugin_name %></span>
+      <% end -%>
+    </h1>
+  </div>
+  <div id="headerRight">
+    <%= render(:partial => 'rails_admin/main/user_info', :locals => {:current_user => _current_user}) %>
+    <% if @scope_adapter %>
+        <%= image_tag('rails_admin/3dots-separator.png', :id => 'separator') %>
+        <%= render(:partial => 'rails_admin/extensions/scope/scope_selector') %>
+    <% end %>
+  </div>
+</div>

@@ -8,6 +8,7 @@ module RailsAdmin
     before_filter :_authorize!
     before_filter :_scope!
     before_filter :set_timezone
+    before_filter :set_locale
     before_filter :set_plugin_name
 
     before_filter :_get_scope_models!
@@ -17,6 +18,14 @@ module RailsAdmin
 
     def set_timezone
       Time.zone = current_user.time_zone if current_user
+    end
+
+    def set_locale
+      I18n.locale = get_locale || extract_locale_from_accept_language_header
+    end
+
+    def default_url_options(options={})
+      options.merge({ :locale => I18n.locale })
     end
 
     def get_model
@@ -53,6 +62,17 @@ module RailsAdmin
     end
 
     private
+
+    def get_locale
+      locale = params[:locale].to_s
+      return locale if I18n.available_locales.include?(locale.to_sym) unless locale.empty?
+      nil
+    end
+
+
+    def extract_locale_from_accept_language_header
+      request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first if request.env['HTTP_ACCEPT_LANGUAGE']
+    end 
 
     def _get_scope_parameters!
       @current_scope_parameters = {}

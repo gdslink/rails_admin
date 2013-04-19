@@ -12,6 +12,24 @@ module RailsAdmin
 
     before_save :truncate_message
 
+    after_find :translate
+
+    def translate
+      self.table = translate_parts(self.table, {self.table => I18n.t("activerecord.models.#{self.table.tableize.singularize}")})
+      self.message = translate_parts(self.message, {/Changed/i => I18n.t('history.changed'),
+                                    /Created/i => I18n.t('history.created'),
+                                    /Added/i => I18n.t('history.added'),
+                                    /Removed/i => I18n.t('history.removed'),
+                                    /associations/i => I18n.t('history.associations')})
+    end
+
+    def translate_parts(str, parts)
+      parts.each do |k,v|
+        str.gsub!(k, v)
+      end
+      str
+    end
+
     def truncate_message
       if message.present? && message.size > 255
         self.message = message.truncate(255)

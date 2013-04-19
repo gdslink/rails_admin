@@ -17,16 +17,8 @@
                 <div class="field <%= field.to_param %>" <%if not visible then %>style="display:none"<%end%>>
                   <%= label_tag field.to_param, field.label %>
                   <%= form.select field.name, collection, {:include_blank => true, :selected => selected}, field.html_attributes %>
-                  <% if authorized? :new, associated_model.abstract_model %>
-                    <%= link_to "Add new #{associated_model_name}", new_path(current_scope_parameters.merge(:model_name => associated_model_name)), :class => "createAssociatedRecord" %>
-                  <% end %>
                   <% if field.has_errors? %>
                   <span class="errorMessage"><%= "#{field.label } #{field.errors.first}" %></span>
                   <% end %>
                   <p class="help"><%= field.help %></p>
-                  <%= javascript_tag do %>
-                    $j(document).ready(function($) {
-                      $(".createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog" });
-                    });
-                  <% end %>
                 </div>

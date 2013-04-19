@@ -13,7 +13,7 @@
   <table class="vedit">
   <tbody><tr>
       <td>
-      <div class="head_title">E-mail</div>
+      <div class="head_title"><%=t('devise.sessions.email')%></div>
       <div class="small">&nbsp;</div><br class="clear">
       <%=f.email_field :email, :class => "lg_log", :size => '30'%>
       </td>
@@ -21,7 +21,7 @@
   </tbody></table>
 
   <div class='button'>
-    <%= f.submit "Send me reset password instructions", :class => "ra-button ui-state-highlight" %>
+    <%= f.submit t('devise.passwords.send_reset_instructions'), :class => "ra-button ui-state-highlight" %>
     <p><%= render :partial => "devise/shared/links" %></p>
   </div>
 <% end %>

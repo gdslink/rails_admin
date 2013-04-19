@@ -128,7 +128,7 @@ module RailsAdmin
         model.reflect_on_all_associations.map do |association|
           {
             :name => association.name.to_sym,
-            :pretty_name => association.name.to_s.tr('_', ' ').capitalize,
+            :pretty_name => association.klass.model_name.human,
             :type => association.macro,
             :parent_model => association_parent_model_lookup(association),
             :parent_key => association_parent_key_lookup(association),

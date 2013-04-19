@@ -9,4 +9,10 @@
   <%= head_style %>
   <%= csrf_meta_tag %>
   <%= yield :head %>
+
+  <script type="text/javascript">
+      I18n = I18n || {};
+      I18n.defaultLocale = "<%= I18n.default_locale %>";
+      I18n.locale = "<%= I18n.locale %>";
+  </script>
 </head>

@@ -1,11 +1,11 @@
 <% head_javascript "rails_admin/application.js" %>
       <div class="ra-block">
         <div class="ui-widget-header">
-          Delete confirmation
+          <%= t('admin.delete.delete_confirmation')%>
         </div>
 <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
         <div class="ra-block-content">
-          <p>Are you sure you want to delete the following object along with all of the following related items will be deleted:</p>
+          <p><%=t('admin.delete.are_your_sure_you_want_to_delete_this_object_and_associations')%></p>
           <%= render :partial => "delete_notice", :collection => @bulk_objects %>
           <%= form_tag bulk_destroy_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :bulk_ids => @bulk_objects.map(&:id))) do %>
             <ul class="submit clearfix">

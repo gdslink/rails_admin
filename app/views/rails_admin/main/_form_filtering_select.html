@@ -14,9 +14,6 @@
               <div class="field <%= "#{field.dom_id}" %>" <%if not visible then %>style="display:none"<%end%>>
                 <%= form.label field.method_name, field.label %>
                 <%= form.select field.method_name, collection, { :selected => selected_id, :include_blank => true }, field.html_attributes %>
-                <% if authorized? :new, config.abstract_model %>
-                  <%= link_to "Add new #{config.label}", new_path(current_scope_parameters.merge(:model_name => config.abstract_model.to_param)), :class => "createAssociatedRecord" %>
-                <% end %>
                 <% if field.has_errors? %>
                 <span class="errorMessage"><%= "#{field.label } #{field.errors.first}" %></span>
                 <% end %>
@@ -24,7 +21,6 @@
                 <% head_style 'rails_admin/ra.filtering-select.css' %>
                 <% head_javascript do %>
                   $j(document).ready(function($){
-                    $(".<%= "#{field.dom_id}" %> .createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog" });
                     $("#<%= "#{field.dom_id}" %>").filteringSelect({
                     });
                   });

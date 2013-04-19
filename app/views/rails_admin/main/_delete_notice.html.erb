@@ -11,7 +11,7 @@
       <% object.send(association[:name]).reject{|child| child.nil?}.each do |child| %>
       <% next if !child.id %>
       <li>
-        One or more <%= @abstract_model.pretty_name.pluralize.downcase %> in <%= association[:pretty_name].downcase %>: <%= link_to(RailsAdmin.config(child).with(:object => child).object_label, edit_path(current_scope_parameters.merge(:model_name => association[:name].to_s.singularize.to_sym, :id => child.id))) %>
+        <%=t('admin.delete.one_or_more', :model_name => @abstract_model.pretty_name.pluralize.downcase, :association_name => association[:pretty_name].downcase )%>: <%= link_to(RailsAdmin.config(child).with(:object => child).object_label, edit_path(current_scope_parameters.merge(:model_name => association[:name].to_s.singularize.to_sym, :id => child.id))) %>
       </li>
       <% end %>
       <% end %>
@@ -19,7 +19,7 @@
       <% child = object.send(association[:name]) %>
       <% next if child.nil? %>
       <li>
-        A <%= @abstract_model.pretty_name.downcase %> in <%= association[:pretty_name].downcase %>: <%= link_to(RailsAdmin.config(child).with(:object => child).object_label, edit_path(current_scope_parameters.merge(:model_name => association[:name], :id => child.id))) %>
+        <%=t('admin.delete.one', :model_name => @abstract_model.pretty_name.downcase, :association_name => association[:pretty_name].downcase)%>: <%= link_to(RailsAdmin.config(child).with(:object => child).object_label, edit_path(current_scope_parameters.merge(:model_name => association[:name], :id => child.id))) %>
       </li>
       <% end %>
     </ul>
