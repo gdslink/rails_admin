@@ -105,7 +105,7 @@
             <input type="submit" class="ra-button" value="<%= t("admin.list.search").upcase %>" />
 
             <select id="filter_select">
-              <option value="">Add filter...</option>
+              <option value=""><%=t('admin.list.add_filter')%>...</option>
               <% @filterable_fields.each do |field| %>
                   <% field_options = case field.type
                                        when :enum
