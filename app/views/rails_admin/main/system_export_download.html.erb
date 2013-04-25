@@ -9,7 +9,7 @@
         <%if @error%>
             alert("<%=@error-%>")
         <%else%>
-            window.parent.$j('#system_export_build_frame').html('<iframe src=' + '<%="#{system_export_path(@model_name)}?id=#{@application.id}&mode=download&model_name=#{@model_name}"-%>' + '/>');
+            window.parent.$j('#system_export_build_frame').html('<iframe src=' + '<%="#{system_export_path(@model_name)}&id=#{@application.id}&mode=download&model_name=#{@model_name}"-%>' + '/>');
         <%end%>
     });
 </script>
