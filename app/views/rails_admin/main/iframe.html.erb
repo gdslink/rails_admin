@@ -3,9 +3,17 @@
     <%= @page_name %>
   </div>
   <div class="ra-block-content">
+    <div id='loading' style='text-align:center;padding:10px;height:100%'><%=image_tag 'admin/loading.gif'%></div>
     <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
-    <iframe src="<%=@iframe_url%>" name="generic-iframe" id="generic-iframe" width="100%" height="100%" frameborder="0" border="0" scrolling="auto" cellspacing="0" style="border-style: none;width: 100%;overflow:hidden">
+    <iframe src="<%=@iframe_url%>" name="generic-iframe" id="generic-iframe" width="100%" height="100%" frameborder="0" border="0" scrolling="auto" cellspacing="0" style="border-style: none;width: 100%;overflow: hidden;display: none">
       <p>Your browser does not support iframes.</p>
     </iframe> 
   </div>
 </div>
+
+
+<script type="text/javascript">
+    $j("#generic-iframe").load(function(){
+        $j("#loading").hide();
+    }).show();
+</script>
