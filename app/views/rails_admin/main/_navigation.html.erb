@@ -4,7 +4,7 @@
 
 <span id="dd" class="wrapper-dropdown" tabindex="1">
   <div class='model_name'>
-    <%= @model_config.abstract_model.pretty_name.pluralize rescue 'Dashboard' %>
+    <%= @model_config.abstract_model.model.model_name.human(:count => 10) rescue 'Dashboard' %>
   </div>
   <ul class="menu dropdown">
   <%accordion_navigation[:sections].each do |section|%>
