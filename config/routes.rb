@@ -13,7 +13,8 @@ RailsAdmin::Engine.routes.draw do
   # Routes for rails_admin controller
   controller "main" do
     match "/", :to => :index, :as => "dashboard"
-    match "/update_scope", :to => :update_scope, :as => "update_scope"      
+    match "/update_scope", :to => :update_scope, :as => "update_scope"
+    match "/global_search", :to => :global_search, :as => "global_search"
     get "/:model_name", :to => :list, :as => "list"
     post "/:model_name/list", :to => :list, :as => "list_post"
     match "/:model_name/export", :to => :export, :as => "export"

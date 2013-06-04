@@ -57,6 +57,59 @@
 
     });
 </script>
+
+<style>
+    .ui-autocomplete-category {
+        font-weight: bold;
+        padding: .2em .4em;
+        margin: .8em 0 .2em;
+        line-height: 1.5;
+    }
+</style>
+<script>
+    $.widget( "custom.catcomplete", $.ui.autocomplete, {
+        _renderMenu: function( ul, items ) {
+            var that = this,
+                    currentCategory = "";
+            $.each( items, function( index, item ) {
+                if ( item.category != currentCategory ) {
+                    ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
+                    currentCategory = item.category;
+                }
+                that._renderItemData( ul, item );
+            });
+        }
+    });
+</script>
+<script>
+    $(function() {
+
+        $( "#global-search input" ).catcomplete({
+            delay: 0,
+            source: function( request, response ) {
+                $.ajax({
+                    url: "<%=global_search_path%>",
+                    dataType: "jsonp",
+                    data: {
+                        sort: 'id',
+                        sort_reverse: false,
+                        all: true,
+                        name_startsWith: request.term
+                    },
+                    success: function( data ) {
+                        response( $.map( data, function( item ) {
+                            return {
+                                label: item.label,
+                                category: item.category
+                            }
+                        }));
+                    }
+                });
+            }
+        });
+    });
+</script>
+
 <div id="header">
   <%= render :partial => 'rails_admin/main/navigation'%>
   <div id="headerLeft">
@@ -72,5 +125,6 @@
         <%= image_tag('rails_admin/3dots-separator.png', :id => 'separator') %>
         <%= render(:partial => 'rails_admin/extensions/scope/scope_selector') %>
     <% end %>
+    <div id='global-search'><input type="text" name="search" value="" size="32" placeholder="What are you looking for?"></div>
   </div>
 </div>

@@ -5,7 +5,7 @@ module RailsAdmin
 
     layout "rails_admin/dashboard"
 
-    before_filter :get_model, :except => [:index, :update_scope]
+    before_filter :get_model, :except => [:index, :update_scope, :global_search]
     before_filter :get_object, :only => [:show, :edit, :update, :delete, :destroy, :system_export]
     before_filter :check_scope_on_query, :except => [:index, :update_scope]
     before_filter :get_attributes, :only => [:create, :update]
@@ -35,6 +35,24 @@ module RailsAdmin
         @most_recent_changes[t.pretty_name] = t.model.order("updated_at desc").first.try(:updated_at) rescue nil
       end
       render :index
+    end
+
+    def global_search
+      result = []
+      RailsAdmin::AbstractModel.all.each do |m|
+        @abstract_model = m
+        @model_config = RailsAdmin.config(@abstract_model)
+        not_found if @model_config.excluded?
+        @properties = @abstract_model.properties
+        #p list_entries({}, {})
+        list_entries({}, {})[0].each do |e|
+          next if not e.respond_to?(:name)
+          result << {
+            :label => e.name , :category => e.class.model_name.human
+          }
+        end
+      end
+      render :json => result
     end
 
     def list
@@ -541,7 +559,7 @@ module RailsAdmin
       conditions = [""]
 
       if query.present?
-        queryable_fields = @model_config.list.fields.select(&:queryable?)
+        queryable_fields = @model_config.list.fields#.select(&:queryable?)
         queryable_fields.each do |field|
           searchable_columns = field.searchable_columns.flatten
           searchable_columns.each do |field_infos|
@@ -691,11 +709,11 @@ module RailsAdmin
       redirect_to list_path(@current_scope_parameters), :notice => t("admin.flash.noaction") if params[:_continue]
     end
 
-    def list_entries(other = {})
+    def list_entries(other = {}, options = nil)
       return [get_bulk_objects(params[:bulk_ids]), 1, 1, "unknown"] if params[:bulk_ids].present?
 
       associations = @model_config.list.fields.select {|f| f.type == :belongs_to_association && !f.polymorphic? }.map {|f| f.association[:name] }
-      options = get_sort_hash.merge(get_conditions_hash(params[:query], params[:filters])).merge(other).merge(associations.empty? ? {} : { :include => associations })
+      options = get_sort_hash.merge(get_conditions_hash(params[:query], params[:filters])).merge(other).merge(associations.empty? ? {} : { :include => associations }) if !options
 
       scope = @authorization_adapter && @authorization_adapter.query(:list, @abstract_model)
       scope = @scope_adapter.apply_scope(scope, @abstract_model) if @scope_adapter
