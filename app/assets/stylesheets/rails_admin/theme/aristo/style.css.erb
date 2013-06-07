@@ -666,3 +666,31 @@ body > #wrapper {
     margin-left: 90px;
     margin-top: 12px;
 }
+
+
+.ui-autocomplete-loading {
+    background: white url('<%=asset_path 'rails_admin/ajax-loader.gif'%>') right center no-repeat;
+}
+
+.ui-autocomplete a{
+    border: 1px solid white;
+    padding: 1px;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
+
+.ui-autocomplete-category {
+    font-weight: bold;
+    padding: .2em .4em;
+    margin: .8em 0 .2em;
+    line-height: 1.5;
+}
+
+.category-img{
+    margin-right: 5px;
+}

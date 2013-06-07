@@ -44,11 +44,10 @@ module RailsAdmin
         @model_config = RailsAdmin.config(@abstract_model)
         not_found if @model_config.excluded?
         @properties = @abstract_model.properties
-        #p list_entries({}, {})
         list_entries({}, {})[0].each do |e|
           next if not e.respond_to?(:name)
           result << {
-            :label => e.name , :category => e.class.model_name.human
+            :label => e.name , :model_name => e.class.model_name, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
           }
         end
       end
@@ -713,7 +712,12 @@ module RailsAdmin
       return [get_bulk_objects(params[:bulk_ids]), 1, 1, "unknown"] if params[:bulk_ids].present?
 
       associations = @model_config.list.fields.select {|f| f.type == :belongs_to_association && !f.polymorphic? }.map {|f| f.association[:name] }
-      options = get_sort_hash.merge(get_conditions_hash(params[:query], params[:filters])).merge(other).merge(associations.empty? ? {} : { :include => associations }) if !options
+
+      if !options
+        options = get_sort_hash.merge(get_conditions_hash(params[:query], params[:filters])).merge(other).merge(associations.empty? ? {} : { :include => associations })
+      else
+        options = get_conditions_hash(params[:query], params[:filters])
+      end
 
       scope = @authorization_adapter && @authorization_adapter.query(:list, @abstract_model)
       scope = @scope_adapter.apply_scope(scope, @abstract_model) if @scope_adapter
@@ -733,7 +737,6 @@ module RailsAdmin
         options.delete(:limit)
         record_count = @abstract_model.count(options, scope)
       end
-
       [objects, current_page, page_count, record_count]
     end
 

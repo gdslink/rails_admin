@@ -58,22 +58,37 @@
     });
 </script>
 
-<style>
-    .ui-autocomplete-category {
-        font-weight: bold;
-        padding: .2em .4em;
-        margin: .8em 0 .2em;
-        line-height: 1.5;
-    }
-</style>
 <script>
-    $.widget( "custom.catcomplete", $.ui.autocomplete, {
+    $j.widget( "custom.catcomplete", $j.ui.autocomplete, {
         _renderMenu: function( ul, items ) {
             var that = this,
                     currentCategory = "";
-            $.each( items, function( index, item ) {
+            $j.each( items, function( index, item ) {
+                var icons = {
+                  'User': '<%=asset_path 'rails_admin/icons/user.png'%>',
+                  'Role': '<%=asset_path 'rails_admin/icons/group.png'%>',
+                  'Table': '<%=asset_path 'rails_admin/icons/database_table.png'%>',
+                  'Field': '<%=asset_path 'rails_admin/icons/table_edit.png'%>',
+                  'Status': '<%=asset_path 'admin/status_small.png'%>',
+                  'DataViewConnector': '<%=asset_path 'admin/dv360.png'%>',
+                  'Modifier': '<%=asset_path 'admin/page_white_ruby.png'%>',
+                  'Email': '<%=asset_path 'admin/email.png'%>',
+                  'Filter': '<%=asset_path 'rails_admin/icons/table.png'%>',
+                  'Screen': '<%=asset_path 'rails_admin/icons/application.png'%>',
+                  'Form': '<%=asset_path 'rails_admin/icons/application_form.png'%>',
+                  'Layout': '<%=asset_path 'rails_admin/icons/layout_content.png'%>',
+                  'HtmlBlock': '<%=asset_path 'rails_admin/icons/html.png'%>',
+                  'Style': '<%=asset_path 'rails_admin/icons/style.png'%>',
+                  'StatusFlow': '<%=asset_path 'rails_admin/icons/chart_organisation.png'%>',
+                  'ScreenFlow': '<%=asset_path 'rails_admin/icons/application_cascade.png'%>',
+                  'ServerFlow': '<%=asset_path 'rails_admin/icons/server_go.png'%>',
+                  'Metric': '<%=asset_path 'rails_admin/icons/chart_curve.png'%>',
+                  'Report': '<%=asset_path 'rails_admin/icons/page_add.png'%>',
+                  'Pattern': '<%=asset_path 'rails_admin/icons/page_code.png'%>'
+
+                }
                 if ( item.category != currentCategory ) {
-                    ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
+                    ul.append( "<li class='ui-autocomplete-category'><span class='category-img'><img src='" + icons[item.model_name] + "'/></span>" + item.category + "</li>" );
                     currentCategory = item.category;
                 }
                 that._renderItemData( ul, item );
@@ -82,25 +97,30 @@
     });
 </script>
 <script>
-    $(function() {
+    $j(function() {
 
-        $( "#global-search input" ).catcomplete({
-            delay: 0,
+        $j( "#global-search input" ).catcomplete({
+            delay: 500,
+            select: function( event, ui ) {
+                window.location = ui.item.url;
+            },
             source: function( request, response ) {
-                $.ajax({
+                $j.ajax({
                     url: "<%=global_search_path%>",
-                    dataType: "jsonp",
+                    dataType: "json",
                     data: {
                         sort: 'id',
                         sort_reverse: false,
                         all: true,
-                        name_startsWith: request.term
+                        query: request.term
                     },
                     success: function( data ) {
-                        response( $.map( data, function( item ) {
+                        response( $j.map( data, function( item ) {
                             return {
                                 label: item.label,
-                                category: item.category
+                                category: item.category,
+                                url: item.url,
+                                model_name: item.model_name
                             }
                         }));
                     }
@@ -125,6 +145,6 @@
         <%= image_tag('rails_admin/3dots-separator.png', :id => 'separator') %>
         <%= render(:partial => 'rails_admin/extensions/scope/scope_selector') %>
     <% end %>
-    <div id='global-search'><input type="text" name="search" value="" size="32" placeholder="What are you looking for?"></div>
+    <div id='global-search'><input type="text" name="search" value="" size="32" placeholder="<%=t("admin.global_search")%>"></div>
   </div>
 </div>
