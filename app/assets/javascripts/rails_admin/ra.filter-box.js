@@ -88,7 +88,7 @@
     );
   });
 
-  $(document).on('change', '#filters_box .delete', function() {
+  $(document).on('click', '#filters_box .delete', function() {
     $(this).parents('.filter').hide();
     $(this).append('<input type="hidden" name="' + $(this).data('disabler-name') + '" value="true" />')
   });
