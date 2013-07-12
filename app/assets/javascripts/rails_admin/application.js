@@ -1,5 +1,6 @@
 if (typeof($j) === "undefined" && typeof(jQuery) !== "undefined") {
   var $j = jQuery.noConflict();
+  var $ = $j;
 }
 
 $j.ajaxSetup({
