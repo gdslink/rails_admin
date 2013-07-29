@@ -410,7 +410,7 @@ module RailsAdmin
       #   use send_file instead of send_data to leverage the x-sendfile header set by rails 3 (generate and let the front server handle the rest)
       # maybe
       #   n-levels (backend: possible with xml&json, frontend: not possible, injections check: quite easy)
-      @authorization_adapter.authorize(:export, @abstract_model) if @authorization_adapter
+      @authorization_adapter.authorize(:read, @abstract_model) if @authorization_adapter
 
       if format = params[:json] && :json || params[:csv] && :csv || params[:xml] && :xml
         request.format = format
