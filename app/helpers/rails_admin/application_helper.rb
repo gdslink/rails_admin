@@ -11,7 +11,9 @@ module RailsAdmin
       case action
       when :dashboard
         dashboard_path(options)
-      when :list 
+      when :edit
+        edit_path(options)
+      when :list
         list_path(options)
       when :new
         new_path(options)

@@ -26,7 +26,18 @@
     %>
     <%next if section[:links].length == 0 rescue nil && section[:sections].length == 0 rescue next%>
       <li data-submenu-id="<%=section[:label].delete(" ")%>_id">
-          <%=link_to "#", {:class => section[:match_keys]} do%>
+          <%
+             u = nil
+             unless section[:links][0][:url_for][:action] == :list or section[:links][0][:url_for][:model].nil?
+                 rec_id = section[:links][0][:url_for][:model].classify.constantize.find_by_application_id(@application.id)
+                 unless rec_id
+                   u = get_url(:new, section[:links][0][:url_for][:model]) rescue nil
+                 else
+                   u = get_url(:edit, section[:links][0][:url_for][:model], :id => rec_id) rescue nil
+                 end
+             end
+          %>
+          <%=link_to section[:links].length == 1 ? u : "#", {:class => section[:match_keys]} do%>
             <%if section[:image] then%>
                 <%=image_tag section[:image] %>
             <%end%>
@@ -37,6 +48,7 @@
   </ul>
 
   <%accordion_navigation[:sections].each do |section|%>
+    <%next if section[:links].length == 1 %>
     <ul id="<%=section[:label].delete(" ")%>_id" class="submenu dropdown">
     <% section[:links].each do |link| %>
       <li>

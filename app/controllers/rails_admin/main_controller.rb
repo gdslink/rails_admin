@@ -688,6 +688,8 @@ module RailsAdmin
         redirect_to new_path(@current_scope_parameters), :notice => notice
       elsif params[:_add_edit]
         redirect_to edit_path(@current_scope_parameters.merge(:id => @object.id)), :notice => notice
+      elsif params[:_dashboard]
+        redirect_to dashboard_path
       else
         redirect_to list_path(@current_scope_parameters), :notice => notice
       end
