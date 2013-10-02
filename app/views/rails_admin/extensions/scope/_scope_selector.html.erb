@@ -40,7 +40,7 @@ models = @scope_adapter.models
       <%end%>
       <%= javascript_tag do %>
         $j(document).ready(function($) {
-          $("#<%=model.name%>.createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog", elementToUpdate: $("select#<%=model.name%>-scope")});
+          $("#scopeSelector .createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog", elementToUpdate: $("select#<%=model.name%>-scope")});
         });
       <% end %>
   </li>
