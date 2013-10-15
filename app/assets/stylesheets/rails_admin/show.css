@@ -47,20 +47,21 @@ fieldset .field{
     width: 500px;
 }
 
-fieldset:nth-child(2){
+fieldset:nth-child(2n){
+  clear:left;
   float: left;
   width:50%;
 }
 
-fieldset:nth-child(2) legend{
+fieldset:nth-child(2n) legend{
     width:80%;
 }
 
-fieldset:nth-child(3){
+fieldset:nth-child(3n){
   width:50%;
   clear: right;
 }
 
-fieldset:nth-child(3) legend{
+fieldset:nth-child(3n) legend{
     width:90%;
 }
