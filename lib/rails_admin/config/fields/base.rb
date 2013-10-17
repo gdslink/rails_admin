@@ -141,6 +141,10 @@ module RailsAdmin
           (required? ? I18n.translate("admin.new.required") : I18n.translate("admin.new.optional")) + '. '
         end
 
+        register_instance_option :default_value do
+          nil
+        end
+
         register_instance_option(:html_attributes) do
           {
             :class => "#{css_class} #{has_errors? ? "errorField" : nil}",
@@ -240,9 +244,14 @@ module RailsAdmin
           @type ||= self.class.name.to_s.demodulize.underscore.to_sym
         end
 
+        def form_default_value
+          bindings[:object].new_record? && bindings[:object].safe_send(name).nil? && !self.default_value.nil? ? self.default_value : nil
+        end
+
         # Reader for field's value
         def value
-          bindings[:object].safe_send(name)
+          #bindings[:object].safe_send(name)
+          self.form_default_value.nil? ? bindings[:object].safe_send(name) : self.form_default_value
         end
 
         # Reader for field's name
