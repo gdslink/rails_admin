@@ -354,7 +354,6 @@ module RailsAdmin
               f.binmode
               f.write(file_data)
               f.close()
-
               CaseCenter::ImportExport.new.import(f.path, details)
               company = ::Company.where(:key => details[:company_key]).first
               application = ::Application.where(:key => details[:application_key]).where(:company_id => company.id).first
