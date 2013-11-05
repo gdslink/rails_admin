@@ -300,14 +300,14 @@ module RailsAdmin
       elsif mode == "upload_file"
         begin
           if Rails.cache.exist?(:import_in_progress)
-            raise Exception.new("Another import is currently in progress, please try again later.")
+            raise Exception.new(I18n.t('admin.import_export.error_in_progress'))
           end
 
           @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["import_file"].tempfile.path)
           Rails.cache.write(:import_temporary_file, Base64.encode64(params["import_file"].read), :expires_in => 5.minutes)
         rescue Exception => e
           Rails.logger.error("Error while importing #{e.message}")
-          Rails.logger.debug("#{e.backtrace.join('\n')}")
+          Rails.logger.error("#{e.backtrace.join('\n')}")
           @error =  e.message
         end
         render :template => 'rails_admin/main/upload_file_complete', :layout => nil
@@ -326,23 +326,23 @@ module RailsAdmin
               @company = ::Company.find(@current_user.company_id)
 
               if(@company.key != params['company_key'])
-                raise Exception.new("You do not have permission to update a company other than #{@company.name}, please try again as a root user")
+                raise Exception.new(I18n.t('admin.import_export.error_no_permission', :company_name => @company.name))
               end
 
               @details[:company_key] = @company.key
               @details[:company_name] = @company.name
             else
-              raise Exception.new("The current user doesn't have permission to import systems")
+              raise Exception.new(I18n.t('admin.import_export.error_user_no_permission'))
             end
           end
 
           if Rails.cache.exist?(:import_in_progress)
-            raise Exception.new("An import is already in progress, please try again later")
+            raise Exception.new(I18n.t('admin.import_export.error_in_progress'))
           end
 
           in_file = Rails.cache.fetch(:import_temporary_file)
           if in_file.nil?
-            raise Exception.new("The import file has expired, or a duplicate request has been please try you import again")
+            raise Exception.new(I18n.t('admin.import_export.error_expired'))
           end
 
           Thread.new(@details, Base64.decode64(in_file)) do |details, file_data|
@@ -367,7 +367,8 @@ module RailsAdmin
                 })
             rescue Exception => e
               Rails.logger.error("Error while importing #{e.message}")
-              Rails.cache.write(:import_last_error, "Error while importing #{e.message}")
+              Rails.logger.error("Backtrace: #{e.backtrace}")
+              Rails.cache.write(:import_last_error, I18n.t('admin.import_export.error', :message => e.message))
             ensure
               Rails.cache.delete(:import_in_progress)
               f.unlink() unless f.nil?
@@ -376,7 +377,7 @@ module RailsAdmin
 
         rescue Exception => e
           Rails.logger.error("Error while importing #{e.message}")
-          Rails.logger.debug("#{e.backtrace.join('\n')}")
+          Rails.logger.error("#{e.backtrace.join('\n')}")
           @error =  e.message
         end
         render :template => 'rails_admin/main/system_import_complete', :layout => nil
