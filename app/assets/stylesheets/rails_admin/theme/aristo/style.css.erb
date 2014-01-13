@@ -392,7 +392,7 @@ ul.items li a:hover {
 
 .model_name {
     font-family: 'Lucida Grande', sans-serif;
-    font-size: 20px;
+    font-size: 15px;
     font-weight: bold;
     margin-left: 60px;
     margin-top: 2px;
@@ -405,9 +405,8 @@ ul.items li a:hover {
     width: 100%;
 }
 
-.dropdown li:hover {
-    text-decoration: underline;
-    font-weight: bold !important;
+.maintainHover {
+    background: rgba(65, 131, 196, 0.2);
 }
 
 .wrapper-dropdown {
@@ -416,7 +415,7 @@ ul.items li a:hover {
     background-repeat: no-repeat;
     background-position: 5px 5px;
     position: absolute;
-    width: 250px;
+    width: 300px;
     margin: 0 auto;
     padding: 10px 15px;
     background-color: #f2f2f2;
@@ -461,10 +460,15 @@ ul.items li a:hover {
     position: fixed;
     width: 175px;
     list-style: none;
+    background-color: #f3f3f3;
 }
 
-.wrapper-dropdown .dropdown.submenu li a {
+.wrapper-dropdown .dropdown.submenu li {
     background-color: #f3f3f3;
+}
+
+.wrapper-dropdown .dropdown.submenu li:hover a {
+    background: rgba(65, 131, 196, 0.2);
 }
 
 .wrapper-dropdown .dropdown li a {
@@ -518,7 +522,11 @@ ul.items li a:hover {
     /* Hover state */
 
 .wrapper-dropdown .dropdown li:hover a {
-    color: grey;
+    background: rgba(65, 131, 196, 0.2) no-repeat scroll 99%;
+}
+
+.wrapper-dropdown .has-submenu{
+    background: rgba(65, 131, 196, 0.2) url("/assets/rails_admin/arrow_right.png") no-repeat scroll 99%;
 }
 
     /* Active state */

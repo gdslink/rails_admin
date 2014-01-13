@@ -83,6 +83,9 @@
                 height = $row.outerHeight(),
                 width = $row.outerWidth();
 
+        if ($j("#" + submenuId).length > 0)
+            $j(row).addClass('has-submenu');
+
         // Show the submenu
         $submenu.css({
             display: "block",
@@ -96,6 +99,7 @@
     }
 
     function deactivateSubmenu(row) {
+        $j(row).removeClass('has-submenu');
         var $row = $j(row),
                 submenuId = $row.data("submenuId"),
                 $submenu = $j("#" + submenuId);
