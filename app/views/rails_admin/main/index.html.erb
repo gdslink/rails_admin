@@ -34,7 +34,7 @@
                        function(response, status, xhr) {
                           $('#history').pageless({container: window, currentPage: 1, url:  '<%=history_list_path%>', params: {month: month, year: year},  loaderMsg: '<%=I18n.t('admin.history.loading')%>', noDataMsg: '<%=I18n.t('admin.history.no_history')%>', dataCondition: "#history tr:gt(0)"})
                           monthNames = <%= ActiveSupport::JSON.encode(month_names).html_safe %>
-                          $j("#historyHeader").text(monthNames[month - 1] + ' ' + year + ' <%= t("admin.history.name").downcase %>'
+                          $j("#historyHeader").text(monthNames[month - 1] + ' ' + year + ' <%= t("admin.history.name").downcase %>')
                        }
                      );
                    },
