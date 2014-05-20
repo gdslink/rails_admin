@@ -87,7 +87,7 @@ module RailsAdmin
 
         # Reader for validation errors of the bound object
         def errors
-          bindings[:object].errors[child_key]
+          bindings[:object].errors[child_key] if bindings[:object].respond_to? :errors
         end
 
         # Reader whether the bound object has validation errors
