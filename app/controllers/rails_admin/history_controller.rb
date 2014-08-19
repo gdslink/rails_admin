@@ -27,16 +27,7 @@ module RailsAdmin
     end
 
     def for_model
-      @authorization_adapter.authorize(:see_history) if @authorization_adapter
-      @page_type = @abstract_model.pretty_name.downcase
-      @page_name = t("admin.history.page_name", :name => @model_config.label)
-      @general = true
-      @current_page = params[:page].try(:to_i) || 1
-
-      @page_count, @history = AbstractHistory.history_for_model @abstract_model, params[:query], params[:sort],
-      params[:sort_reverse], params[:all], params[:page], @scope_adapter, @authorization_adapter
-
-      render "show", :layout => request.xhr? ? false : 'rails_admin/list'
+      return not_found
     end
 
     def for_object

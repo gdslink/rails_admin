@@ -88,11 +88,6 @@
               <%= link_to(t("admin.list.export_action"), export_path(params.reject{|key, value| key.to_sym == :page}), :class => "ra-button", :method => :post) %>
             </li>
         <% end %>
-        <% if authorized? :see_history %>
-            <li>
-              <%= link_to(t("admin.history.name"), history_model_path(current_scope_parameters), :class => "ra-button") %>
-            </li>
-        <%end%>
         <% if authorized? :new, @abstract_model %>
             <li>
               <%= link_to(t("admin.list.add_new"), new_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :class => "ra-button add-button") %>
