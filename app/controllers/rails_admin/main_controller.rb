@@ -138,6 +138,7 @@ module RailsAdmin
       @page_type = @abstract_model.pretty_name.downcase
 
       if @object.save
+        @application.generate_mongoid_model if ["field", "status", "table"].include? @page_type
         AbstractHistory.create_history_item("Created #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
         respond_to do |format|
           format.html do
@@ -190,6 +191,7 @@ module RailsAdmin
 
       if @object.save
         object_label = @model_config.with(:object => @object).object_label
+        @application.generate_mongoid_model if ["field", "status", "table"].include? @page_type
         AbstractHistory.create_update_history @abstract_model, @object, @cached_assocations_hash, associations_hash, @modified_assoc, @old_object, _current_user
         respond_to do |format|
           format.html do
