@@ -5,6 +5,9 @@ module RailsAdmin
       # This adapter enables a scope selector that limits the records fetched from the DB
       # to the specified scope.
       class ScopeAdapter
+
+        attr_accessor :current_scope
+
         # See the +scope_with+ config method for where the initialization happens.
         def initialize(controller, models = [])
           @models = models.map {|m| m.constantize}
@@ -201,6 +204,7 @@ module RailsAdmin
               parent_entries = entries
               parent_selection_id = selection
             end
+            @scope_adapter.current_scope = @current_scope
           end
         end
       end
