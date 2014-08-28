@@ -47,6 +47,10 @@ module RailsAdmin
           @controller.current_ability.attributes_for(action, abstract_model && abstract_model.model)
         end
 
+        def current_ability
+          @controller.current_ability
+        end
+
         private
 
         # Change the action into something that fits better with CanCan's conventions
