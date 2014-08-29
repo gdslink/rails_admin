@@ -223,8 +223,10 @@ module RailsAdmin
 
     def destroy
       @authorization_adapter.authorize(:destroy, @abstract_model, @object) if @authorization_adapter
+      @page_type = @abstract_model.pretty_name.downcase
 
       if @object.destroy
+        @application.generate_mongoid_model if ["field", "status", "table"].include? @page_type
         AbstractHistory.create_history_item("Destroyed #{@model_config.with(:object => @object).object_label}", @object, @abstract_model, _current_user)
         flash[:notice] = t("admin.flash.successful", :name => @model_config.label, :action => t("admin.actions.deleted"))
       else
