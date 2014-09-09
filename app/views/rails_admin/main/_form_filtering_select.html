@@ -6,8 +6,10 @@
   selected = current_scope(config.abstract_model.model.name) if not visible
 
   selected_id = selected.to_i rescue field.selected_id if selected
-  
-  collection = field.associated_collection(authorization_adapter, scope_adapter)
+
+  collection = Rails.cache.fetch("sl-#{config.abstract_model.model.model_name}-#{authorization_adapter.current_ability.cache_key}-#{scope_adapter.current_scope['Application'][:selected]}-#{scope_adapter.current_scope['Application'][:selected_record].global_model_checksum}", expires_in: 10.minutes) do
+    field.associated_collection(authorization_adapter, scope_adapter)
+  end
 
 %>
 
