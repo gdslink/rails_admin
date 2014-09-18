@@ -3,6 +3,7 @@ module RailsAdmin
     before_filter :get_model, :except => [:list, :slider]
     before_filter :get_object, :except => [:list, :slider, :for_model]
 
+
     def list
       @authorization_adapter.authorize(:see_history) if @authorization_adapter
       if params[:month].nil? or params[:year].nil?

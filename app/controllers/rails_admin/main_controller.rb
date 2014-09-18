@@ -11,6 +11,25 @@ module RailsAdmin
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel, :only => [:create, :update, :destroy, :export, :bulk_destroy]
 
+    caches_action :index,
+                  cache_path: Proc.new {"admin/index/#{current_ability.cache_key}/#{@application.id}"},
+                  expires_in: 10.minute
+
+    caches_action :new,
+                  cache_path: Proc.new {"admin/new/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name)}"},
+                  expires_in: 10.minute
+
+    caches_action :list,
+                  cache_path: Proc.new {"admin/list/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name, false)}"},
+                  expires_in: 10.minute
+
+    caches_action :edit,
+                  cache_path: Proc.new {"admin/edit/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name)}/#{params[:id]}"},
+                  expires_in: 10.minute
+
+    caches_action :show,
+                  cache_path: Proc.new {"admin/show/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name)}/#{params[:id]}"},
+                  expires_in: 10.minute
 
     def index
       @authorization_adapter.authorize(:index) if @authorization_adapter
@@ -151,6 +170,8 @@ module RailsAdmin
       else
         handle_save_error
       end
+
+      invalidate_cache_key(@model_name)
     end
 
     def show
@@ -203,6 +224,8 @@ module RailsAdmin
       else
         handle_save_error :edit
       end
+
+      invalidate_cache_key(@model_name)
     end
 
     def delete
@@ -231,6 +254,8 @@ module RailsAdmin
         format.js {render :json => {}}
         format.any {redirect_to list_path(@current_scope_parameters.merge(:model_name => @abstract_model.to_param))}
       end
+
+      invalidate_cache_key(@model_name)
     end
 
     def system_export

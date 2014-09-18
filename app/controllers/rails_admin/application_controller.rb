@@ -15,6 +15,29 @@ module RailsAdmin
     before_filter :_get_scope_parameters!
 
     helper_method :_current_user, :_attr_accessible_role
+    helper_method :cache_key
+
+    def cache_key(model_name, depends = true)
+      signature = model_name
+
+      signature = model_name.constantize.reflect_on_all_associations.map{ |c|
+        _cache_key_for_model(c.class_name)
+      }.join(',') if depends
+
+      Rails.cache.fetch(Digest::SHA1.hexdigest("admin/cache_key/#{@current_scope_parameters.to_s}/#{signature}")) do
+        signature.to_s + Time.now.to_i.to_s
+      end
+    end
+
+    def _cache_key_for_model(model_name)
+      Rails.cache.fetch("admin/cache_key/#{@current_scope_parameters.to_s}/#{model_name}") do
+        model_name.to_s + Time.now.to_i.to_s
+      end
+    end
+
+    def invalidate_cache_key(model_name)
+      Rails.cache.delete("admin/cache_key/#{@current_scope_parameters.to_s}/#{model_name}")
+    end
 
     def set_timezone
       Time.zone = current_user.time_zone if current_user
@@ -29,8 +52,8 @@ module RailsAdmin
     end
 
     def get_model
-      model_name = to_model_name(params[:model_name])
-      @abstract_model = RailsAdmin::AbstractModel.new(model_name)
+      @model_name = to_model_name(params[:model_name])
+      @abstract_model = RailsAdmin::AbstractModel.new(@model_name)
       @model_config = RailsAdmin.config(@abstract_model)
       not_found if @model_config.excluded?
       @properties = @abstract_model.properties
