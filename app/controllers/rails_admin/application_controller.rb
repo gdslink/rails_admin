@@ -20,11 +20,17 @@ module RailsAdmin
     def cache_key(model_name, depends = true)
       signature = model_name
 
-      signature = model_name.constantize.reflect_on_all_associations.map{ |c|
-        _cache_key_for_model(c.class_name)
-      }.join(',') if depends
+      if depends
+        m = model_name.constantize.reflect_on_all_associations.map{ |c|
+          _cache_key_for_model(c.class_name)
+        }
+        m << _cache_key_for_model(model_name)
+        signature = m.join(',')
+      else
+        signature = _cache_key_for_model(model_name)
+      end
 
-      Rails.cache.fetch(Digest::SHA1.hexdigest("admin/cache_key/#{@current_scope_parameters.to_s}/#{signature}")) do
+      Rails.cache.fetch(Digest::SHA1.hexdigest("admin/cache_key/#{signature}")) do
         signature.to_s + Time.now.to_i.to_s
       end
     end
