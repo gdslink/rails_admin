@@ -172,9 +172,11 @@ module RailsAdmin
           end
 
           def list_entries_for(model_name, association = {})
-            abstract_model = RailsAdmin::AbstractModel.new(model_name)
-            scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
-            abstract_model.where(association, scope)
+            Rails.cache.fetch("admin/scope/#{cache_key(model_name)}") do
+              abstract_model = RailsAdmin::AbstractModel.new(model_name)
+              scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
+              abstract_model.where(association, scope).all
+            end
           end
 
           def get_scope_models
