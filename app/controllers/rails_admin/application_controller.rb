@@ -30,9 +30,11 @@ module RailsAdmin
         signature = _cache_key_for_model(model_name)
       end
 
-      Rails.cache.fetch(Digest::SHA1.hexdigest("admin/cache_key/#{signature}")) do
+      cache_name = Digest::SHA1.hexdigest("admin/cache_key/#{signature}")
+      Rails.cache.fetch(cache_name) do
         signature.to_s + Time.now.to_i.to_s
       end
+      cache_name
     end
 
     def _cache_key_for_model(model_name)
