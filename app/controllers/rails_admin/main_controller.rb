@@ -369,31 +369,33 @@ module RailsAdmin
           end
 
           Thread.new(@details, Base64.decode64(in_file)) do |details, file_data|
-            f = Tempfile.new('cc')
-            begin
-              Rails.cache.write(:import_in_progress, true)
-              Rails.cache.delete(:import_last_error)
+            ActiveRecord::Base.connection_pool.with_connection do
+              f = Tempfile.new('cc')
+              begin
+                Rails.cache.write(:import_in_progress, true)
+                Rails.cache.delete(:import_last_error)
 
-              f.binmode
-              f.write(file_data)
-              f.close()
-              CaseCenter::ImportExport.new.import(f.path, details)
-              company = ::Company.where(:key => details[:company_key]).first
-              application = ::Application.where(:key => details[:application_key]).where(:company_id => company.id).first
-              application.generate_mongoid_model(true)
-              Rails.cache.write(:import_company_data, {
-                  :company_name => company.name,
-                  :company_id => company.id,
-                  :application_name => application.name,
-                  :application_id => application.id,
-                })
-            rescue Exception => e
-              Rails.logger.error("Error while importing #{e.message}")
-              Rails.logger.error("Backtrace: #{e.backtrace}")
-              Rails.cache.write(:import_last_error, I18n.t('admin.import_export.error', :message => e.message))
-            ensure
-              Rails.cache.delete(:import_in_progress)
-              f.unlink() unless f.nil?
+                f.binmode
+                f.write(file_data)
+                f.close()
+                CaseCenter::ImportExport.new.import(f.path, details)
+                company = ::Company.where(:key => details[:company_key]).first
+                application = ::Application.where(:key => details[:application_key]).where(:company_id => company.id).first
+                application.generate_mongoid_model(true)
+                Rails.cache.write(:import_company_data, {
+                    :company_name => company.name,
+                    :company_id => company.id,
+                    :application_name => application.name,
+                    :application_id => application.id,
+                  })
+              rescue Exception => e
+                Rails.logger.error("Error while importing #{e.message}")
+                Rails.logger.error("Backtrace: #{e.backtrace}")
+                Rails.cache.write(:import_last_error, I18n.t('admin.import_export.error', :message => e.message))
+              ensure
+                Rails.cache.delete(:import_in_progress)
+                f.unlink() unless f.nil?
+              end
             end
           end
 
