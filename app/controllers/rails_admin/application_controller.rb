@@ -19,7 +19,7 @@ module RailsAdmin
 
     def cache_key(model_name, depends = true)
       signature = model_name
-
+      m = []
       if depends
         m = model_name.constantize.reflect_on_all_associations.map{ |c|
           _cache_key_for_model(c.class_name)
