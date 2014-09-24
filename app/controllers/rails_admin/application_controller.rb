@@ -23,7 +23,7 @@ module RailsAdmin
       if depends
         m = model_name.constantize.reflect_on_all_associations.map{ |c|
           _cache_key_for_model(c.class_name)
-        }
+        } if model_name.respond_to? :constantize
         m << _cache_key_for_model(model_name)
         signature = m.join(',')
       else
