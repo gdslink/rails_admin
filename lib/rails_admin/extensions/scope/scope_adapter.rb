@@ -35,7 +35,7 @@ module RailsAdmin
           #assigned (ex: User not being associated to a company)
           # if @controller.current_user.class.name == base_abstract_model.model.name then
           #   return query if !@authorization_adapter || @authorization_adapter.authorized?(:list, nil, @controller.current_user.class.name)
-          # end        
+          # end
 
           @controller.current_scope.each do |key, value|
             next if base_abstract_model.model.name == key
@@ -172,7 +172,7 @@ module RailsAdmin
           end
 
           def list_entries_for(model_name, association = {})
-            Rails.cache.fetch("admin/scope/#{cache_key(model_name)}") do
+            Rails.cache.fetch(Digest::SHA1.hexdigest("admin/scope/#{current_ability.cache_key}/#{cache_key(model_name)}/#{association.to_s}")) do
               abstract_model = RailsAdmin::AbstractModel.new(model_name)
               scope = @authorization_adapter && @authorization_adapter.query(:list, abstract_model)
               abstract_model.where(association, scope).all
