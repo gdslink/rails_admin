@@ -162,6 +162,7 @@ module RailsAdmin
 
           def update_scope
             @scope_adapter.models.each do |model|
+              invalidate_cache_key(model.name)
               update_session_for_model(model, params[model.name])
             end
             get_scope_models
@@ -180,7 +181,7 @@ module RailsAdmin
           end
 
           def get_scope_models
-            @current_scope = {}
+            @current_scope  = {}
             session[:scope] ||= {}
             parent_model     = nil
             parent_selection_id = nil
