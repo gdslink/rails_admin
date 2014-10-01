@@ -44,6 +44,9 @@
                 $j("#system_installing_message").show();
                 $j("#system_import_upload_attrs").hide();
 
+                window.parent.$j('div.createAssociatedRecordDialog').data("dialog")._setOption('title', 'Importing...');
+                $j('div.ui-dialog-buttonpane span.ui-button-text').text("Close");
+
                 return true;
             }
         </script>
@@ -75,6 +78,8 @@
             </table>
           </form>
         </div>
+
+        <div id="system_installing_message" style="display:none;"><%=t('admin.import_export.import_close')%></div>
 
         <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
           <%= render :partial => 'submit_buttons' %>
