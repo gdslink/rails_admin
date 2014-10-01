@@ -57,11 +57,16 @@ module RailsAdmin
     end
 
     def get_model
-      @model_name = to_model_name(params[:model_name])
-      @abstract_model = RailsAdmin::AbstractModel.new(@model_name)
-      @model_config = RailsAdmin.config(@abstract_model)
-      not_found if @model_config.excluded?
-      @properties = @abstract_model.properties
+      begin
+        @model_name = to_model_name(params[:model_name])
+        @abstract_model = RailsAdmin::AbstractModel.new(@model_name)
+        @model_config = RailsAdmin.config(@abstract_model)
+        not_found if @model_config.excluded?
+        @properties = @abstract_model.properties
+      rescue Exception => e
+        Rails.logger.warn("--- Admin: Invalid model name: #{params[:model_name]} - #{e}")
+        not_found
+      end
     end
 
     def to_model_name(param)
