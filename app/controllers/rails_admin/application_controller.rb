@@ -35,13 +35,13 @@ module RailsAdmin
     end
 
     def _cache_key_for_model(model_name)
-      Rails.cache.fetch("admin/cache_key/#{session[:scope].to_s}/#{model_name}") do
+      Rails.cache.fetch(Digest::SHA1.hexdigest("admin/cache_key/#{session[:scope].to_s}/#{model_name}")) do
         model_name.to_s + Time.now.to_i.to_s
       end
     end
 
     def invalidate_cache_key(model_name)
-      Rails.cache.delete("admin/cache_key/#{session[:scope].to_s}/#{model_name}")
+      Rails.cache.delete(Digest::SHA1.hexdigest("admin/cache_key/#{session[:scope].to_s}/#{model_name}"))
     end
 
     def set_timezone
