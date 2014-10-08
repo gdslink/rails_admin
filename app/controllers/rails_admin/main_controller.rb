@@ -16,19 +16,20 @@ module RailsAdmin
                   expires_in: 10.minute
 
     caches_action :new,
-                  cache_path: Proc.new {"admin/new/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name)}"},
+                  cache_path: Proc.new {"admin/new/#{current_user.cache_key}/#{@application.id}/#{cache_key(@model_name)}"},
                   expires_in: 10.minute
 
     caches_action :list,
                   cache_path: Proc.new {"admin/list/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name, false)}"},
-                  expires_in: 10.minute
+                  expires_in: 10.minute,
+                  layout: false
 
     caches_action :edit,
-                  cache_path: Proc.new {"admin/edit/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name)}/#{params[:id]}"},
+                  cache_path: Proc.new {"admin/edit/#{current_user.cache_key}/#{@application.id}/#{cache_key(@model_name)}/#{params[:id]}"},
                   expires_in: 10.minute
 
     caches_action :show,
-                  cache_path: Proc.new {"admin/show/#{current_ability.cache_key}/#{@application.id}/#{cache_key(@model_name)}/#{params[:id]}"},
+                  cache_path: Proc.new {"admin/show/#{current_user.cache_key}/#{@application.id}/#{cache_key(@model_name)}/#{params[:id]}"},
                   expires_in: 10.minute
 
     def index
