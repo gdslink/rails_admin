@@ -9,6 +9,7 @@ module RailsAdmin
     before_filter :_scope!
     before_filter :set_timezone
     before_filter :set_locale
+    before_filter :check_admin_access
     before_filter :set_plugin_name
 
     before_filter :_get_scope_models!
@@ -95,6 +96,23 @@ module RailsAdmin
     end
 
     private
+
+    def check_admin_access
+      t = Time.now
+      st = "#{CaseCenter::Config::Reader.get("admin_access_start_time")}"
+      et = "#{CaseCenter::Config::Reader.get("admin_access_end_time")}"
+
+      unless st.blank? && et.blank?
+        hr, min = st.split(":")
+        startTime = Time.new(t.year, t.month, t.day, hr, min)
+        hr, min = et.split(":")
+        endTime = Time.new(t.year, t.month, t.day, hr, min)
+        if t.between?(startTime, endTime)
+          flash.now[:error] = t('admin.access.time_window', :start_time => st, :end_time => et)
+          render :file => Rails.root.join('public', '401.html'), :layout => false, :status => 401
+        end
+      end
+    end
 
     def get_locale
       locale = params[:locale].to_s
