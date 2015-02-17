@@ -98,7 +98,7 @@ module RailsAdmin
     private
 
     def check_admin_access
-      if current_user.is_admin?
+      unless current_user.is_root?
         t = Time.now
         st = "#{CaseCenter::Config::Reader.get("admin_access_start_time")}"
         et = "#{CaseCenter::Config::Reader.get("admin_access_end_time")}"
