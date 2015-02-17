@@ -98,18 +98,19 @@ module RailsAdmin
     private
 
     def check_admin_access
-      t = Time.now
-      st = "#{CaseCenter::Config::Reader.get("admin_access_start_time")}"
-      et = "#{CaseCenter::Config::Reader.get("admin_access_end_time")}"
-
-      unless st.blank? && et.blank?
-        hr, min = st.split(":")
-        startTime = Time.new(t.year, t.month, t.day, hr, min)
-        hr, min = et.split(":")
-        endTime = Time.new(t.year, t.month, t.day, hr, min)
-        if t.between?(startTime, endTime)
-          flash.now[:error] = t('admin.access.time_window', :start_time => st, :end_time => et)
-          render :file => Rails.root.join('public', '401.html'), :layout => false, :status => 401
+      if current_user.is_admin?
+        t = Time.now
+        st = "#{CaseCenter::Config::Reader.get("admin_access_start_time")}"
+        et = "#{CaseCenter::Config::Reader.get("admin_access_end_time")}"
+        if !st.blank? && !et.blank?
+          hr, min = st.split(":")
+          startTime = Time.new(t.year, t.month, t.day, hr, min)
+          hr, min = et.split(":")
+          endTime = Time.new(t.year, t.month, t.day, hr, min)
+          if t.between?(startTime, endTime)
+            flash.now[:error] = t('admin.access.time_window', :start_time => st, :end_time => et)
+            render :file => Rails.root.join('public', '401.html'), :layout => false, :status => 401
+          end
         end
       end
     end
