@@ -12,11 +12,36 @@ module RailsAdmin
 
     before_filter :_authenticate!
     before_filter :_authorize!
+    before_filter :_scope!
+    before_filter :_scope_current_user!
+    before_filter :_get_scope_models!
+    before_filter :_get_scope_parameters!
     before_filter :_audit!
 
-    helper_method :_current_user, :_get_plugin_name
+    before_filter :_set_timezone
+    before_filter :_set_locale
+
+
+    helper_method :_current_user, :_get_plugin_name, :cache_key
 
     attr_reader :object, :model_config, :abstract_model
+
+    def cache_key(model_name, depends = true)
+      signature = model_name
+      m = []
+      if depends
+        m = model_name.constantize.reflect_on_all_associations.map{ |c|
+          _cache_key_for_model(c.class_name)
+        } if model_name.respond_to? :constantize
+        m << _cache_key_for_model(model_name)
+        signature = m.join(',')
+      else
+        signature = _cache_key_for_model(model_name)
+      end
+
+      cache_name = Digest::SHA1.hexdigest("admin/cache_key/#{signature}")
+      cache_name
+    end
 
     def get_model
       @model_name = to_model_name(params[:model_name])
@@ -30,7 +55,7 @@ module RailsAdmin
     end
 
     def to_model_name(param)
-      param.split('~').collect(&:camelize).join('::')
+      param.to_s.split('~').collect(&:camelize).join('::')
     end
 
     def _current_user
@@ -38,6 +63,21 @@ module RailsAdmin
     end
 
   private
+
+    def _set_timezone
+      Time.zone = current_user.time_zone if current_user
+    end
+
+    def _set_locale
+      I18n.locale = get_locale || extract_locale_from_accept_language_header
+    end
+
+
+    def _cache_key_for_model(model_name)
+      Rails.cache.fetch(Digest::SHA1.hexdigest("admin/cache_key/#{session[:scope].to_s}/#{model_name}")) do
+        model_name.to_s + Time.now.to_i.to_s
+      end
+    end
 
     def _get_plugin_name
       @plugin_name_array ||= [RailsAdmin.config.main_app_name.is_a?(Proc) ? instance_eval(&RailsAdmin.config.main_app_name) : RailsAdmin.config.main_app_name].flatten
@@ -51,8 +91,44 @@ module RailsAdmin
       instance_eval(&RailsAdmin::Config.authorize_with)
     end
 
+    def _scope_current_user!
+      User.current_user = self.current_user
+    end
+
     def _audit!
       instance_eval(&RailsAdmin::Config.audit_with)
+    end
+
+    def _scope!
+      instance_eval(&RailsAdmin::Config.scope_with)
+    end
+
+    def _get_scope_models!
+      get_scope_models if @scope_adapter
+    end
+
+    def _get_scope_parameters!
+      @current_scope_parameters = {}
+      return if not session.include? :scope
+      session[:scope].each do |model, value|
+        @current_scope_parameters[model] = value
+      end
+      @current_scope_parameters
+      current_user.current_scope = @current_scope_parameters
+    end
+
+    def check_scope_on_query
+      return if not request.format or not request.format.html?
+      return if not @scope_adapter or not @authorization_adapter
+      return if @scope_adapter.models.map{|m| m.name}.include?(@abstract_model.model.name)
+      @scope_adapter.models.each do |model|
+        assoc = @abstract_model.belongs_to_associations.map{|a| a if  a[:parent_model].respond_to? :name and a[:parent_model].name == model.name}.reject{|a| a.nil?}.first
+        if @object and assoc and assoc.length > 0 then
+          record = @object.send assoc[:name]
+          raise CanCan::AccessDenied if record.id != @current_scope_parameters[model.name].to_i
+        end
+        raise CanCan::AccessDenied if not params.include?(model.name)
+      end
     end
 
     alias_method :user_for_paper_trail, :_current_user

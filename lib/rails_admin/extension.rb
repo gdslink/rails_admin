@@ -4,13 +4,14 @@ module RailsAdmin
   AUTHORIZATION_ADAPTERS = {}
   AUDITING_ADAPTERS = {}
   CONFIGURATION_ADAPTERS = {}
+  SCOPE_ADAPTERS = {}
 
   # Extend RailsAdmin
   #
   # The extension may define various adapters (e.g., for authorization) and
   # register those via the options hash.
   def self.add_extension(extension_key, extension_definition, options = {})
-    options.assert_valid_keys(:authorization, :configuration, :auditing)
+    options.assert_valid_keys(:authorization, :configuration, :auditing, :scope)
 
     EXTENSIONS << extension_key
 
@@ -24,6 +25,10 @@ module RailsAdmin
 
     if options[:auditing]
       AUDITING_ADAPTERS[extension_key] = extension_definition::AuditingAdapter
+    end
+
+    if options[:scope]
+      SCOPE_ADAPTERS[extension_key] = extension_definition::ScopeAdapter
     end
   end
 end

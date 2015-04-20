@@ -205,6 +205,7 @@
             this._attachments(input, inst);
             input.addClass(this.markerClassName).
                 keydown(this._doKeyDown).
+
                 keyup(this._doKeyUp).
                 bind("setData.timepicker", function (event, key, value) {
                     inst.settings[key] = value;

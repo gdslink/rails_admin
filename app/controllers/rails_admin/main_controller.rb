@@ -8,6 +8,7 @@ module RailsAdmin
 
     before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name)
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
+    before_filter :check_scope_on_query, :except => [:index, :update_scope]
     before_filter :check_for_cancel
 
     RailsAdmin::Config::Actions.all.each do |action|

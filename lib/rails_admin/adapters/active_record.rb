@@ -53,6 +53,10 @@ module RailsAdmin
         end
       end
 
+      def belongs_to
+        associations.map{|a| a if a.type == :belongs_to}.compact
+      end
+
       def properties
         columns = model.columns.reject do |c|
           c.type.blank? ||

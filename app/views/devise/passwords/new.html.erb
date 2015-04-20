@@ -1,0 +1,29 @@
+<%= stylesheet_link_tag 'application'%>
+
+<%if resource.errors.size > 0 %>
+  <div id='flash-alert'>
+    <%= custom_devise_error_messages! %>
+  </div>
+<%end%>
+
+<div id="main-login">
+
+<%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post }) do |f| %>  
+
+  <table class="vedit">
+  <tbody><tr>
+      <td>
+      <div class="head_title"><%=t('devise.sessions.email')%></div>
+      <div class="small">&nbsp;</div><br class="clear">
+      <%=f.email_field :email, :class => "lg_log", :size => '30'%>
+      </td>
+  </tr>
+  </tbody></table>
+
+  <div class='button'>
+    <%= f.submit t('devise.passwords.send_reset_instructions'), :class => "ra-button ui-state-highlight" %>
+    <p><%= render :partial => "devise/shared/links" %></p>
+  </div>
+<% end %>
+
+</div>

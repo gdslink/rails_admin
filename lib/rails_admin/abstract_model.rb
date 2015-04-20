@@ -76,8 +76,9 @@ module RailsAdmin
       model.model_name.human
     end
 
-    def where(conditions)
-      model.where(conditions)
+    def where(conditions = {}, scope = nil)
+      scope ||= model
+      scope.where(conditions)
     end
 
     def each_associated_children(object)

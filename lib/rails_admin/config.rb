@@ -20,6 +20,8 @@ module RailsAdmin
 
     DEFAULT_CURRENT_USER = proc {}
 
+    DEFAULT_SCOPE = proc {}
+
     class << self
       # Application title, can be an array of two elements
       attr_accessor :main_app_name
@@ -92,6 +94,18 @@ module RailsAdmin
       def authenticate_with(&blk)
         @authenticate = blk if blk
         @authenticate || DEFAULT_AUTHENTICATION
+      end
+
+      def scope_with(*args, &blk)
+        extension = args.shift
+        if extension
+          @scope = proc do
+            @scope_adapter = RailsAdmin::SCOPE_ADAPTERS[extension].new(*([self] + args).compact)
+          end
+        else
+          @scope = blk if blk
+        end
+        @scope || DEFAULT_SCOPE
       end
 
       # Setup auditing/history/versioning provider that observe objects lifecycle

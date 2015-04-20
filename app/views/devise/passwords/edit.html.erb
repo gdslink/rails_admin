@@ -1,0 +1,36 @@
+<%= stylesheet_link_tag 'application'%>
+
+<%if resource.errors.size > 0 %>
+  <div id='flash-alert'>
+    <%= devise_error_messages! %>
+  </div>
+<%end%>
+
+<div id="main-login">
+
+<%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :put }) do |f| %>
+  <%= f.hidden_field :reset_password_token %>
+  
+  <table class="vedit">
+  <tbody><tr>
+      <td>
+      <div class="head_title"><%=t('devise.passwords.new_password')%></div>
+      <div class="small">&nbsp;</div><br class="clear">
+      <%=f.password_field :password, :class => "lg_log", :size => '30'%>
+      </td>
+  </tr>
+  <tr>
+      <td>
+      <div class="head_title"><%=t('devise.passwords.password_confirmation')%></div>
+      <div class="small">&nbsp;</div><br class="clear">
+      <%=f.password_field :password_confirmation, :class => "lg_log", :size => '30'%>
+      </td>
+  </tr>
+  </tbody></table>
+
+  <div class='button'>
+    <%= f.submit t('devise.passwords.change_my_password'), :class => "ra-button ui-state-highlight" %>
+  </div>
+<% end %>
+
+</div>

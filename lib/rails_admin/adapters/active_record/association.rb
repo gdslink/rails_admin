@@ -71,6 +71,32 @@ module RailsAdmin
           true
         end
 
+        def parent_model
+          case association.macro
+            when :belongs_to
+              if association.options[:polymorphic]
+                RailsAdmin::Adapters::ActiveRecord.polymorphic_parents(association.name) || []
+              else
+                association.klass
+              end
+            when :has_one, :has_many, :has_and_belongs_to_many
+              association.active_record
+            else
+              raise "Unknown association type: #{association.macro.inspect}"
+          end
+        end
+
+        def child_key
+          case association.macro
+            when :belongs_to
+              association.options[:foreign_key].try(:to_sym) || "#{association.name}_id".to_sym
+            when :has_one, :has_many, :has_and_belongs_to_many
+              association.foreign_key.to_sym
+            else
+              raise "Unknown association type: #{association.macro.inspect}"
+          end
+        end
+
         delegate :options, :scope, to: :association, prefix: false
         delegate :polymorphic_parents, to: RailsAdmin::AbstractModel
       end
