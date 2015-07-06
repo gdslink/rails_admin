@@ -16,7 +16,7 @@ models = @scope_adapter.models
           <%= link_to I18n.t('admin.scope.add'), new_path(:model_name => model.name ), :id => "#{model.name}_add", :class => "createAssociatedRecord" %>
         <%end%>
       <%end%>
-      <%if index == 1 and @current_scope[models[index-1].name][:entries].length == 0%>
+      <%if index == 1 and @current_scope[models[index-1].name][:entries].length > 0 and @current_scope[model_name][:entries].length == 0%>
         <% if authorized? :system_import, nil, model %>
           <%= link_to I18n.t('admin.scope.system_import'), system_import_path(:model_name => model.name ), :id => "#{model.name}_import", :class => "createAssociatedRecord" %>
         <%end%>
