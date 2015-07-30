@@ -1,0 +1,40 @@
+:javascript
+  function alertme() {
+    v = $j("#field_upload").val();
+    if(v == undefined || v === '')
+      {
+        alert("#{t('admin.import_export.missing_file')}");
+        return false;
+      }
+      return true;
+  }
+
+
+- unless params[:mode]
+  %div
+    %h2 STEP 1: FIELD IMPORT HERE
+    = form_tag field_import_path(current_scope_parameters.merge(:mode => "upload")), :multipart => true do
+      = file_field_tag "fields", :accept => "text/csv", :id => "field_upload"
+      = submit_tag t('admin.import_export.upload'), :id => "field_upload_btn", :class => "ra-button", :onclick => "return alertme();"
+    %p Only accepts csv file
+    %p Include the following headers in your csv: name key description table_id field_type default_value enable_index is_protected is_encrypted
+
+- if params[:mode] == "upload"
+  %div
+    %h2 STEP 2: FIELDS TO IMPORT HERE
+    = form_tag field_import_path(current_scope_parameters.merge(:mode => "import")) do
+      = render_field_list(@csv)
+      %br
+      = submit_tag t('admin.import_export.import_file'), :name => "import", :class => "ra-button"
+
+
+- if params[:mode] == "import"
+  %div
+    %h2 STEP 3: RESULTS OF IMPORT HERE
+    - if @result.failed_instances.length > 0
+      %p List of fields that failed:
+      %ul
+        - @result.failed_instances.each do |f|
+          %li= "#{f.name} - #{f.errors.full_messages.join(",")}"
+    - else
+      %p Import successful
