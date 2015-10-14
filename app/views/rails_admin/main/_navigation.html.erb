@@ -33,7 +33,7 @@
                u = get_url(:list, m) rescue nil
              end
           %>
-          <%=link_to section[:links].length == 1 ? u : "#", {:class => section[:match_keys]} do%>
+          <%=link_to %w(Dashboard Navigators).include?(section[:label]) ? u : "#", {:class => section[:match_keys]} do%>
             <%if section[:image] then%>
                 <%=image_tag section[:image] %>
             <%end%>
@@ -44,7 +44,7 @@
   </ul>
 
   <%accordion_navigation[:sections].each do |section|%>
-    <%next if section[:links].length == 1 %>
+    <%next if %w(Dashboard Navigators).include?(section[:label])%>
     <ul id="<%=section[:label].delete(" ")%>_id" class="submenu dropdown">
     <% section[:links].each do |link| %>
       <li>

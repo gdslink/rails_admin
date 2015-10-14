@@ -83,6 +83,11 @@
     <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
     <div class="ra-block-toolbar ui-state-highlight">
       <ul>
+        <% if @abstract_model.to_param == 'fields' %>
+            <li>
+              <%= link_to("Import", field_import_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param)), :class => "ra-button")  %>
+            </li>
+        <% end %>
         <% if authorized? :read, @abstract_model %>
             <li>
               <%= link_to(t("admin.list.export_action"), export_path(params.reject{|key, value| key.to_sym == :page}), :class => "ra-button", :method => :post) %>
