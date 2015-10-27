@@ -1,0 +1,11 @@
+%div.remove-for-form.ra-block-toolbar.ui-state-highlight.clearfix
+  %ul.submit.clearfix
+    - if params[:mode] == "upload"
+      %li.import
+        = submit_tag t('admin.import_export.import_file'), :name => "import", :class => "ra-button"
+    - unless params[:mode] == "import"
+      %li.cancel
+        = link_to "Cancel", list_path(current_scope_parameters.merge(:model_name => @model_name)), :class => "ra-button"
+    - if params[:mode] == "import"
+      %li.done
+        = link_to "Done", list_path(current_scope_parameters.merge(:model_name => @model_name)), :class => "ra-button"

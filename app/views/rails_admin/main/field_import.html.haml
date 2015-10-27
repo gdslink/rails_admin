@@ -1,4 +1,53 @@
+- @tables = Query::FieldTable.new(authorization_adapter, scope_adapter).tables.inject({}) do |h, object|
+  - h[object.key] = object.id
+  - h
+- @tables.to_a
+
+- @field_types = Hash[*(Field.new.field_type_enum.flatten.map {|d| d.to_s})]
+
 :javascript
+  $j(document).ready(function() {
+    $j("[id^=field__]").on('change', function(){
+      chkbox = $j(this).closest("tr").find(".valid_chkbox")
+      if (chkbox.is(":checked"))
+        chkbox.trigger("click")
+      $j(this).closest("tr").find(".valid_chkbox").trigger("click");
+    });
+
+    $j("input[type=submit][name=import]").on('click', function(){
+      if ($j(".valid_chkbox:checked").length == 0) {
+        alert("Nothing to import");
+        return false;
+      } else {
+        $j("form").submit()
+      }
+    });
+
+    $j(".valid_chkbox").on('click', function(){
+      chkbox = $j(this)
+      if ($j(this).is(":checked")) {
+        var status = $j(this).closest("tr").find("span.status-msg").first()
+        var rowData = {}
+        $j(this).closest("tr").find("[id^=field__]").each(function() {
+          field_name = $(this).attr("id").replace("field__", "")
+          if ($(this).is("input[type=text]") || $(this).is("select"))
+            rowData[field_name] = $(this).val()
+          if ($(this).is("input[type=checkbox]"))
+            rowData[field_name] = $(this).is(":checked")
+        });
+
+        $j.post("#{field_import_url(current_scope_parameters.merge(:mode => "ajax", :tables => @tables, :field_types => @field_types))}", {field: JSON.stringify(rowData)}, function(result){
+          if (result.errors.length == 0) {
+            status.html("OK").css({"color": "green"})
+          } else {
+            status.html(result.errors).removeAttr("style")
+            chkbox.trigger("click")
+          }
+        });
+      }
+    });
+  });
+
   function alertme() {
     v = $j("#field_upload").val();
     if (v == undefined || v === '') {
@@ -14,33 +63,32 @@
   }
 
 
-- unless params[:mode] or params[:mode] == "download"
-  %div
-    %h2 STEP 1: FIELD IMPORT HERE
-    = form_tag field_import_path(current_scope_parameters.merge(:mode => "upload")), :multipart => true do
-      = file_field_tag "fields", :accept => "text/csv", :id => "field_upload"
-      = submit_tag t('admin.import_export.upload'), :id => "field_upload_btn", :class => "ra-button", :onclick => "return alertme();"
-    %p Only accepts csv file
-    %p Include the following headers in your csv: name key description table_id field_type default_value enable_index is_protected is_encrypted
-    = link_to "Download template file", field_import_path(current_scope_parameters.merge(:mode => "download"))
+%div.ra-block
+  %div.ui-widget-header
+    = @page_name
+  %div.ra-block-content
+    = render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash})
+    = render :partial => "field_import_submit_buttons"
+    %div
+      - unless params[:mode] or params[:mode] == "download"
+        = form_tag field_import_path(current_scope_parameters.merge(:mode => "upload")), :multipart => true do
+          = file_field_tag "fields", :accept => "text/csv", :id => "field_upload"
+          = submit_tag t('admin.import_export.upload'), :id => "field_upload_btn", :class => "ra-button", :onclick => "return alertme();"
+        %p Note: Only accepts csv file
+        %br
+        = link_to "Download template file", field_import_path(current_scope_parameters.merge(:mode => "download"))
 
-- if params[:mode] == "upload"
-  %div{style: 'margin-bottom: 60px;'}
-    %h2 STEP 2: FIELDS TO IMPORT HERE
-    = form_tag field_import_path(current_scope_parameters.merge(:mode => "import")) do
-      = render_field_list(@csv)
-      %br
-      = submit_tag t('admin.import_export.import_file'), :name => "import", :class => "ra-button"
-      %br
-      %br
+      - if params[:mode] == "upload"
+        - unless @error
+          = form_tag field_import_path(current_scope_parameters.merge(:mode => "import")) do
+            = render_field_list(@csv)
+        = render :partial => "field_import_submit_buttons"
 
-- if params[:mode] == "import"
-  %div
-    %h2 STEP 3: RESULTS OF IMPORT HERE
-    - if @result.failed_instances.length > 0
-      %p List of fields that failed:
-      %ul
-        - @result.failed_instances.each do |f|
-          %li= "#{f.name} - #{f.errors.full_messages.join(",")}"
-    - else
-      %p Import successful
+      - if params[:mode] == "import"
+        - if @result.failed_instances.length > 0
+          %p List of fields that failed:
+          %ul
+            - @result.failed_instances.each do |f|
+              %li= "#{f.name} - #{f.errors.full_messages.join(",")}"
+        - else
+          %p Import successful!
