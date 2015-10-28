@@ -69,7 +69,7 @@
   %div.ra-block-content
     = render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash})
     = render :partial => "field_import_submit_buttons"
-    %div
+    %div{:style => "overflow-x: auto"}
       - unless params[:mode] or params[:mode] == "download"
         = form_tag field_import_path(current_scope_parameters.merge(:mode => "upload")), :multipart => true do
           = file_field_tag "fields", :accept => "text/csv", :id => "field_upload"
@@ -82,7 +82,6 @@
         - unless @error
           = form_tag field_import_path(current_scope_parameters.merge(:mode => "import")) do
             = render_field_list(@csv)
-        = render :partial => "field_import_submit_buttons"
 
       - if params[:mode] == "import"
         - if @result.failed_instances.length > 0
@@ -92,3 +91,6 @@
               %li= "#{f.name} - #{f.errors.full_messages.join(",")}"
         - else
           %p Import successful!
+
+    - if params[:mode] == "upload"
+      = render :partial => "field_import_submit_buttons"
