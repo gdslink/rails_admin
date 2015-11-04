@@ -74,7 +74,10 @@
         = form_tag field_import_path(current_scope_parameters.merge(:mode => "upload")), :multipart => true do
           = file_field_tag "fields", :accept => "text/csv", :id => "field_upload"
           = submit_tag t('admin.import_export.upload'), :id => "field_upload_btn", :class => "ra-button", :onclick => "return alertme();"
-        %p Note: Only accepts csv file
+          %p.help Only accepts csv file
+        %br
+        %b NOTE:
+        %p List of field types (case-sensitive): String, Mongoid::CaseInsensitiveString, Integer, Float, BigDecimal, Money, Date, File
         %br
         = link_to "Download template file", field_import_path(current_scope_parameters.merge(:mode => "download"))
 
