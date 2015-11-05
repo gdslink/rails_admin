@@ -3,6 +3,7 @@
 <% #Factor out to controller
   model_config = RailsAdmin.config(@abstract_model)
 %>
+<% if (@abstract_model.pretty_name) != 'Application' %>
 <ul class="items">
   <li>
     <%= @abstract_model.pretty_name %>: <%= link_to(model_config.with(:object => object).object_label, edit_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => object.id))) %>
@@ -25,3 +26,4 @@
     </ul>
   </li>
 </ul>
+<% end %>
