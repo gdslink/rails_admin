@@ -566,76 +566,117 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
       expect(find('#team_name_field .help-block')).to have_content(I18n.translate('admin.help.team.name'))
     end
 
-    it 'can hide the add button on an associated field' do
-      RailsAdmin.config Player do
-        edit do
-          field :team do
-            inline_add false
-          end
-          field :draft do
-            inline_add false
-          end
-          field :comments do
-            inline_add false
+    describe 'inline_add' do
+      it 'can hide the add button on an associated field' do
+        RailsAdmin.config Player do
+          edit do
+            field :team do
+              inline_add false
+            end
+            field :draft do
+              inline_add false
+            end
+            field :comments do
+              inline_add false
+            end
           end
         end
+        visit new_path(model_name: 'player')
+        is_expected.to have_no_selector('a', text: 'Add a new Team')
+        is_expected.to have_no_selector('a', text: 'Add a new Draft')
+        is_expected.to have_no_selector('a', text: 'Add a new Comment')
       end
-      visit new_path(model_name: 'player')
-      is_expected.to have_no_selector('a', text: 'Add a new Team')
-      is_expected.to have_no_selector('a', text: 'Add a new Draft')
-      is_expected.to have_no_selector('a', text: 'Add a new Comment')
+
+      it 'can show the add button on an associated field' do
+        RailsAdmin.config Player do
+          edit do
+            field :team do
+              inline_add true
+            end
+            field :draft do
+              inline_add true
+            end
+            field :comments do
+              inline_add true
+            end
+          end
+        end
+        visit new_path(model_name: 'player')
+        is_expected.to have_selector('a', text: 'Add a new Team')
+        is_expected.to have_selector('a', text: 'Add a new Draft')
+        is_expected.to have_selector('a', text: 'Add a new Comment')
+      end
+
+      context 'when the associated model is invisible' do
+        before do
+          RailsAdmin.config do |config|
+            [Team, Draft, Comment].each do |model|
+              config.model model do
+                visible false
+              end
+            end
+          end
+        end
+
+        it 'does not prevent showing the add button' do
+          visit new_path(model_name: 'player')
+          is_expected.to have_selector('a', text: 'Add a new Team')
+          is_expected.to have_selector('a', text: 'Add a new Draft')
+          is_expected.to have_selector('a', text: 'Add a new Comment')
+        end
+      end
     end
 
-    it 'can show the add button on an associated field' do
-      RailsAdmin.config Player do
-        edit do
-          field :team do
-            inline_add true
-          end
-          field :draft do
-            inline_add true
-          end
-          field :comments do
-            inline_add true
+    describe 'inline_edit' do
+      it 'can hide the edit button on an associated field' do
+        RailsAdmin.config Player do
+          edit do
+            field :team do
+              inline_edit false
+            end
+            field :draft do
+              inline_edit false
+            end
           end
         end
+        visit new_path(model_name: 'player')
+        is_expected.to have_no_selector('a', text: 'Edit this Team')
+        is_expected.to have_no_selector('a', text: 'Edit this Draft')
       end
-      visit new_path(model_name: 'player')
-      is_expected.to have_selector('a', text: 'Add a new Team')
-      is_expected.to have_selector('a', text: 'Add a new Draft')
-      is_expected.to have_selector('a', text: 'Add a new Comment')
-    end
 
-    it 'can hide the edit button on an associated field' do
-      RailsAdmin.config Player do
-        edit do
-          field :team do
-            inline_edit false
-          end
-          field :draft do
-            inline_edit false
+      it 'can show the edit button on an associated field' do
+        RailsAdmin.config Player do
+          edit do
+            field :team do
+              inline_edit true
+            end
+            field :draft do
+              inline_edit true
+            end
           end
         end
+        visit new_path(model_name: 'player')
+        is_expected.to have_selector('a', text: 'Edit this Team')
+        is_expected.to have_selector('a', text: 'Edit this Draft')
       end
-      visit new_path(model_name: 'player')
-      is_expected.to have_no_selector('a', text: 'Edit this Team')
-      is_expected.to have_no_selector('a', text: 'Edit this Draft')
-    end
 
-    it 'can show the edit button on an associated field' do
-      RailsAdmin.config Player do
-        edit do
-          field :team do
-            inline_edit true
-          end
-          field :draft do
-            inline_edit true
+      context 'when the associated model is invisible' do
+        before do
+          RailsAdmin.config do |config|
+            [Team, Draft].each do |model|
+              config.model model do
+                visible false
+              end
+            end
           end
         end
+
+        it 'does not prevent showing the edit button' do
+          visit new_path(model_name: 'player')
+          is_expected.to have_selector('a', text: 'Edit this Team')
+          is_expected.to have_selector('a', text: 'Edit this Draft')
+        end
       end
-      visit new_path(model_name: 'player')
-      is_expected.to have_selector('a', text: 'Edit this Team')
-      is_expected.to have_selector('a', text: 'Edit this Draft')
     end
   end
 
@@ -665,7 +706,8 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
   describe 'nested form' do
     it 'works', js: true do
       @record = FactoryGirl.create :field_test
-      @record.nested_field_tests = [NestedFieldTest.create!(title: 'title 1'), NestedFieldTest.create!(title: 'title 2')]
+      NestedFieldTest.create! title: 'title 1', field_test: @record
+      NestedFieldTest.create! title: 'title 2', field_test: @record
       visit edit_path(model_name: 'field_test', id: @record.id)
 
       find('#field_test_comment_attributes_field .add_nested_fields').click
@@ -702,7 +744,7 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
         end
       end
       @record = FieldTest.create
-      @record.nested_field_tests << NestedFieldTest.create!(title: 'title 1')
+      NestedFieldTest.create! title: 'title 1', field_test: @record
       visit edit_path(model_name: 'field_test', id: @record.id)
       expect(find('#field_test_nested_field_tests_attributes_0_title_field')).to have_content('NestedFieldTest')
     end
@@ -735,7 +777,7 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
 
       it 'does not show destroy button except for newly created when :allow_destroy is false' do
         @record = FieldTest.create
-        @record.nested_field_tests << NestedFieldTest.create!(title: 'nested title 1')
+        NestedFieldTest.create! title: 'nested title 1', field_test: @record
         allow(FieldTest.nested_attributes_options).to receive(:[]).with(:nested_field_tests).
           and_return(allow_destroy: false, update_only: false)
         visit edit_path(model_name: 'field_test', id: @record.id)
@@ -776,6 +818,44 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
     end
   end
 
+  describe 'has_many', active_record: true do
+    context 'with not nullable foreign key' do
+      before do
+        RailsAdmin.config FieldTest do
+          edit do
+            field :nested_field_tests do
+              nested_form false
+            end
+          end
+        end
+        @field_test = FactoryGirl.create :field_test
+      end
+
+      it 'don\'t allow to remove element', js: true do
+        visit edit_path(model_name: 'FieldTest', id: @field_test.id)
+        is_expected.not_to have_selector('a.ra-multiselect-item-remove')
+        is_expected.not_to have_selector('a.ra-multiselect-item-remove-all')
+      end
+    end
+
+    context 'with nullable foreign key' do
+      before do
+        RailsAdmin.config Team do
+          edit do
+            field :players
+          end
+        end
+        @team = FactoryGirl.create :team
+      end
+
+      it 'allow to remove element', js: true do
+        visit edit_path(model_name: 'Team', id: @team.id)
+        is_expected.to have_selector('a.ra-multiselect-item-remove')
+        is_expected.to have_selector('a.ra-multiselect-item-remove-all')
+      end
+    end
+  end
+
   describe 'fields which are nullable and have AR validations', active_record: true do
     it 'is required' do
       # draft.notes is nullable and has no validation
@@ -798,6 +878,12 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
       # team.revenue is nullable in the schema but has an AR
       # validates_numericality_of validation that allows nil
       field = RailsAdmin.config('Team').edit.fields.detect { |f| f.name == :revenue }
+      expect(field.properties.nullable?).to be_truthy
+      expect(field.required?).to be_falsey
+
+      # team.founded is nullable in the schema but has an AR
+      # validates_numericality_of validation that allows blank
+      field = RailsAdmin.config('Team').edit.fields.detect { |f| f.name == :founded }
       expect(field.properties.nullable?).to be_truthy
       expect(field.required?).to be_falsey
     end
@@ -854,6 +940,33 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
     end
   end
 
+  describe 'Froala Support' do
+    it 'adds Javascript to enable Froala' do
+      RailsAdmin.config Draft do
+        edit do
+          field :notes, :froala
+        end
+      end
+      visit new_path(model_name: 'draft')
+      is_expected.to have_selector('textarea#draft_notes[data-richtext="froala-wysiwyg"]')
+    end
+
+    it 'should include custom froala configuration' do
+      RailsAdmin.config Draft do
+        edit do
+          field :notes, :froala do
+            config_options inlineMode: false
+            css_location 'stub_css.css'
+            js_location 'stub_js.js'
+          end
+        end
+      end
+
+      visit new_path(model_name: 'draft')
+      is_expected.to have_selector("textarea#draft_notes[data-richtext=\"froala-wysiwyg\"][data-options]")
+    end
+  end
+
   describe 'Paperclip Support' do
     it 'shows a file upload field' do
       RailsAdmin.config User do
@@ -889,7 +1002,7 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
       it 'auto-detects enumeration' do
         is_expected.to have_selector('.enum_type select')
         is_expected.not_to have_selector('.enum_type select[multiple]')
-        is_expected.to have_content('green')
+        expect(all('.enum_type option').map(&:text).select(&:present?)).to eq %w(blue green red)
       end
     end
 
@@ -1051,6 +1164,39 @@ describe 'RailsAdmin Config DSL Edit Section', type: :request do
 
       it 'makes enumeration multi-selectable' do
         is_expected.to have_selector('.enum_type select[multiple]')
+      end
+    end
+  end
+
+  if defined?(ActiveRecord) && ActiveRecord::VERSION::STRING >= '4.1'
+    describe 'ActiveRecord::Enum support', active_record: true do
+      before do
+        class FieldTestWithEnum < FieldTest
+          self.table_name = 'field_tests'
+          enum integer_field: %w(foo bar)
+        end
+        RailsAdmin.config.included_models = [FieldTestWithEnum]
+        RailsAdmin.config FieldTestWithEnum do
+          edit do
+            field :integer_field
+          end
+        end
+      end
+
+      after do
+        Object.send :remove_const, :FieldTestWithEnum
+      end
+
+      it 'auto-detects enumeration' do
+        visit new_path(model_name: 'field_test_with_enum')
+        is_expected.to have_selector('.enum_type select')
+        is_expected.not_to have_selector('.enum_type select[multiple]')
+        expect(all('.enum_type option').map(&:text).select(&:present?)).to eq %w(foo bar)
+      end
+
+      it 'shows current value as selected' do
+        visit edit_path(model_name: 'field_test_with_enum', id: FieldTestWithEnum.create(integer_field: 'bar'))
+        expect(find('.enum_type select').value).to eq '1'
       end
     end
   end

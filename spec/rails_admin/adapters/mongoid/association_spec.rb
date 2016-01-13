@@ -79,7 +79,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
   end
 
   describe 'belongs_to association' do
-    subject { @post.associations.select { |a| a.name == :mongo_blog }.first }
+    subject { @post.associations.detect { |a| a.name == :mongo_blog } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Mongo blog'
@@ -87,6 +87,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq MongoBlog
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to eq :mongo_blog_id
+      expect(subject.foreign_key_nullable?).to be_truthy
       expect(subject.foreign_type).to be_nil
       expect(subject.foreign_inverse_of).to be_nil
       expect(subject.as).to be_nil
@@ -103,7 +104,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
   end
 
   describe 'has_many association' do
-    subject { @blog.associations.select { |a| a.name == :mongo_posts }.first }
+    subject { @blog.associations.detect { |a| a.name == :mongo_posts } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Mongo posts'
@@ -111,6 +112,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq MongoPost
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to eq :mongo_blog_id
+      expect(subject.foreign_key_nullable?).to be_truthy
       expect(subject.foreign_type).to be_nil
       expect(subject.foreign_inverse_of).to be_nil
       expect(subject.as).to be_nil
@@ -122,7 +124,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
   end
 
   describe 'has_and_belongs_to_many association' do
-    subject { @post.associations.select { |a| a.name == :mongo_categories }.first }
+    subject { @post.associations.detect { |a| a.name == :mongo_categories } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Mongo categories'
@@ -130,6 +132,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq MongoCategory
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to eq :mongo_category_ids
+      expect(subject.foreign_key_nullable?).to be_truthy
       expect(subject.foreign_type).to be_nil
       expect(subject.foreign_inverse_of).to be_nil
       expect(subject.as).to be_nil
@@ -142,7 +145,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
 
   describe 'polymorphic belongs_to association' do
     before { allow(RailsAdmin::Config).to receive(:models_pool).and_return(%w(MongoBlog MongoPost MongoCategory MongoUser MongoProfile MongoComment)) }
-    subject { @comment.associations.select { |a| a.name == :commentable }.first }
+    subject { @comment.associations.detect { |a| a.name == :commentable } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Commentable'
@@ -150,6 +153,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq [MongoBlog, MongoPost]
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to eq :commentable_id
+      expect(subject.foreign_key_nullable?).to be_truthy
       expect(subject.foreign_type).to eq :commentable_type
       expect(subject.foreign_inverse_of).to be_nil
       expect(subject.as).to be_nil
@@ -162,7 +166,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
 
   describe 'polymorphic inverse has_many association' do
     before { allow(RailsAdmin::Config).to receive(:models_pool).and_return(%w(MongoBlog MongoPost MongoCategory MongoUser MongoProfile MongoComment)) }
-    subject { @blog.associations.select { |a| a.name == :mongo_comments }.first }
+    subject { @blog.associations.detect { |a| a.name == :mongo_comments } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Mongo comments'
@@ -170,6 +174,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq MongoComment
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to eq :commentable_id
+      expect(subject.foreign_key_nullable?).to be_truthy
       expect(subject.foreign_type).to be_nil
       expect(subject.foreign_inverse_of).to be_nil
       expect(subject.as).to eq :commentable
@@ -186,7 +191,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
   end
 
   describe 'embeds_one association' do
-    subject { @post.associations.select { |a| a.name == :mongo_note }.first }
+    subject { @post.associations.detect { |a| a.name == :mongo_note } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Mongo note'
@@ -194,6 +199,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq MongoNote
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to be_nil
+      expect(subject.foreign_key_nullable?).to be_falsey
       expect(subject.foreign_type).to be_nil
       expect(subject.foreign_inverse_of).to be_nil
       expect(subject.as).to be_nil
@@ -205,7 +211,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
   end
 
   describe 'embeds_many association' do
-    subject { @user.associations.select { |a| a.name == :mongo_notes }.first }
+    subject { @user.associations.detect { |a| a.name == :mongo_notes } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Mongo notes'
@@ -213,6 +219,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
       expect(subject.klass).to eq MongoNote
       expect(subject.primary_key).to eq :_id
       expect(subject.foreign_key).to be_nil
+      expect(subject.foreign_key_nullable?).to be_falsey
       expect(subject.foreign_type).to be_nil
       expect(subject.as).to be_nil
       expect(subject.polymorphic?).to be_falsey
@@ -248,14 +255,10 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
         recursively_embeds_many
       end
 
-      expect(lambda { RailsAdmin::AbstractModel.new(MongoEmbedsOne).associations.first.nested_options }).to raise_error(RuntimeError,
-                                                                                                                        "Embbeded association without accepts_nested_attributes_for can't be handled by RailsAdmin,\nbecause embedded model doesn't have top-level access.\nPlease add `accepts_nested_attributes_for :mongo_embedded' line to `MongoEmbedsOne' model.\n",
-      )
-      expect(lambda { RailsAdmin::AbstractModel.new(MongoEmbedsMany).associations.first.nested_options }).to raise_error(RuntimeError,
-                                                                                                                         "Embbeded association without accepts_nested_attributes_for can't be handled by RailsAdmin,\nbecause embedded model doesn't have top-level access.\nPlease add `accepts_nested_attributes_for :mongo_embeddeds' line to `MongoEmbedsMany' model.\n",
-      )
-      expect(lambda { RailsAdmin::AbstractModel.new(MongoRecursivelyEmbedsOne).associations.first.nested_options }).not_to raise_error
-      expect(lambda { RailsAdmin::AbstractModel.new(MongoRecursivelyEmbedsMany).associations.first.nested_options }).not_to raise_error
+      expect { RailsAdmin::AbstractModel.new(MongoEmbedsOne).associations.first.nested_options }.to raise_error(RuntimeError, "Embbeded association without accepts_nested_attributes_for can't be handled by RailsAdmin,\nbecause embedded model doesn't have top-level access.\nPlease add `accepts_nested_attributes_for :mongo_embedded' line to `MongoEmbedsOne' model.\n")
+      expect { RailsAdmin::AbstractModel.new(MongoEmbedsMany).associations.first.nested_options }.to raise_error(RuntimeError, "Embbeded association without accepts_nested_attributes_for can't be handled by RailsAdmin,\nbecause embedded model doesn't have top-level access.\nPlease add `accepts_nested_attributes_for :mongo_embeddeds' line to `MongoEmbedsMany' model.\n")
+      expect { RailsAdmin::AbstractModel.new(MongoRecursivelyEmbedsOne).associations.first.nested_options }.not_to raise_error
+      expect { RailsAdmin::AbstractModel.new(MongoRecursivelyEmbedsMany).associations.first.nested_options }.not_to raise_error
     end
 
     it 'works with inherited embeds_many model' do
@@ -272,7 +275,7 @@ describe 'RailsAdmin::Adapters::Mongoid::Association', mongoid: true do
 
       class MongoEmbedsChild < MongoEmbedsParent; end
 
-      expect(lambda { RailsAdmin::AbstractModel.new(MongoEmbedsChild).associations }).not_to raise_error
+      expect { RailsAdmin::AbstractModel.new(MongoEmbedsChild).associations }.not_to raise_error
     end
   end
 end

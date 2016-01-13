@@ -124,7 +124,9 @@ module RailsAdmin
         end
 
         register_instance_option :html_attributes do
-          {}
+          {
+            required: required?,
+          }
         end
 
         register_instance_option :default_value do
@@ -172,9 +174,10 @@ module RailsAdmin
           end
           (@required ||= {})[context] ||= !!([name] + children_fields).uniq.detect do |column_name| # rubocop:disable DoubleNegation
             abstract_model.model.validators_on(column_name).detect do |v|
-              !v.options[:allow_nil] &&
+              !(v.options[:allow_nil] || v.options[:allow_blank]) &&
               [:presence, :numericality, :attachment_presence].include?(v.kind) &&
-              (v.options[:on] == context || v.options[:on].blank?)
+              (v.options[:on] == context || v.options[:on].blank?) &&
+              (v.options[:if].blank? && v.options[:unless].blank?)
             end
           end
         end
@@ -296,6 +299,10 @@ module RailsAdmin
           model_lookup = "admin.help.#{model}.#{name}".to_sym
           translated = I18n.translate(model_lookup, help: generic_help, default: [generic_help])
           (translated.is_a?(Hash) ? translated.to_a.first[1] : translated).html_safe
+        end
+
+        def parse_value(value)
+          value
         end
 
         def parse_input(_params)

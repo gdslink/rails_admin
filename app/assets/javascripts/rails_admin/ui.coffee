@@ -69,6 +69,11 @@ $(document).on 'rails_admin.dom_ready', ->
 
   $(".table").tooltip selector: "th[rel=tooltip]"
 
+  # Workaround for jquery-ujs formnovalidate issue:
+  # https://github.com/rails/jquery-ujs/issues/316
+  $('[formnovalidate]').on 'click', ->
+    $(this).closest('form').attr('novalidate', true)
+
 $(document).on 'click', '#fields_to_export label input#check_all', () ->
   elems = $('#fields_to_export label input')
   if $('#fields_to_export label input#check_all').is ':checked'
@@ -87,3 +92,11 @@ $(document).on 'pjax:popstate', () ->
       return
     return
   return
+
+#Remove all filter and then refresh
+$(document).on 'click',  "#remove_filter",(event) ->
+  event.preventDefault()
+  $("#filters_box").html("")
+  $("hr.filters_box").hide()
+  $(this).parent().siblings("input[type='search']").val("")
+  $(this).parents("form").submit()  

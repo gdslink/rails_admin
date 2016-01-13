@@ -25,12 +25,12 @@ describe 'RailsAdmin Basic Edit', type: :request do
     end
 
     it 'checks required fields to have required attribute set' do
-      expect(find_field('player_name')[:required].nil?).to eq(false)
-      expect(find_field('player_number')[:required].nil?).to eq(false)
+      expect(find_field('player_name')[:required]).to be_present
+      expect(find_field('player_number')[:required]).to be_present
     end
 
     it 'checks optional fields to not have required attribute set' do
-      expect(find_field('player_position')[:required].nil?).to eq(true)
+      expect(find_field('player_position')[:required]).to be_blank
     end
   end
 
@@ -112,12 +112,52 @@ describe 'RailsAdmin Basic Edit', type: :request do
   end
 
   describe 'clicking cancel when editing an object' do
-    it 'sends back to previous URL' do
+    before do
       @ball = FactoryGirl.create :ball
       visit '/admin/ball?sort=color'
       click_link 'Edit'
+    end
+
+    it "shows cancel button with 'novalidate' attribute" do
+      expect(page).to have_css '[type="submit"][name="_continue"][formnovalidate]'
+    end
+
+    it 'sends back to previous URL' do
       click_button 'Cancel'
       expect(page.current_url).to eq('http://www.example.com/admin/ball?sort=color')
+    end
+  end
+
+  describe 'clicking save without changing anything' do
+    before { @datetime = 'October 08, 2015 06:45' }
+    context 'when config.time_zone set' do
+      before do
+        RailsAdmin.config Player do
+          field :datetime_field
+        end
+        @old_timezone = Time.zone
+        Time.zone = ActiveSupport::TimeZone.new('Central Time (US & Canada)')
+      end
+
+      after do
+        Time.zone = @old_timezone
+      end
+
+      it 'does not alter datetime fields' do
+        visit new_path(model_name: 'field_test')
+        find('#field_test_datetime_field').set(@datetime)
+        click_button 'Save and edit'
+        expect(find('#field_test_datetime_field').value).to eq(@datetime)
+      end
+    end
+
+    context 'without config.time_zone set (default)' do
+      it 'does not alter datetime fields' do
+        visit new_path(model_name: 'field_test')
+        find('#field_test_datetime_field').set(@datetime)
+        click_button 'Save and edit'
+        expect(find('#field_test_datetime_field').value).to eq(@datetime)
+      end
     end
   end
 end

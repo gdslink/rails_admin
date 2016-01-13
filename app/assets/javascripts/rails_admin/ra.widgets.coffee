@@ -20,10 +20,22 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
           $(that).val(hex)
           $(that).css('backgroundColor', '#' + hex)
 
-    # datetime
+    # datetime picker
+    $.fn.datetimepicker.defaults.icons =
+      time:     'fa fa-clock-o'
+      date:     'fa fa-calendar'
+      up:       'fa fa-chevron-up'
+      down:     'fa fa-chevron-down'
+      previous: 'fa fa-angle-double-left'
+      next:     'fa fa-angle-double-right'
+      today:    'fa fa-dot-circle-o'
+      clear:    'fa fa-trash'
+      close:    'fa fa-times'
 
     content.find('[data-datetimepicker]').each ->
-      $(this).datetimepicker $(this).data('options')
+      options = $(this).data('options')
+      $.extend(options, {locale: RailsAdmin.I18n.locale})
+      $(this).datetimepicker options
 
     # enumeration
 
@@ -46,7 +58,7 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
       input = this
       image_container = $("#" + input.id).parent().children(".preview")
       unless image_container.length
-        image_container = $("#" + input.id).parent().prepend($('<img />').addClass('preview')).find('img.preview')
+        image_container = $("#" + input.id).parent().prepend($('<img />').addClass('preview').addClass('img-thumbnail')).find('img.preview')
         image_container.parent().find('img:not(.preview)').hide()
       ext = $("#" + input.id).val().split('.').pop().toLowerCase()
       if input.files and input.files[0] and $.inArray(ext, ['gif','png','jpg','jpeg','bmp']) != -1
@@ -63,7 +75,7 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
     content.find('[data-filteringmultiselect]').each ->
       $(this).filteringMultiselect $(this).data('options')
       if $(this).parents("#modal").length # hide link if we already are inside a dialog (endless issues on nested dialogs with JS)
-        $(this).parents('.control-group').find('.btn').remove()
+        $(this).siblings('.btn').remove()
       else
         $(this).parents('.control-group').first().remoteForm()
 
@@ -72,7 +84,7 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
     content.find('[data-filteringselect]').each ->
       $(this).filteringSelect $(this).data('options')
       if $(this).parents("#modal").length # hide link if we already are inside a dialog (endless issues on nested dialogs with JS)
-        $(this).parents('.control-group').find('.btn').remove()
+        $(this).siblings('.btn').remove()
       else
         $(this).parents('.control-group').first().remoteForm()
 
@@ -151,9 +163,12 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
             beforeSend: (xhr) ->
               xhr.setRequestHeader("Accept", "application/json")
             success: (data, status, xhr) ->
-              html = '<option></option>'
+              html = $('<option></option>')
               $(data).each (i, el) ->
-                html += '<option value="' + el.id + '">' + el.label + '</option>'
+                option = $('<option></option>')
+                option.attr('value', el.id)
+                option.text(el.label)
+                html = html.add(option)
               object_select.html(html)
 
     # ckeditor
@@ -217,3 +232,77 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
           goBootstrapWysihtml5s(@array, config_options)
       else
         goBootstrapWysihtml5s(@array, config_options)
+
+    # froala_wysiwyg
+
+    goFroalaWysiwygs = (array) =>
+      array.each ->
+        options = $(@).data('options')
+        config_options = $.parseJSON(options['config_options'])
+        if config_options
+          if !config_options['inlineMode']
+            config_options['inlineMode'] = false
+        else
+          config_options = { inlineMode: false }
+
+        uploadEnabled =
+        if config_options['imageUploadURL']
+          config_options['imageUploadParams'] =
+            authenticity_token: $('meta[name=csrf-token]').attr('content')
+
+        $(@).addClass('froala-wysiwyged')
+        $(@).editable(config_options)
+        if uploadEnabled
+          $(@).on 'editable.imageError', (e, editor, error) ->
+            alert("error uploading image: " + error.message);
+            # Custom error message returned from the server.
+            if error.code == 0
+
+            # Bad link.
+            else if error.code == 1
+
+            # No link in upload response.
+            else if error.code == 2
+
+            # Error during image upload.
+            else if error.code == 3
+
+            # Parsing response failed.
+            else if error.code == 4
+
+            # Image too large.
+            else if error.code == 5
+
+            # Invalid image type.
+            else if error.code == 6
+
+            # Image can be uploaded only to same domain in IE 8 and IE 9.
+            else if error.code == 7
+
+            else
+
+            return
+
+          .on('editable.afterRemoveImage', (e, editor, $img) ->
+            # Set the image source to the image delete params.
+            editor.options.imageDeleteParams =
+              src: $img.attr('src')
+              authenticity_token: $('meta[name=csrf-token]').attr('content')
+            # Make the delete request.
+            editor.deleteImage $img
+            return
+          ).on('editable.imageDeleteSuccess', (e, editor, data) ->
+            # handle success
+          ).on 'editable.imageDeleteError', (e, editor, error) ->
+            # handle error
+            alert("error deleting image: " + error.message);
+
+    array = content.find('[data-richtext=froala-wysiwyg]').not('.froala-wysiwyged')
+    if array.length
+      options = $(array[0]).data('options')
+      if not $.isFunction($.fn.editable)
+        $('head').append('<link href="' + options['csspath'] + '" rel="stylesheet" media="all" type="text\/css">')
+        $.getScript options['jspath'], (script, textStatus, jqXHR) =>
+          goFroalaWysiwygs(array)
+      else
+        goFroalaWysiwygs(array)

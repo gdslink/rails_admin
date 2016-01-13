@@ -6,7 +6,7 @@ module RailsAdmin
       #
       # @see RailsAdmin::Config::Fields.registry
       mattr_reader :default_factory
-      @@default_factory = lambda do |parent, properties, fields|
+      @@default_factory = proc do |parent, properties, fields|
         # If it's an association
         if properties.association?
           association = parent.abstract_model.associations.detect { |a| a.name.to_s == properties.name.to_s }
@@ -82,4 +82,5 @@ require 'rails_admin/config/fields/factories/devise'
 require 'rails_admin/config/fields/factories/paperclip'
 require 'rails_admin/config/fields/factories/dragonfly'
 require 'rails_admin/config/fields/factories/carrierwave'
+require 'rails_admin/config/fields/factories/refile'
 require 'rails_admin/config/fields/factories/association'

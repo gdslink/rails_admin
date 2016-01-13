@@ -49,7 +49,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
   end
 
   it 'lists associations' do
-    expect(@post.associations.collect { |a|a.name.to_s }).to include(*%w(a_r_blog a_r_categories a_r_comments))
+    expect(@post.associations.collect { |a| a.name.to_s }).to include(*%w(a_r_blog a_r_categories a_r_comments))
   end
 
   it 'list associations types in supported [:belongs_to, :has_and_belongs_to_many, :has_many, :has_one]' do
@@ -58,7 +58,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
   end
 
   describe 'belongs_to association' do
-    subject { @post.associations.select { |a| a.name == :a_r_blog }.first }
+    subject { @post.associations.detect { |a| a.name == :a_r_blog } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'A r blog'
@@ -76,7 +76,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
   end
 
   describe 'has_many association' do
-    subject { @blog.associations.select { |a| a.name == :a_r_posts }.first }
+    subject { @blog.associations.detect { |a| a.name == :a_r_posts } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'A r posts'
@@ -103,6 +103,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
         expect(association.type).to eq :has_many
         expect(association.klass).to eq Division
         expect(association.read_only?).to be_falsey
+        expect(association.foreign_key_nullable?).to be_truthy
       end
     end
 
@@ -113,6 +114,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
         expect(association.type).to eq :has_many
         expect(association.klass).to eq Team
         expect(association.read_only?).to be_truthy
+        expect(association.foreign_key_nullable?).to be_truthy
       end
     end
 
@@ -127,14 +129,39 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
     end
   end
 
+  describe 'has_many association with not nullable foreign key' do
+    let(:field_test) { RailsAdmin::AbstractModel.new(FieldTest) }
+    let(:association) { field_test.associations.detect { |a| a.name == :nested_field_tests } }
+
+    context 'for direct has many' do
+      it 'returns correct values' do
+        expect(association.foreign_key_nullable?).to be_falsey
+      end
+    end
+
+    context 'when foreign_key is passed as Symbol' do
+      before do
+        class FieldTestWithSymbolForeignKey < FieldTest
+          has_many :nested_field_tests, dependent: :destroy, inverse_of: :field_test, foreign_key: :field_test_id
+        end
+      end
+      let(:field_test) { RailsAdmin::AbstractModel.new(FieldTestWithSymbolForeignKey) }
+
+      it 'does not break' do
+        expect(association.foreign_key_nullable?).to be_falsey
+      end
+    end
+  end
+
   describe 'has_and_belongs_to_many association' do
-    subject { @post.associations.select { |a| a.name == :a_r_categories }.first }
+    subject { @post.associations.detect { |a| a.name == :a_r_categories } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'A r categories'
       expect(subject.klass).to eq ARCategory
       expect(subject.primary_key).to eq :id
       expect(subject.foreign_type).to be_nil
+      expect(subject.foreign_key_nullable?).to be_truthy
       expect(subject.as).to be_nil
       expect(subject.polymorphic?).to be_falsey
       expect(subject.inverse_of).to be_nil
@@ -145,7 +172,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
 
   describe 'polymorphic belongs_to association' do
     before { allow(RailsAdmin::Config).to receive(:models_pool).and_return(%w(ARBlog ARPost ARCategory ARUser ARProfile ARComment)) }
-    subject { @comment.associations.select { |a| a.name == :commentable }.first }
+    subject { @comment.associations.detect { |a| a.name == :commentable } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'Commentable'
@@ -168,7 +195,7 @@ describe 'RailsAdmin::Adapters::ActiveRecord::Association', active_record: true 
   end
 
   describe 'polymorphic inverse has_many association' do
-    subject { @blog.associations.select { |a| a.name == :a_r_comments }.first }
+    subject { @blog.associations.detect { |a| a.name == :a_r_comments } }
 
     it 'returns correct values' do
       expect(subject.pretty_name).to eq 'A r comments'
