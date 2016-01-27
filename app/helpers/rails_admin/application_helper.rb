@@ -78,13 +78,13 @@ module RailsAdmin
         nodes = nodes.select { |n| n.parent.nil? || !n.parent.to_s.in?(node_model_names) }
         li_stack = navigation nodes_stack, nodes
 
-        grp_li_stack = content_tag :div, class: 'ui link list' do
+        grp_li_stack = content_tag :div, class: 'menu' do
           li_stack
         end
 
         label = navigation_label
 
-        %(<div class='column'><h4 class='ui header'>#{capitalize_first_letter label}</h4>#{grp_li_stack}</div>) if grp_li_stack.present?
+        %(<i class='dropdown icon'></i><span class='text'>#{capitalize_first_letter label}</span>#{grp_li_stack}) if grp_li_stack.present?
       end.join.html_safe
     end
 
