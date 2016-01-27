@@ -78,19 +78,23 @@ module RailsAdmin
         nodes = nodes.select { |n| n.parent.nil? || !n.parent.to_s.in?(node_model_names) }
         li_stack = navigation nodes_stack, nodes
 
-        label = navigation_label || t('admin.misc.navigation')
+        grp_li_stack = content_tag :div, class: 'ui link list' do
+          li_stack
+        end
 
-        %(<li class='dropdown-header'>#{capitalize_first_letter label}</li>#{li_stack}) if li_stack.present?
+        label = navigation_label
+
+        %(<div class='column'><h4 class='ui header'>#{capitalize_first_letter label}</h4>#{grp_li_stack}</div>) if grp_li_stack.present?
       end.join.html_safe
     end
 
     def static_navigation
       li_stack = RailsAdmin::Config.navigation_static_links.collect do |title, url|
-        content_tag(:li, link_to(title.to_s, url, target: '_blank'))
+        content_tag(:div, link_to(title.to_s, url, target: '_blank'))
       end.join
 
       label = RailsAdmin::Config.navigation_static_label || t('admin.misc.navigation_static_label')
-      li_stack = %(<li class='dropdown-header'>#{label}</li>#{li_stack}).html_safe if li_stack.present?
+      li_stack = %(<div class='ui header'>#{label}</div>#{li_stack}).html_safe if li_stack.present?
       li_stack
     end
 
@@ -100,9 +104,9 @@ module RailsAdmin
         url         = url_for(action: :index, controller: 'rails_admin/main', model_name: model_param)
         level_class = " nav-level-#{level}" if level > 0
         nav_icon = node.navigation_icon ? %(<i class="#{node.navigation_icon}"></i>).html_safe : ''
-        li = content_tag :li, data: {model: model_param} do
-          link_to nav_icon + capitalize_first_letter(node.label_plural), url, class: "pjax#{level_class}"
-        end
+        # li = content_tag :a, data: {model: model_param}, class: 'item' do
+        li = link_to nav_icon + capitalize_first_letter(node.label_plural), url, class: "pjax#{level_class} item"
+        # end
         li + navigation(nodes_stack, nodes_stack.select { |n| n.parent.to_s == node.abstract_model.model_name }, level + 1)
       end.join.html_safe
     end
