@@ -47,6 +47,7 @@
     <%next if %w(Dashboard Navigators).include?(section[:label])%>
     <ul id="<%=section[:label].delete(" ")%>_id" class="submenu dropdown">
     <% section[:links].each do |link| %>
+      <% next if %w(Report Metric).include?(link[:url_for][:model]) && !CaseCenter::Config::Reader.get('enable_reports') %>
       <li>
         <%if link[:url_for] and link[:url_for].include?(:action) and link[:url_for].include?(:model)%>
             <%=link_to get_url(link[:url_for][:action], link[:url_for][:model]) do%>
