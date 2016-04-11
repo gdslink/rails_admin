@@ -27,6 +27,7 @@
       chkbox = $j(this)
       if ($j(this).is(":checked")) {
         var status = $j(this).closest("tr").find("span.status-msg").first()
+        var fieldType = $j(this).closest("tr").find("select#field__field_type").first()
         var rowData = {}
         $j(this).closest("tr").find("[id^=field__]").each(function() {
           field_name = $(this).attr("id").replace("field__", "")
@@ -36,7 +37,10 @@
             rowData[field_name] = $(this).is(":checked")
         });
 
-        $j.post("#{field_import_url(current_scope_parameters.merge(:mode => "ajax", :tables => @tables, :field_types => @field_types))}", {field: JSON.stringify(rowData)}, function(result){
+        $j.post("#{field_import_url(current_scope_parameters.merge(:mode => "ajax"))}", {field: JSON.stringify(rowData)}, function(result){
+          if (fieldType.val() == "") {
+            fieldType.val("String")
+          }
           if (result.errors.length == 0) {
             status.html("OK").css({"color": "green"})
           } else {
