@@ -342,6 +342,19 @@ module RailsAdmin
             end.join(', ')
           }>"
         end
+
+        def dom_name
+          @dom_name ||= "#{bindings[:form].object_name}#{(index = bindings[:form].options[:index]) && "[#{index}]"}[#{method_name}]"
+        end
+
+        # Reader for field's id
+        def dom_id
+          @dom_id ||= [
+              bindings[:form].object_name,
+              bindings[:form].options[:index],
+              method_name
+          ].reject(&:blank?).join('_')
+        end
       end
     end
   end

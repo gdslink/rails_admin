@@ -82,6 +82,11 @@ module RailsAdmin
           association.foreign_key
         end
 
+        # Reader whether the bound object has validation errors
+        def has_errors?
+          errors.present?
+        end
+
         # Reader whether this is a polymorphic association
         def polymorphic?
           association.polymorphic?
