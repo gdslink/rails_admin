@@ -3,15 +3,16 @@ module RailsAdmin
     include ActionView::Helpers::TextHelper
     include RailsAdmin::MainHelper
     include RailsAdmin::ApplicationHelper
+    include RailsAdmin::Extensions::Scope
 
     layout :get_layout
 
-    before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name)
+    before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name) << :update_scope
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
     before_filter :check_scope_on_query, :except => [:index, :update_scope]
     before_filter :check_for_cancel
 
-    RailsAdmin::Config::Actions.all.each do |action|
+  RailsAdmin::Config::Actions.all.each do |action|
       class_eval <<-EOS, __FILE__, __LINE__ + 1
         def #{action.action_name}
           action = RailsAdmin::Config::Actions.find('#{action.action_name}'.to_sym)
@@ -23,6 +24,10 @@ module RailsAdmin
           instance_eval &@action.controller
         end
       EOS
+    end
+
+    def update_scope
+      super if @scope_adapter
     end
 
     def bulk_action

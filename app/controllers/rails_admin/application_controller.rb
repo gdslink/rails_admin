@@ -11,6 +11,9 @@ module RailsAdmin
   end
 
   class ApplicationController < Config.parent_controller.constantize
+
+    newrelic_ignore if defined?(NewRelic)
+
     before_filter :_authenticate!
     before_filter :_authorize!
     before_filter :_scope!
@@ -26,6 +29,10 @@ module RailsAdmin
     helper_method :_current_user, :_get_plugin_name, :cache_key
 
     attr_reader :object, :model_config, :abstract_model, :authorization_adapter
+
+    def invalidate_cache_key(model_name)
+      Rails.cache.delete(Digest::SHA1.hexdigest("admin/cache_key/#{session[:scope].to_s}/#{model_name}"))
+    end
 
     def cache_key(model_name, depends = true)
       signature = model_name

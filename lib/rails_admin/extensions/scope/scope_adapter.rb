@@ -49,6 +49,7 @@ module RailsAdmin
             get_scope_models
 
             respond_to do |format|
+              #format.html {render :text => "ok"+session[:scope]['Company']}
               format.js {render :partial => 'rails_admin/extensions/scope/scope_selector', :locals => {:models => @scope_adapter.models}}
             end
           end
