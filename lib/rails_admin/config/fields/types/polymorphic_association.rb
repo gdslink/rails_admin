@@ -45,13 +45,7 @@ module RailsAdmin
             [children_fields]
           end
 
-          def associated_collection(type)
-            return [] if type.blank?
-            config = RailsAdmin.config(type)
-            config.abstract_model.all.collect do |object|
-              [object.send(config.object_label_method), object.id]
-            end
-          end
+
 
           def associated_model_config
             @associated_model_config ||= association.klass.collect { |type| RailsAdmin.config(type) }.select { |config| !config.excluded? }
@@ -62,7 +56,13 @@ module RailsAdmin
               [config.label, config.abstract_model.model.name]
             end
           end
-
+          def associated_collection(type)
+            return [] if type.blank?
+            config = RailsAdmin.config(type)
+            config.abstract_model.all.collect do |object|
+              [object.send(config.object_label_method), object.id]
+            end
+          end
           def polymorphic_type_urls
             types = associated_model_config.collect do |config|
               [config.abstract_model.model.name, config.abstract_model.to_param]
