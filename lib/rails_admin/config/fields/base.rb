@@ -355,6 +355,10 @@ module RailsAdmin
               method_name
           ].reject(&:blank?).join('_')
         end
+
+        def has_errors?
+          errors.present?
+        end
       end
     end
   end

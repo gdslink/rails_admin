@@ -125,19 +125,23 @@ module RailsAdmin
       current_user.current_scope = @current_scope_parameters
     end
 
+    def get_scope_parameters_to_params_for_model
+      return true
+    end
+
     def check_scope_on_query
       return if not request.format or not request.format.html?
       return if not @scope_adapter or not @authorization_adapter
       return if @scope_adapter.models.map{|m| m.name}.include?(@abstract_model.model.name)
       @scope_adapter.models.each do |model|
         assoc = @abstract_model.belongs_to.map{|a|
-          a if  a.association and a.association.name == model.name}.reject{|a| a.nil?
+          a if  a.association and a.association.name.to_s.downcase == model.name.downcase}.reject{|a| a.nil?
         }.first
-        if @object and assoc and assoc.length > 0 then
-          record = @object.send assoc[:name]
+        if @object and assoc then
+          record = @object.send assoc.association.name
           raise CanCan::AccessDenied if record.id != @current_scope_parameters[model.name].to_i
         end
-        raise CanCan::AccessDenied if not params.include?(model.name)
+        raise CanCan::AccessDenied if assoc and not params.include?(model.name)
       end
     end
 

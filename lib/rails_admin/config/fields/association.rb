@@ -54,7 +54,7 @@ module RailsAdmin
         # preload entire associated collection (per associated_collection_scope) on load
         # Be sure to set limit in associated_collection_scope if set is large
         register_instance_option :associated_collection_cache_all do
-          @associated_collection_cache_all ||= (associated_model_config.abstract_model.count < 100)
+          @associated_collection_cache_all ||= (associated_model_config.abstract_model.count < associated_model_limit)
         end
 
         # determines whether association's elements can be removed
@@ -82,11 +82,6 @@ module RailsAdmin
           association.foreign_key
         end
 
-        # Reader whether the bound object has validation errors
-        def has_errors?
-          errors.present?
-        end
-
         # Reader whether this is a polymorphic association
         def polymorphic?
           association.polymorphic?
@@ -109,6 +104,14 @@ module RailsAdmin
 
         def virtual?
           true
+        end
+
+        def associated_model_limit
+          RailsAdmin.config.default_associated_collection_limit
+        end
+
+        def has_errors?
+          errors.present?
         end
       end
     end
