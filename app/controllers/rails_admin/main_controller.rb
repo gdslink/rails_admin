@@ -7,9 +7,9 @@ module RailsAdmin
 
     layout :get_layout
 
-    before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name) << [:update_scope,:index]
+    before_filter :get_model, except: [:update_scope,:dashboard,:global_search]
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
-    before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard]
+    before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard,:global_search ]
     before_filter :check_for_cancel
 
   RailsAdmin::Config::Actions.all.each do |action|
@@ -32,6 +32,46 @@ module RailsAdmin
 
     def bulk_action
       send(params[:bulk_action]) if params[:bulk_action].in?(RailsAdmin::Config::Actions.all(controller: self, abstract_model: @abstract_model).select(&:bulkable?).collect(&:route_fragment))
+    end
+
+
+    def global_search
+      result = []
+      RailsAdmin.config.included_models.each do |m|
+        cached = Rails.cache.fetch(Digest::SHA1.hexdigest("admin/global_search/#{current_ability.cache_key}/#{params[:query]}/#{@current_scope_parameters.to_s}/#{cache_key(m)}")) do
+          model_result = []
+        @model_config=RailsAdmin.config(m)
+        list_entries(@model_config).each do |e|
+          if e.respond_to?(:name)
+            model_result << {
+                :label => e.name , :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
+            }
+          end
+        end
+        model_result
+      end
+      result.concat cached
+      end
+=begin
+      RailsAdmin::AbstractModel.all.each do |m|
+        cached = Rails.cache.fetch(Digest::SHA1.hexdigest("admin/global_search/#{current_ability.cache_key}/#{params[:query]}/#{@current_scope_parameters.to_s}/#{cache_key(m.model.to_s)}")) do
+          model_result = []
+          @abstract_model = m
+          @model_config = RailsAdmin.config(@abstract_model)
+          not_found if @model_config.excluded?
+          @properties = @abstract_model.properties
+          list_entries({}, {})[0].each do |e|
+            next if not e.respond_to?(:name)
+            model_result << {
+                :label => e.name , :model_name => e.class.model_name, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
+            }
+          end
+          model_result
+        end
+        result.concat cached
+      end
+=end
+      render :json => result
     end
 
     def list_entries(model_config = @model_config, auth_scope_key = :index, additional_scope = get_association_scope_from_params, pagination = !(params[:associated_collection] || params[:all] || params[:bulk_ids]))

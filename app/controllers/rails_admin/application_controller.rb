@@ -52,7 +52,8 @@ module RailsAdmin
     end
 
     def get_model
-      @model_name = to_model_name(params[:model_name])
+        model_name = params[:model_name]
+      @model_name = to_model_name(model_name)
       fail(RailsAdmin::ModelNotFound) unless (@abstract_model = RailsAdmin::AbstractModel.new(@model_name))
       fail(RailsAdmin::ModelNotFound) if (@model_config = @abstract_model.config).excluded?
       @properties = @abstract_model.properties
@@ -141,9 +142,10 @@ module RailsAdmin
           record = @object.send assoc.association.name
           raise CanCan::AccessDenied if record.id != @current_scope_parameters[model.name].to_i
         end
-        raise CanCan::AccessDenied if assoc and not params.include?(model.name)
+        raise CanCan::AccessDenied if assoc != nil and not params.include?(model.name)
       end
     end
+
 
     alias_method :user_for_paper_trail, :_current_user
 
