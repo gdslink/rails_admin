@@ -42,6 +42,10 @@ module RailsAdmin
           @controller.current_ability.attributes_for(action, abstract_model && abstract_model.model)
         end
 
+        def current_ability
+          @controller.current_ability
+        end
+
         module ControllerExtension
           def current_ability
             # use _current_user instead of default current_user so it works with
