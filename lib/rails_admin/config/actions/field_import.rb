@@ -15,18 +15,12 @@ module RailsAdmin
           [:get, :post]
         end
 
-        # register_instance_option :authorization_key do
-        #   custom_key.to_sym
-        # end
-
         register_instance_option :controller do
           proc do
             @model_name = params[:model_name]
             field_columns = Field.column_names.collect { |x| x == "table_id" ? "table_key" : x } # change table_id to table_key
-            @page_name = "Field Import Form"
 
             if params[:mode] == "upload"
-              @page_name = "List of fields to import"
               @csv = CSV.read(params["fields"].tempfile.path)
               invalid_column = @csv[0] - field_columns
               unless invalid_column.empty?
@@ -34,10 +28,12 @@ module RailsAdmin
                 @error = true
               end
             elsif params[:mode] == "import"
-              @page_name = "Field Import Results"
               records = []
               params[:valid].each do |index|
-                records << Field.new(params[:field][index.to_i].delete_if { |key, value| value.to_s.strip == '' }.merge({"application_id" => @application.id}))
+                h = {:field => params[:field][index.to_i].delete_if { |key, value| value.to_s.strip == '' }.merge!({"application_id" => @application.id})}
+                parameters = ActionController::Parameters.new(h)
+                parameters.require(:field).permit(:application_id, :field_type, :key, :name)
+                records << Field.new(parameters)
               end
               @result = Field.import records, :on_duplicate_key_update => [:application_id, :key]
               if @result.failed_instances.length == 0
@@ -68,30 +64,30 @@ module RailsAdmin
               attr.delete_if { |key, value| value.to_s.strip == '' }.merge({"application_id" => @application.id})
               field = Field.get_field_and_validate(attr.merge({"application_id" => @application.id}), tbl, fld_types)
 
-              respond_to do |format|
-                format.json { render :json => { "errors" => field.errors.full_messages.join(", ")} }
-              end
+              render :json => { "errors" => field.errors.full_messages.join(", ")}
             end
 
             unless params[:mode] == "download" or params[:mode] == "ajax"
-              respond_to do |format|
-                format.html { render :layout => 'rails_admin/application' }
-              end
+              render :layout => 'rails_admin/application'
             end
+
           end
         end
 
         register_instance_option :link_icon do
           'icon-upload'
         end
-
-        # Should the action be visible
+        
         register_instance_option :visible? do
           authorized? && bindings[:abstract_model].model_name == 'Field'
         end
 
         register_instance_option :custom_key do
-          'field_import'
+          :field_import
+        end
+
+        register_instance_option :authorization_key do
+          :field_import
         end
 
       end
