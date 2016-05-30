@@ -37,11 +37,11 @@ module RailsAdmin
               @result = Field.import records, :on_duplicate_key_update => [:application_id, :key]
               if @result.failed_instances.length == 0
                 flash[:notice] = t("admin.flash.successful", :name => pluralize(records.size, @model_config.label), :action => t("admin.actions.system_imported"))
-                # @application.generate_mongoid_model
+                @application.generate_mongoid_model
               else
                 flash[:error] = t("admin.flash.error", :name => pluralize(records.size, @model_config.label), :action => t("admin.actions.system_imported"))
               end
-              redirect_to index_path(@current_scope_parameters) and return
+              redirect_to index_path and break
             elsif params[:mode] == "download"
               columns_list = field_columns.reject do |f|
                 %W(id application_id created_at updated_at field_format).include?(f)
