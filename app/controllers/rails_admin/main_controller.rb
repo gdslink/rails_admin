@@ -1,3 +1,4 @@
+
 module RailsAdmin
   class MainController < RailsAdmin::ApplicationController
     include ActionView::Helpers::TextHelper
@@ -29,7 +30,66 @@ module RailsAdmin
     def update_scope
       super if @scope_adapter
     end
+    def field_import
+      @model_name = params[:model_name]
+      field_columns = Field.column_names.collect { |x| x == "table_id" ? "table_key" : x } # change table_id to table_key
+      @page_name = "Field Import Form"
 
+      if params[:mode] == "upload"
+        @page_name = "List of fields to import"
+        @csv = CSV.read(params["fields"].tempfile.path)
+        invalid_column = @csv[0] - field_columns
+        unless invalid_column.empty?
+          flash[:error] = "Invalid columns found: #{invalid_column.join(", ")}"
+          @error = true
+        end
+      elsif params[:mode] == "import"
+        @page_name = "Field Import Results"
+        records = []
+        params[:valid].each do |index|
+          records << Field.new(params[:field][index.to_i].delete_if { |key, value| value.to_s.strip == '' }.merge({"application_id" => @application.id}))
+        end
+        @result = Field.import records, :on_duplicate_key_update => [:application_id, :key]
+        if @result.failed_instances.length == 0
+          flash[:notice] = t("admin.flash.successful", :name => pluralize(records.size, @model_config.label), :action => t("admin.actions.system_imported"))
+          @application.generate_mongoid_model
+        else
+          flash[:error] = t("admin.flash.error", :name => pluralize(records.size, @model_config.label), :action => t("admin.actions.system_imported"))
+        end
+        redirect_to list_path(@current_scope_parameters) and return
+      elsif params[:mode] == "download"
+        columns_list = field_columns.reject do |f|
+          %W(id application_id created_at updated_at field_format).include?(f)
+        end
+
+        res = CSV.generate do |csv|
+          csv << columns_list
+        end
+        send_data res, :filename => "Fields_Import_Template.csv", :type => "text/csv"
+      elsif params[:mode] == "ajax"
+        attr = JSON.parse(params[:field])
+        tbl = Query::FieldTable.new(@authorization_adapter, @scope_adapter).tables.inject({}) do |h, object|
+          h[object.key] = object.id
+          h
+        end
+        tbl.to_a
+
+        fld_types = Hash[*(Field.new.field_type_enum.flatten.map {|d| d.to_s})]
+        attr.delete_if { |key, value| value.to_s.strip == '' }.merge({"application_id" => @application.id})
+        field = Field.get_field_and_validate(attr.merge({"application_id" => @application.id}), tbl, fld_types)
+
+        respond_to do |format|
+          format.json { render :json => { "errors" => field.errors.full_messages.join(", ")} }
+        end
+      end
+
+      unless params[:mode] == "download" or params[:mode] == "ajax"
+        respond_to do |format|
+          format.html { render :layout => 'rails_admin/form', :locals => {:current_scope_parameters => @current_scope_parameters}}
+        end
+      end
+
+    end
     def bulk_action
       send(params[:bulk_action]) if params[:bulk_action].in?(RailsAdmin::Config::Actions.all(controller: self, abstract_model: @abstract_model).select(&:bulkable?).collect(&:route_fragment))
     end

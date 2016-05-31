@@ -4,6 +4,21 @@ module RailsAdmin
   module ApplicationHelper
     include RailsAdmin::Support::I18n
 
+    def get_url(action, model_name, opts = {})
+      options = {:model_name => model_name}.merge(opts)
+      options.merge!(current_scope_parameters)
+      case action
+        when :dashboard
+          dashboard_path(options)
+        when :edit
+          edit_path(options)
+        when :list
+          list_path(options)
+        when :new
+          new_path(options)
+      end
+    end
+
     def capitalize_first_letter(wording)
       return nil unless wording.present? && wording.is_a?(String)
 

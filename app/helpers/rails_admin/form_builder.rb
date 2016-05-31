@@ -48,9 +48,7 @@ module RailsAdmin
       css = 'col-sm-10 controls'
       css += ' has-error' if field.errors.present?
       @template.content_tag(:div, class: css) do
-        field_for(field) +
-          errors_for(field) +
-          help_for(field)
+        field_for(field).to_s+errors_for(field).to_s+help_for(field).to_s
       end
     end
 
