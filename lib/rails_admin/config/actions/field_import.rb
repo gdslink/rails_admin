@@ -77,10 +77,6 @@ module RailsAdmin
           'icon-upload'
         end
 
-        register_instance_option :visible? do
-          authorized? && bindings[:abstract_model].model_name == 'Field'
-        end
-
         register_instance_option :custom_key do
           :field_import
         end
