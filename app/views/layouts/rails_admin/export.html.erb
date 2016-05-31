@@ -1,0 +1,25 @@
+<% content_for :head do %>
+  <title><%= @abstract_model.pretty_name %> | <%= @plugin_name %></title>
+<% end %>
+
+
+<%= render(:partial => 'layouts/rails_admin/head') %>
+<body>
+  <div id="wrapper">
+    <%= render(:partial => 'layouts/rails_admin/header') %>
+    <%if @current_scope and @current_scope.length > 0 && @current_scope[@scope_adapter.models.last.name][:entries].length == 0 %>
+      <%= render :partial => 'rails_admin/main/no_content'%>
+    <%else%>
+      <div id="splitter">
+        <%= render :partial => 'rails_admin/main/navigation'%>
+        <div id="content">      
+          <%= content_for(:layout) %>
+        </div>
+      </div>
+    <%end%>
+  </div>
+  <div id="footer">
+  <%= render(:partial => 'layouts/rails_admin/footer') %>
+  </div>    
+</body>
+</html>

@@ -1,0 +1,25 @@
+<% head_style "rails_admin/form.css" %>
+<% head_javascript "rails_admin/application.js" %>
+<% head_javascript "rails_admin/ra.remote-form.js" %>
+      <div class="ra-block">      
+        <div class="ui-widget-header">
+          <%= @page_name %>
+          </div>        
+        <div class="ra-block-content">
+          <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>        
+          <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
+            <ul>
+              <% if authorized? :see_history %>
+              <li>
+               <%= link_to t("admin.history.name"), history_object_path(current_scope_parameters.merge(:id => params[:id])), :class => 'ra-button' %>
+              </li>
+              <%end%>
+            </ul>
+          </div>
+          <%= send(@model_config.update.form_builder, @object, :url => update_path(current_scope_parameters.merge(:model_name => @abstract_model.to_param, :id => @object.id)), :html => { :method => "put", :multipart => true }) do |form| %>
+            <% @model_config.edit.with(:object => @object).visible_groups.each do |fieldset| %>
+              <%= render :partial => 'form_fieldset', :locals => { :fieldset => fieldset, :form => form, :object => @object } -%>
+            <% end %>
+          <% end %>
+        </div>
+      </div>

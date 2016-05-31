@@ -1,0 +1,28 @@
+<% head_style "rails_admin/form.css" %>
+<% head_javascript "rails_admin/application.js" %>
+<% head_javascript "rails_admin/ra.remote-form.js" %>
+
+<script type="text/javascript">
+    $j(document).ready(function(){
+        window.setTimeout(function() {
+            $j('#system_export_build_frame').html('<iframe src=' + '<%="#{system_export_path(@model_name)}&id=#{@application.id}&mode=build&model_name=#{@model_name}"-%>' + '/>');
+        });
+    });
+</script>
+
+<div class="ra-block">
+  <div class="ui-widget-header">
+    <%= @page_name %>
+  </div>
+  <div class="ra-block-content">
+    <%= render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash}) -%>
+    <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
+      <div id='submit-buttons'></div>
+    </div>
+    <div id="system_export_build_frame" style="display:none;"/>
+    <div id="system_exporting_message"><%=t('admin.import_export.export_please_wait', :company_name => @company.name, :application_name => @application.name)%></div>
+    <div class="remove-for-form ra-block-toolbar ui-state-highlight clearfix">
+      <%= render :partial => 'submit_buttons' %>
+    </div>
+  </div>
+</div>

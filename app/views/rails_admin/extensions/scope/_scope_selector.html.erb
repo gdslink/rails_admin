@@ -1,0 +1,65 @@
+<%
+models = @scope_adapter.models
+%>
+
+<div id='scopeSelector'>
+  <ul>
+  <%models.each_with_index do |model, index|%>
+    <%model_name = model.name%>
+    <li><%=label_tag model.model_name.human + ":"%>
+      <%=select_tag model_name, 
+                    options_for_select(@current_scope[model_name][:entries].collect{|o| [o.name, o.id]}.sort, @current_scope[model_name][:selected]),
+                    :id => "#{model_name}-scope"
+      %>
+      <%if index == 0 or (index > 0 and @current_scope[models[index-1].name][:entries].length != 0)%>
+        <% if authorized? :new, nil, model %>
+          <%= link_to I18n.t('admin.scope.add'), new_path(:model_name => model.name ), :id => "#{model.name}_add", :class => "createAssociatedRecord" %>
+        <%end%>
+      <%end%>
+      <%if index == 1 and @current_scope[models[index-1].name][:entries].length == 0%>
+        <% if authorized? :system_import, nil, model %>
+          <%= link_to I18n.t('admin.scope.system_import'), system_import_path(:model_name => model.name ), :id => "#{model.name}_import", :class => "createAssociatedRecord" %>
+        <%end%>
+      <%end%>     
+      <%if @current_scope[model_name][:entries].length > 0%>
+        <% if authorized? :edit, nil, model %>        
+          <%= link_to I18n.t('admin.scope.edit'), edit_path(:model_name => model.name, :id => @current_scope[model_name][:selected]), :id => "#{model.name}_edit", :class => "createAssociatedRecord" %>
+        <%end%>
+        <% if authorized? :destroy, nil, model %>
+          <%= link_to I18n.t('admin.scope.delete'), delete_path(:model_name => model.name, :id => @current_scope[model_name][:selected]),  :id => "#{model.name}_delete", :class => "createAssociatedRecord" %>
+        <%end%>
+        <% if index > 0 && authorized?(:systemexport, nil, model) && authorized?(:systemimport, nil, model)%>
+          <span>|</span>
+        <%end%>
+        <% if index > 0 and authorized? :system_export, nil, model %>
+          <%= link_to I18n.t('admin.scope.system_export'), system_export_path(:model_name => model.name, :id => @current_scope[model_name][:selected]),  :id => "#{model.name}_export",  :class => "createAssociatedRecord" %>
+        <%end%>
+        <% if index > 0 and authorized? :system_import, nil, model %>
+          <%= link_to I18n.t('admin.scope.system_import'), system_import_path(:model_name => model.name ), :id => "#{model.name}_import", :class => "createAssociatedRecord" %>
+        <%end%>
+      <%end%>
+      <%= javascript_tag do %>
+        $j(document).ready(function($) {
+          $("#scopeSelector .createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog", elementToUpdate: $("select#<%=model.name%>-scope")});
+        });
+      <% end %>
+  </li>
+  <%end%>
+  </ul>
+
+  <script>
+  $j(function($) {    
+      $('<%=models.collect{|model| "##{model.name}-scope"}.join(',')%>').change(function() {
+          $.ajax({url: '<%= url_for :action => :update_scope, :controller => :main %>',
+          data: $('<%=models.collect{|model| "##{model.name}-scope"}.join(',')%>').each(function(i,el){
+            '&' + el.value + '=' + el.id
+          }),
+          dataType: 'text',
+          success: function(html){
+            $("#scopeSelector").html(html);
+            location = "<%=dashboard_url%>"
+          }})
+      });
+  });
+  </script>
+</div>

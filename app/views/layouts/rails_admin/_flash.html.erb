@@ -1,0 +1,21 @@
+      <% if flash && flash[:error] %>
+      <div class="ra-message ui-state-error ui-corner-all model-error">
+        <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+        <%= flash[:error] %>
+        <%if @object%>
+          <ul>            
+            <%@object.errors.full_messages.each do |m|%>
+            <li>
+              <%=m%>
+            </li>
+            <%end%>
+          <ul>
+        <%end%>
+      </div>
+      <% end %>
+      <% if flash && flash[:notice] %>
+      <div class="ra-message ui-state-highlight ui-corner-all">
+        <span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+        <%= flash[:notice] %>
+      </div>
+      <% end %>

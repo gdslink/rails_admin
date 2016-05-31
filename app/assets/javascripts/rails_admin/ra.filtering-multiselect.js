@@ -17,7 +17,6 @@
         return { query: query };
       },
       sortable: false,
-      removable: true,
       regional: {
         up: "Up",
         down: "Down",
@@ -25,32 +24,35 @@
         chooseAll: "Choose all",
         chosen: "Chosen records",
         clearAll: "Clear all",
-        remove: "Remove"
+        remove: "Remove",
+        selectChoice: "Select your choice(s) and click"
       },
       searchDelay: 400,
-      remote_source: null,
-      xhr: false
+      source: null
     },
 
     _create: function() {
       this._cache = {};
       this._build();
-      this._buildCache();
       this._bindEvents();
+      this._buildCache();
     },
 
     _build: function() {
       var i;
 
-      this.wrapper = $('<div class="ra-multiselect">');
+      this.element.parent().addClass("ra-multiselect-field");
+
+      this.wrapper = $('<div class="input ra-multiselect">');
 
       this.wrapper.insertAfter(this.element);
 
       this.header = $('<div class="ra-multiselect-header ui-helper-clearfix">');
 
-      this.filter = $('<input type="search" placeholder="' + this.options.regional.search + '" class="form-control ra-multiselect-search"/>');
+      this.filter = $('<input type="text" class="ra-multiselect-search"/>');
 
-      this.header.append(this.filter);
+      this.header.append(this.filter)
+                 .append('<div class="help"><strong>' + this.options.regional.chosen + '</strong><br />' + this.options.regional.selectChoice + '</div><div class="ui-icon ui-icon-circle-triangle-e"></div>');
 
       this.wrapper.append(this.header);
 
@@ -68,153 +70,89 @@
 
       this.collection = $('<select multiple="multiple"></select>');
 
-      this.collection.addClass("form-control ra-multiselect-collection");
-
-      this.addAll = $('<a href="#" class="ra-multiselect-item-add-all"><span class="ui-icon ui-icon-circle-triangle-e"></span>' + this.options.regional.chooseAll + '</a>');
-
-      this.columns.left.html(this.collection)
-                          .append(this.addAll);
-
-      this.collection.wrap('<div class="wrapper"/>');
+      this.collection.addClass("ra-multiselect-collection");
 
 
-      this.add = $('<a href="#" class="ui-icon ui-icon-circle-triangle-e ra-multiselect-item-add">' + this.options.regional.add + '</a>');
-      this.columns.center.append(this.add);
+      this.columns.left.append(this.collection);
 
-      if (this.options.removable) {
-        this.remove = $('<a href="#" class="ui-icon ui-icon-circle-triangle-w ra-multiselect-item-remove">' + this.options.regional.remove + '</a>');
-        this.columns.center.append(this.remove);
-      }
+      this.add = $('<a class="ui-icon ui-icon-circle-triangle-e ra-multiselect-item-add">' + this.options.regional.add + '</a>');
 
+      this.remove = $('<a class="ui-icon ui-icon-circle-triangle-w ra-multiselect-item-remove">' + this.options.regional.remove + '</a>');
+
+      this.columns.center.append(this.add).append(this.remove)
       if (this.options.sortable) {
-        this.up = $('<a href="#" class="ui-icon ui-icon-circle-triangle-n ra-multiselect-item-up">' + this.options.regional.up + '</a>');
-        this.down = $('<a href="#" class="ui-icon ui-icon-circle-triangle-s ra-multiselect-item-down">' + this.options.regional.down + '</a>');
+        this.up = $('<a class="ui-icon ui-icon-circle-triangle-n ra-multiselect-item-up">' + this.options.regional.up + '</a>');
+        this.down = $('<a class="ui-icon ui-icon-circle-triangle-s ra-multiselect-item-down">' + this.options.regional.down + '</a>');
         this.columns.center.append(this.up).append(this.down);
       }
 
-      this.selection = $('<select class="form-control ra-multiselect-selection" multiple="multiple"></select>');
+      this.selection = $('<select class="ra-multiselect-selection" multiple="multiple"></select>');
+
       this.columns.right.append(this.selection);
 
-
-      if (this.options.removable) {
-        this.removeAll = $('<a href="#" class="ra-multiselect-item-remove-all"><span class="ui-icon ui-icon-circle-triangle-w"></span>' + this.options.regional.clearAll + '</a>');
-        this.columns.right.append(this.removeAll);
-      }
-
-      this.selection.wrap('<div class="wrapper"/>');
-
       this.element.css({display: "none"});
-
-      this.tooManyObjectsPlaceholder = $('<option disabled="disabled" />').text(RailsAdmin.I18n.t("too_many_objects"));
-      this.noObjectsPlaceholder = $('<option disabled="disabled" />').text(RailsAdmin.I18n.t("no_objects"))
-
-      if(this.options.xhr){
-        this.collection.append(this.tooManyObjectsPlaceholder);
-      }
     },
 
     _bindEvents: function() {
       var widget = this;
 
-      /* Add all to selection */
-      this.addAll.click(function(e){
-        widget._select($('option', widget.collection));
-        e.preventDefault();
-        widget.selection.trigger('change');
-      });
-
       /* Add to selection */
       this.add.click(function(e){
         widget._select($(':selected', widget.collection));
-
-        e.preventDefault();
-        widget.selection.trigger('change');
       });
 
-      if (this.options.removable) {
-        /* Remove all from selection */
-        this.removeAll.click(function(e){
-          widget._deSelect($('option', widget.selection));
-          e.preventDefault();
-          widget.selection.trigger('change');
-        });
 
-        /* Remove from selection */
-        this.remove.click(function(e){
-          widget._deSelect($(':selected', widget.selection));
-          e.preventDefault();
-          widget.selection.trigger('change');
-        });
-      }
+      /* Remove from selection */
+      this.remove.click(function(e){
+        widget._deSelect($(':selected', widget.selection));
+      });
 
       var timeout = null;
       if(this.options.sortable) {
         /* Move selection up */
         this.up.click(function(e){
           widget._move('up', $(':selected', widget.selection));
-          e.preventDefault();
         });
 
         /* Move selection down */
         this.down.click(function(e){
           widget._move('down', $(':selected', widget.selection));
-          e.preventDefault();
         });
       }
 
       /* Typing to the filter */
-      this.filter.bind('keyup click', function(e){
+      this.filter.keyup(function(e){
+
         if (timeout) { clearTimeout(timeout); }
-        timeout = setTimeout(function() {
-            widget._queryFilter(widget.filter.val());
-          }, widget.options.searchDelay
-        );
+
+        var search = function() {
+
+          widget._query(widget.filter.val(), function(matches) {
+            var i, html = "";
+            for (i in matches) {
+              if (matches.hasOwnProperty(i) && !widget.selected(matches[i].id)) {
+                html += '<option value="' + matches[i].id + '">' + matches[i].label + '</option>';
+              }
+            }
+
+            widget.collection.html(html);
+          });
+        };
+
+        timeout = setTimeout(search, widget.options.searchDelay);
       });
     },
 
-    _queryFilter: function(val) {
-      var widget = this;
-      widget._query(val, function(matches) {
-        var i;
-        var filtered = [];
-        for (i in matches) {
-          if (matches.hasOwnProperty(i) && !widget.selected(matches[i].id)) {
-            filtered.push(i);
-          }
-        }
-        if (filtered.length > 0) {
-          widget.collection.html('');
-          for (i in filtered) {
-            widget.collection.append(
-              $('<option></option>').attr('value', matches[filtered[i]].id).attr('title', matches[filtered[i]].label).text(matches[filtered[i]].label)
-            );
-          }
-        } else {
-          widget.collection.html(widget.noObjectsPlaceholder);
-        }
-      });
-    },
-
-    /*
-     * Cache key is stored in the format `o_<option value>` to avoid JS
-     * engine coercing string keys to int keys, and thereby preserving
-     * the insertion order. The value for each key is in turn an object
-     * that stores the option tag's HTML text and the value. Example:
-     * cache = {
-     *    'o_271': { id: 271, value: 'CartItem #271'},
-     *    'o_270': { id: 270, value: 'CartItem #270'}
-     * }
-     */
     _buildCache: function(options) {
       var widget = this;
 
       this.element.find("option").each(function(i, option) {
         if (option.selected) {
-          widget._cache['o_' + option.value] = {id: option.value, value: option.innerHTML};
-          $(option).clone().appendTo(widget.selection).attr("selected", false).attr("title", $(option).text());
+          widget._cache[option.value] = option.innerHTML;
+          $(option).clone().appendTo(widget.selection).attr("selected", false);
         } else {
-          widget._cache['o_' + option.value] = {id: option.value, value: option.innerHTML};
-          $(option).clone().appendTo(widget.collection).attr("selected", false).attr("title", $(option).text());
+          widget._cache[option.value] = option.innerHTML;
+          $(option).clone().appendTo(widget.collection).attr("selected", false);
         }
       });
     },
@@ -222,9 +160,9 @@
     _deSelect: function(options) {
       var widget = this;
       options.each(function(i, option) {
-        widget.element.find('option[value="' + option.value + '"]').removeAttr("selected");
+        widget.element.find("option[value=" + option.value + "]").removeAttr("selected");
       });
-      $(options).appendTo(this.collection).attr('selected', false);
+      options.appendTo(this.collection).attr('selected', false);
     },
 
     _query: function(query, success) {
@@ -233,27 +171,26 @@
 
       if (query === "") {
 
-        if (!this.options.xhr) {
+        if (!this.options.source) {
+
           for (i in this._cache) {
             if (this._cache.hasOwnProperty(i)) {
-              option = this._cache[i];
-              matches.push({id: option.id, label: option.value});
+              matches.push({id: i, label: this._cache[i]});
             }
           }
-          success.apply(this, [matches]);
-        } else {
-          this.collection.html(this.tooManyObjectsPlaceholder);
         }
+
+        success.apply(this, [matches]);
 
       } else {
 
-        if (this.options.xhr) {
+        if (this.options.source) {
 
           $.ajax({
             beforeSend: function(xhr) {
               xhr.setRequestHeader("Accept", "application/json");
             },
-            url: this.options.remote_source,
+            url: this.options.source,
             data: this.options.createQuery(query),
             success: success
           });
@@ -263,9 +200,8 @@
           query = new RegExp(query + '.*', 'i');
 
           for (i in this._cache) {
-            if (this._cache.hasOwnProperty(i) && query.test(this._cache[i]['value'])) {
-              option = this._cache[i];
-              matches.push({id: option.id, label: option.value});
+            if (this._cache.hasOwnProperty(i) && query.test(this._cache[i])) {
+              matches.push({id: i, label: this._cache[i]});
             }
           }
 
@@ -277,14 +213,14 @@
     _select: function(options) {
       var widget = this;
       options.each(function(i, option) {
-        var el = widget.element.find('option[value="' + option.value + '"]');
+        var el = widget.element.find("option[value=" + option.value + "]");
         if (el.length) {
           el.attr("selected", "selected");
         } else {
-          widget.element.append($('<option></option>').attr('value', option.value).attr('selected', "selected"));
+          widget.element.append($('<option value="' + option.value + '" selected="selected"></option>'));
         }
       });
-      $(options).appendTo(this.selection).attr('selected', false);
+      $(options).prependTo(this.selection).attr('selected', false);
     },
 
     _move: function(direction, options) {
@@ -293,8 +229,8 @@
         options.each(function(i, option) {
           var prev = $(option).prev();
           if (prev.length > 0) {
-            var el = widget.element.find('option[value="' + option.value + '"]');
-            var el_prev = widget.element.find('option[value="' + prev[0].value + '"]');
+            var el = widget.element.find("option[value=" + option.value + "]");
+            var el_prev = widget.element.find("option[value=" + prev[0].value + "]");
             el_prev.before(el);
             prev.before($(option));
           }
@@ -304,8 +240,8 @@
         options.reverse().each(function(i, option) {
           var next = $(option).next();
           if (next.length > 0) {
-            var el = widget.element.find('option[value="' + option.value + '"]');
-            var el_next = widget.element.find('option[value="' + next[0].value + '"]');
+            var el = widget.element.find("option[value=" + option.value + "]");
+            var el_next = widget.element.find("option[value=" + next[0].value + "]");
             el_next.after(el);
             next.after($(option));
           }
@@ -314,7 +250,7 @@
     },
 
     selected: function(value) {
-      return this.element.find('option[value="' + value + '"]').attr("selected");
+      return this.element.find("option[value=" + value + "]").attr("selected");
     },
 
     destroy: function() {

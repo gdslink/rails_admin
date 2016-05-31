@@ -1,0 +1,24 @@
+<%
+  collection = field.associated_collection(authorization_adapter, scope_adapter).sort_by{|object| object.first.to_s }
+  selected = field.bindings[:object].send(field.child_key)
+
+  if selected.nil? && params["associations"]
+    selected = params["associations"][field.child_key.to_param.pluralize].to_i
+  end
+  
+  model_name = field.abstract_model.to_param
+  associated_model = field.associated_model_config
+  associated_model_name = associated_model.abstract_model.to_param
+
+  visible = !scope_adapter || !scope_adapter.models.collect{|m| m.name}.include?(associated_model.abstract_model.model.name)
+  selected = current_scope(associated_model.abstract_model.model.name) if not visible
+
+%>
+                <div class="field <%= field.to_param %>" <%if not visible then %>style="display:none"<%end%>>
+                  <%= label_tag field.to_param, field.label %>
+                  <%= form.select field.name, collection, {:include_blank => true, :selected => selected}, field.html_attributes %>
+                  <% if field.has_errors? %>
+                  <span class="errorMessage"><%= "#{field.label } #{field.errors.first}" %></span>
+                  <% end %>
+                  <p class="help"><%= field.help %></p>
+                </div>
