@@ -15,18 +15,12 @@ module RailsAdmin
           [:get, :post]
         end
 
-        # register_instance_option :authorization_key do
-        #   custom_key.to_sym
-        # end
-
         register_instance_option :controller do
           proc do
             @model_name = params[:model_name]
             field_columns = Field.column_names.collect { |x| x == "table_id" ? "table_key" : x } # change table_id to table_key
-            @page_name = "Field Import Form"
 
             if params[:mode] == "upload"
-              @page_name = "List of fields to import"
               @csv = CSV.read(params["fields"].tempfile.path)
               invalid_column = @csv[0] - field_columns
               unless invalid_column.empty?
@@ -34,10 +28,11 @@ module RailsAdmin
                 @error = true
               end
             elsif params[:mode] == "import"
-              @page_name = "Field Import Results"
               records = []
               params[:valid].each do |index|
-                records << Field.new(params[:field][index.to_i].delete_if { |key, value| value.to_s.strip == '' }.merge({"application_id" => @application.id}))
+                params[:field][index.to_i].delete_if { |key, value| value.to_s.strip == '' }.merge!({"application_id" => @application.id})
+                parameters = ActionController::Parameters.new(params[:field][index.to_i])
+                records << Field.new(parameters.permit(:application_id, :field_type, :key, :name, :table_id, :description, :default_value, :is_protected, :is_encrypted, :enable_index))
               end
               @result = Field.import records, :on_duplicate_key_update => [:application_id, :key]
               if @result.failed_instances.length == 0
@@ -46,7 +41,7 @@ module RailsAdmin
               else
                 flash[:error] = t("admin.flash.error", :name => pluralize(records.size, @model_config.label), :action => t("admin.actions.system_imported"))
               end
-              redirect_to list_path(@current_scope_parameters) and return
+              redirect_to index_path and break
             elsif params[:mode] == "download"
               columns_list = field_columns.reject do |f|
                 %W(id application_id created_at updated_at field_format).include?(f)
@@ -68,16 +63,13 @@ module RailsAdmin
               attr.delete_if { |key, value| value.to_s.strip == '' }.merge({"application_id" => @application.id})
               field = Field.get_field_and_validate(attr.merge({"application_id" => @application.id}), tbl, fld_types)
 
-              respond_to do |format|
-                format.json { render :json => { "errors" => field.errors.full_messages.join(", ")} }
-              end
+              render :json => { "errors" => field.errors.full_messages.join(", ")}
             end
 
             unless params[:mode] == "download" or params[:mode] == "ajax"
-              respond_to do |format|
-                format.html { render :layout => 'rails_admin/application' }
-              end
+              render :layout => 'rails_admin/application'
             end
+
           end
         end
 
@@ -85,13 +77,12 @@ module RailsAdmin
           'icon-upload'
         end
 
-        # Should the action be visible
-        register_instance_option :visible? do
-          authorized? && bindings[:abstract_model].model_name == 'Field'
+        register_instance_option :custom_key do
+          :field_import
         end
 
-        register_instance_option :custom_key do
-          'field_import'
+        register_instance_option :authorization_key do
+          :field_import
         end
 
       end
