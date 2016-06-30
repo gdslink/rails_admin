@@ -22,30 +22,22 @@ module RailsAdmin
             @model_name = params[:model_name]
             if mode.nil?
               @object = @abstract_model.new #we do not have an object yet, so create one
-              @page_name = t("admin.actions.system_import").capitalize
-              @page_type = t("admin.actions.system_import").capitalize
-
-              respond_to do |format|
-                format.html { render :layout => 'rails_admin/form' }
-                format.js   { render :layout => 'rails_admin/plain.html.erb' }
-              end
-            elsif mode == "upload_iframe"
-              render :template => 'rails_admin/main/upload_file_form', :layout => nil
-            elsif mode == "upload_file"
+              render :layout => 'rails_admin/application'
+            elsif mode == "upload"
               begin
                 if Rails.cache.exist?(:import_in_progress)
                   raise Exception.new(I18n.t('admin.import_export.error_in_progress'))
                 end
 
-                @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["import_file"].tempfile.path)
-                Rails.cache.write(:import_temporary_file, Base64.encode64(params["import_file"].read), :expires_in => 5.minutes)
+                @import_details = CaseCenter::ImportExport.new.get_company_and_application(params["system"].tempfile.path)
+                Rails.cache.write(:import_temporary_file, Base64.encode64(params["system"].read), :expires_in => 5.minutes)
               rescue Exception => e
                 Rails.logger.error("Error while importing #{e.message}")
                 Rails.logger.error(e.backtrace.join("\n"))
                 @error = e.message.squish
               end
-              render :template => 'rails_admin/main/upload_file_complete', :layout => nil
-            elsif mode == "install_import"
+              render :layout => 'rails_admin/application'
+            elsif mode == "import"
               begin
                 @details = {
                     :application_name => params['application_name'],
@@ -132,7 +124,7 @@ module RailsAdmin
                 Rails.logger.error(e.backtrace.join("\n"))
                 @error =  e.message.squish
               end
-              render :template => 'rails_admin/main/system_import_complete', :layout => nil
+              render :layout => 'rails_admin/application'
             elsif mode == "check_complete"
               json = {}
               if Rails.cache.exist?(:import_in_progress)
@@ -157,6 +149,8 @@ module RailsAdmin
                 end
               end
               render :json => json.to_json
+            elsif mode == "reload_partial"
+              render 'rails_admin/scope_selector'
             end
           end
         end
