@@ -10,7 +10,7 @@
             <% if (@abstract_model.pretty_name) != 'Application' %>
               <%=t('admin.delete.all_of_the_following_related_items_will_be_deleted')%>
             <% else %>
-              <%=t('admin.delete.all_objects_associated_with_the_system_will_be_removed')%>
+              <br/><%=t('admin.delete.all_objects_associated_with_the_system_will_be_removed')%>
             <% end %>
             <strong></p>
           <% path = "/rails_admin/main/#{@object.class.to_s.downcase}" %>
