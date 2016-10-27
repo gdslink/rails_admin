@@ -8,7 +8,8 @@ module RailsAdmin
       attr_accessible :message, :item, :table, :username
     end
 
-    default_scope { order('id DESC') }
+    # default_scope { order('id DESC') }
+    default_scope { where(application_id: User.current_user.current_scope['Application']).order('id DESC') unless User.current_user.nil? or User.current_user.current_scope.nil? }
 
     class << self
       def latest
