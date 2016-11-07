@@ -29,8 +29,9 @@ module RailsAdmin
                 @object.send("#{name}=", value)
               end
               changes = @object.changes
+              changes.delete(:authentication_token)
               if @object.save
-                @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes)
+                @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
                 respond_to do |format|
                   format.html { redirect_to_on_success }
                   format.js { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
