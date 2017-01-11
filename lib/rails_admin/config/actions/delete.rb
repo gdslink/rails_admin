@@ -40,6 +40,7 @@ module RailsAdmin
                 flash[:error] = t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done'))
                 redirect_path = back_or_index
               end
+              invalidate_cache_key(@model_name)
 
               redirect_to redirect_path
 

@@ -49,6 +49,7 @@ module RailsAdmin
                 handle_save_error
               end
 
+              invalidate_cache_key(@model_name)
             end
           end
         end

@@ -39,7 +39,7 @@ module RailsAdmin
               else
                 handle_save_error :edit
               end
-
+              invalidate_cache_key(@model_name)
             end
           end
         end
