@@ -31,6 +31,7 @@ module RailsAdmin
               changes = @object.changes
               changes.delete(:authentication_token)
               if @object.save
+                @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
                 respond_to do |format|
                   format.html { redirect_to_on_success }

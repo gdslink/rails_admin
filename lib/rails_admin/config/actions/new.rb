@@ -40,6 +40,7 @@ module RailsAdmin
               end
 
               if @object.save
+                @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.create_object(@object, @abstract_model, _current_user)
                 respond_to do |format|
                   format.html { redirect_to_on_success }
