@@ -11,7 +11,7 @@ module RailsAdmin
   end
 
   class ApplicationController < Config.parent_controller.constantize
-
+    protect_from_forgery with: :exception
     newrelic_ignore if defined?(NewRelic)
 
     before_filter :_authenticate!
