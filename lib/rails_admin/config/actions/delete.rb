@@ -34,12 +34,14 @@ module RailsAdmin
               redirect_path = nil
               @auditing_adapter && @auditing_adapter.delete_object(@object, @abstract_model, _current_user)
               if @object.destroy
+                @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 flash[:success] = t('admin.flash.successful', name: @model_config.label, action: t('admin.actions.delete.done'))
                 redirect_path = index_path
               else
                 flash[:error] = t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done'))
                 redirect_path = back_or_index
               end
+              invalidate_cache_key(@model_name)
 
               redirect_to redirect_path
 

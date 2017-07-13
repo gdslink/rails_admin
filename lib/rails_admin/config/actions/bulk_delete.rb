@@ -49,7 +49,7 @@ module RailsAdmin
                 flash[:error] = t('admin.flash.error', name: pluralize(not_destroyed.count, @model_config.label), action: t('admin.actions.delete.done')) unless not_destroyed.empty?
                 redirect_to back_or_index
               end
-
+              invalidate_cache_key(@model_name)
             end
           end
         end

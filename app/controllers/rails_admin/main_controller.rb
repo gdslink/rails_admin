@@ -8,9 +8,10 @@ module RailsAdmin
 
     layout :get_layout
 
-    before_filter :get_model, except: [:update_scope,:dashboard,:global_search]
+    before_filter :get_model, except: [:update_scope, :dashboard, :global_search]
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
-    before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard,:global_search ]
+    before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard, :global_search]
+    before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel
 
   RailsAdmin::Config::Actions.all.each do |action|
@@ -183,9 +184,9 @@ module RailsAdmin
     def redirect_to_on_success
       notice = t('admin.flash.successful', name: @model_config.label, action: t("admin.actions.#{@action.key}.done"))
       if params[:_add_another]
-        redirect_to new_path(return_to: params[:return_to]), flash: {success: notice}
+        redirect_to new_path(@current_scope_parameters.merge(return_to: params[:return_to])), flash: {success: notice}
       elsif params[:_add_edit]
-        redirect_to edit_path(id: @object.id, return_to: params[:return_to]), flash: {success: notice}
+        redirect_to edit_path(@current_scope_parameters.merge(id: @object.id, return_to: params[:return_to])), flash: {success: notice}
       else
         redirect_to back_or_index, flash: {success: notice}
       end
@@ -245,6 +246,18 @@ module RailsAdmin
       action = params[:current_action].in?(%w(create update)) ? params[:current_action] : 'edit'
       @association = source_model_config.send(action).fields.detect { |f| f.name == params[:associated_collection].to_sym }.with(controller: self, object: source_object)
       @association.associated_collection_scope
+    end
+
+    def get_attributes
+      @attributes = params[@abstract_model.to_param.singularize.gsub('~','_')] || {}
+      @attributes.each do |key, value|
+        # Deserialize the attribute if attribute is serialized
+        if @abstract_model.model.serialized_attributes.keys.include?(key) and value.is_a? String
+          @attributes[key] = YAML::load(value)
+        end
+        # Delete fields that are blank
+        @attributes[key] = nil if value.blank?
+      end
     end
   end
 end

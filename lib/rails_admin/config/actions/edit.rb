@@ -29,8 +29,10 @@ module RailsAdmin
                 @object.send("#{name}=", value)
               end
               changes = @object.changes
+              changes.delete(:authentication_token)
               if @object.save
-                @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes)
+                @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
+                @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
                 respond_to do |format|
                   format.html { redirect_to_on_success }
                   format.js { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
@@ -38,13 +40,17 @@ module RailsAdmin
               else
                 handle_save_error :edit
               end
-
+              invalidate_cache_key(@model_name)
             end
           end
         end
 
         register_instance_option :link_icon do
           'icon-pencil'
+        end
+
+        register_instance_option :pjax? do
+          false
         end
       end
     end

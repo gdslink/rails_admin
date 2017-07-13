@@ -45,7 +45,12 @@ module RailsAdmin
     end
 
     def input_for(field)
-      css = 'col-sm-10 controls'
+      css = 'controls'
+      if field.label
+        css += ' col-sm-10'
+      else
+        css += ' col-sm-12'
+      end
       css += ' has-error' if field.errors.present?
       @template.content_tag(:div, class: css) do
         field_for(field).to_s+errors_for(field).to_s+help_for(field).to_s
