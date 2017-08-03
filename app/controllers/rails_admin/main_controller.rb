@@ -9,7 +9,7 @@ module RailsAdmin
 
     before_filter :get_model, except: [:update_scope, :dashboard, :global_search]
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
-    before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard, :global_search]
+    before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard, :global_search, :bulk_action, :bulk_delete, :export]
     before_filter :get_attributes, :only => [:create, :update]
     before_filter :check_for_cancel
 
