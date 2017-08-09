@@ -55,8 +55,8 @@ describe RailsAdmin, type: :request do
 
     it 'shows up with default value, hidden' do
       visit new_path(model_name: 'player')
-      is_expected.to have_selector("#player_name[type=hidden][value='username@example.com']")
-      is_expected.not_to have_selector("#player_name[type=hidden][value='toto@example.com']")
+      is_expected.to have_selector("#player_name[type=hidden][value='username@example.com']", visible: false)
+      is_expected.not_to have_selector("#player_name[type=hidden][value='toto@example.com']", visible: false)
     end
 
     it 'does not show label' do
@@ -146,6 +146,19 @@ describe RailsAdmin, type: :request do
     it 'has label-danger class on log out link' do
       visit dashboard_path
       is_expected.to have_selector('.label-danger')
+    end
+  end
+
+  describe 'CSRF protection' do
+    before do
+      allow_any_instance_of(ActionController::Base).to receive(:protect_against_forgery?).and_return(true)
+    end
+
+    it 'is enforced' do
+      visit new_path(model_name: 'league')
+      fill_in 'league[name]', with: 'National league'
+      find('input[name="authenticity_token"]', visible: false).set("invalid token")
+      expect { click_button 'Save' }.to raise_error ActionController::InvalidAuthenticityToken
     end
   end
 end

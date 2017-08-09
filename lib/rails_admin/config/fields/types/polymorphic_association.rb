@@ -16,7 +16,7 @@ module RailsAdmin
           # association checks that any of the child models are included in
           # configuration.
           register_instance_option :visible? do
-            associated_model_config.length > 0
+            associated_model_config.any?
           end
 
           register_instance_option :formatted_value do
@@ -45,7 +45,17 @@ module RailsAdmin
             [children_fields]
           end
 
+          register_instance_option :eager_load? do
+            false
+          end
 
+          def associated_collection(type)
+            return [] if type.blank?
+            config = RailsAdmin.config(type)
+            config.abstract_model.all.collect do |object|
+              [object.send(config.object_label_method), object.id]
+            end
+          end
 
           def associated_model_config
             @associated_model_config ||= association.klass.collect { |type| RailsAdmin.config(type) }.select { |config| !config.excluded? }
@@ -56,13 +66,7 @@ module RailsAdmin
               [config.label, config.abstract_model.model.name]
             end
           end
-          def associated_collection(type)
-            return [] if type.blank?
-            config = RailsAdmin.config(type)
-            config.abstract_model.all.collect do |object|
-              [object.send(config.object_label_method), object.id]
-            end
-          end
+
           def polymorphic_type_urls
             types = associated_model_config.collect do |config|
               [config.abstract_model.model.name, config.abstract_model.to_param]

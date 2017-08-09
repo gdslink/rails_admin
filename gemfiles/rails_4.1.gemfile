@@ -8,7 +8,7 @@ gem "rails", "~> 4.1.0"
 gem "capybara", ">= 0.8", :group => :test
 
 group :active_record do
-  gem "paper_trail", "~> 3.0"
+  gem "paper_trail", ">= 5.0"
 
   platforms :jruby do
     gem "activerecord-jdbcmysql-adapter", ">= 1.2"
@@ -46,7 +46,7 @@ group :test do
   gem "pundit"
   gem "rack-cache", :require => "rack/cache"
   gem "rspec-rails", ">= 2.14"
-  gem "rubocop", "~> 0.31.0"
+  gem "rubocop", "~> 0.41.2"
   gem "simplecov", ">= 0.9", :require => false
   gem "timecop", ">= 0.5"
 
@@ -56,7 +56,8 @@ group :test do
 end
 
 group :mongoid do
-  gem "mongoid", "~> 4.0.0"
+  gem "mongoid", "~> 4.0"
+  gem "kaminari-mongoid"
   gem "mongoid-paperclip", ">= 0.0.8", :require => "mongoid_paperclip"
   gem "carrierwave-mongoid", ">= 0.6.3", :require => "carrierwave/mongoid"
   gem "refile-mongoid", ">= 0.0.1", :platforms => [:ruby_21, :ruby_22, :ruby_23]

@@ -14,16 +14,15 @@ module RailsAdmin
     protect_from_forgery with: :exception
     newrelic_ignore if defined?(NewRelic)
 
-    before_filter :_authenticate!
-    before_filter :_authorize!
-    before_filter :_scope!
-    before_filter :_scope_current_user!
-    before_filter :_get_scope_models!
-    before_filter :_get_scope_parameters!
-    before_filter :_audit!
-
-    before_filter :_set_timezone
-    before_filter :_set_locale
+    before_action :_authenticate!
+    before_action :_authorize!
+    before_action :_scope!
+    before_action :_scope_current_user!
+    before_action :_get_scope_models!
+    before_action :_get_scope_parameters!
+    before_action :_audit!
+    before_action :_set_timezone
+    before_action :_set_locale
 
 
     helper_method :_current_user, :_get_plugin_name, :cache_key
@@ -52,15 +51,14 @@ module RailsAdmin
     end
 
     def get_model
-        model_name = params[:model_name]
-      @model_name = to_model_name(model_name)
-      fail(RailsAdmin::ModelNotFound) unless (@abstract_model = RailsAdmin::AbstractModel.new(@model_name))
-      fail(RailsAdmin::ModelNotFound) if (@model_config = @abstract_model.config).excluded?
+      @model_name = to_model_name(params[:model_name])
+      raise(RailsAdmin::ModelNotFound) unless (@abstract_model = RailsAdmin::AbstractModel.new(@model_name))
+      raise(RailsAdmin::ModelNotFound) if (@model_config = @abstract_model.config).excluded?
       @properties = @abstract_model.properties
     end
 
     def get_object
-      fail(RailsAdmin::ObjectNotFound) unless (@object = @abstract_model.get(params[:id]))
+      raise(RailsAdmin::ObjectNotFound) unless (@object = @abstract_model.get(params[:id]))
     end
 
     def to_model_name(param)
@@ -72,6 +70,34 @@ module RailsAdmin
     end
 
     private
+
+    def check_admin_access
+      unless current_user.is_root?
+        t = Time.now
+        st = "#{CaseCenter::Config::Reader.get("admin_access_start_time")}"
+        et = "#{CaseCenter::Config::Reader.get("admin_access_end_time")}"
+        if !st.blank? && !et.blank?
+          hr, min = st.split(":")
+          startTime = Time.new(t.year, t.month, t.day, hr, min)
+          hr, min = et.split(":")
+          endTime = Time.new(t.year, t.month, t.day, hr, min)
+          if t.between?(startTime, endTime)
+            flash.now[:error] = t('admin.access.time_window', :start_time => st, :end_time => et)
+            render :file => Rails.root.join('public', '401.html'), :layout => false, :status => 401
+          end
+        end
+      end
+    end
+
+    def get_locale
+      locale = params[:locale].to_s
+      return locale if I18n.available_locales.include?(locale.to_sym) unless locale.empty?
+      nil
+    end
+
+    def extract_locale_from_accept_language_header
+      request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first if request.env['HTTP_ACCEPT_LANGUAGE']
+    end
 
     def _set_timezone
       Time.zone = current_user.time_zone if current_user
@@ -147,22 +173,22 @@ module RailsAdmin
     end
 
 
-    alias_method :user_for_paper_trail, :_current_user
-
-    def user_for_paper_trail
-      _current_user.try(:id) || _current_user
+    def rails_admin_controller?
+      true
     end
 
 
     rescue_from RailsAdmin::ObjectNotFound do
       flash[:error] = I18n.t('admin.flash.object_not_found', model: @model_name, id: params[:id])
       params[:action] = 'index'
+      @status_code = :not_found
       index
     end
 
     rescue_from RailsAdmin::ModelNotFound do
       flash[:error] = I18n.t('admin.flash.model_not_found', model: @model_name)
       params[:action] = 'dashboard'
+      @status_code = :not_found
       dashboard
     end
   end

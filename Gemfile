@@ -18,8 +18,6 @@ group :active_record do
     gem 'pg', '>= 0.14'
     gem 'sqlite3', '>= 1.3'
   end
-
-  gem 'paper_trail', '~> 3.0'
 end
 
 group :development, :test do
@@ -42,7 +40,7 @@ group :test do
   gem 'pundit'
   gem 'rack-cache', require: 'rack/cache'
   gem 'rspec-rails', '>= 2.14'
-  gem 'rubocop', '~> 0.31.0'
+  gem 'rubocop', '~> 0.41.2'
   gem 'simplecov', '>= 0.9', require: false
   gem 'timecop', '>= 0.5'
 

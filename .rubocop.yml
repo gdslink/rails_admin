@@ -29,7 +29,7 @@ Metrics/MethodLength:
   Max: 29 # TODO: Lower to 15
 
 Metrics/ModuleLength:
-  Max: 164 # TODO: Lower to 100
+  Max: 200 # TODO: Lower to 100
 
 Metrics/ParameterLists:
   Max: 8 # TODO: Lower to 4
@@ -40,6 +40,9 @@ Metrics/PerceivedComplexity:
 
 Style/AccessModifierIndentation:
   EnforcedStyle: outdent
+
+Style/Alias:
+  Enabled: false
 
 Style/CollectionMethods:
   PreferredMethods:
@@ -76,5 +79,8 @@ Style/RaiseArgs:
 Style/SpaceInsideHashLiteralBraces:
   EnforcedStyle: no_space
 
-Style/TrailingComma:
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: 'comma'
+
+Style/TrailingCommaInLiteral:
   EnforcedStyleForMultiline: 'comma'

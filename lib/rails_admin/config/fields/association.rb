@@ -10,7 +10,7 @@ module RailsAdmin
         end
 
         # Reader for the association information hash
-        def association # rubocop:disable TrivialAccessors
+        def association
           @properties
         end
 
@@ -54,13 +54,14 @@ module RailsAdmin
         # preload entire associated collection (per associated_collection_scope) on load
         # Be sure to set limit in associated_collection_scope if set is large
         register_instance_option :associated_collection_cache_all do
-          @associated_collection_cache_all ||= (associated_model_config.abstract_model.count < 100)
+          @associated_collection_cache_all ||= (associated_model_config.abstract_model.count < associated_model_limit)
         end
 
         # determines whether association's elements can be removed
         register_instance_option :removable? do
           association.foreign_key_nullable?
         end
+
         def associated_collection(authorization_adapter, scope_adapter)
           scope = authorization_adapter && authorization_adapter.query(:list_via_association, associated_model_config.abstract_model)
           if scope_adapter and not scope_adapter.is_root_managing_users?(associated_model_config.abstract_model)
@@ -70,6 +71,11 @@ module RailsAdmin
             [object.send(associated_model_config.object_label_method), object.id]
           end
         end
+
+        register_instance_option :eager_load? do
+          !!searchable
+        end
+
         # Reader for the association's child model's configuration
         def associated_model_config
           @associated_model_config ||= RailsAdmin.config(association.klass)
@@ -117,6 +123,10 @@ module RailsAdmin
 
         def virtual?
           true
+        end
+
+        def associated_model_limit
+          RailsAdmin.config.default_associated_collection_limit
         end
       end
     end
