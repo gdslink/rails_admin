@@ -41,6 +41,9 @@ module RailsAdmin
 
             respond_to do |format|
               format.html do
+                if @abstract_model.model_name == "Ckeditor::Asset" then
+                  @iframe_url = "/ckeditor/pictures?CKEditorFuncNum=2&mode=standalone&assetable_id=#{@current_scope_parameters['Company']}&assetable_type=Company"
+                end
                 render @action.template_name, status: @status_code || :ok
               end
 
