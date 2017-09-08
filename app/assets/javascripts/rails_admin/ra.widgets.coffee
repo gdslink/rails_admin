@@ -21,16 +21,16 @@ $(document).on 'rails_admin.dom_ready', (e, content) ->
           $(that).css('backgroundColor', '#' + hex)
 
     # datetime picker
-    $.fn.datetimepicker.defaults.icons =
-      time:     'fa fa-clock-o'
-      date:     'fa fa-calendar'
-      up:       'fa fa-chevron-up'
-      down:     'fa fa-chevron-down'
-      previous: 'fa fa-angle-double-left'
-      next:     'fa fa-angle-double-right'
-      today:    'fa fa-dot-circle-o'
-      clear:    'fa fa-trash'
-      close:    'fa fa-times'
+#    $.fn.datetimepicker.defaults.icons =
+#      time:     'fa fa-clock-o'
+#      date:     'fa fa-calendar'
+#      up:       'fa fa-chevron-up'
+#      down:     'fa fa-chevron-down'
+#      previous: 'fa fa-angle-double-left'
+#      next:     'fa fa-angle-double-right'
+#      today:    'fa fa-dot-circle-o'
+#      clear:    'fa fa-trash'
+#      close:    'fa fa-times'
 
     content.find('[data-datetimepicker]').each ->
       options = $(this).data('options')
