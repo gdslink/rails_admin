@@ -52,6 +52,7 @@ module RailsAdmin
               end
 
               invalidate_cache_key(@model_name)
+              update_session_for_model(@model_name, @object.id) if ["Company", "Application"].include? @model_name
             end
           end
         end
