@@ -151,7 +151,11 @@ module RailsAdmin
       #
       # @see RailsAdmin::Config::DEFAULT_AUTHORIZE
       def authorize_with(*args, &block)
+
         extension = args.shift
+
+        extension = extension || DEFAULT_AUTHORIZATION_ADAPTER
+
         if extension
           @authorize = proc do
             @authorization_adapter = RailsAdmin::AUTHORIZATION_ADAPTERS[extension].new(*([self] + args).compact)
