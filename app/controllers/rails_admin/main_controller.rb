@@ -80,7 +80,7 @@ module RailsAdmin
         field = Field.get_field_and_validate(attr.merge({"application_id" => @application.id}), tbl, fld_types)
 
         respond_to do |format|
-          format.json { render :json => { "errors" => field.errors.full_messages.join(", ")} }
+          format.json { render :json => { "errors" => field.errors.full_messages} }
         end
       end
 
