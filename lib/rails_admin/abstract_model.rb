@@ -15,8 +15,8 @@ module RailsAdmin
         adapter ? @@all.select { |m| m.adapter == adapter } : @@all
       end
 
-      alias_method :old_new, :new
-      def new(m)
+      #alias_method :old_new, :new
+      def new_new(m)
         m = m.constantize unless m.is_a?(Class)
         (am = old_new(m)).model && am.adapter ? am : nil
       rescue LoadError, NameError
