@@ -9,7 +9,7 @@ module RailsAdmin
       return self if (@objects = objects).blank?
 
       @model = objects.dup.first.class
-      @abstract_model = RailsAdmin::AbstractModel.new(@model)
+      @abstract_model = RailsAdmin::AbstractModel.new_new(@model)
       @model_config = @abstract_model.config
       @methods = [(schema[:only] || []) + (schema[:methods] || [])].flatten.compact
       @fields = @methods.collect { |m| export_fields_for(m).first }

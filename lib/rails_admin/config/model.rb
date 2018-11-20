@@ -31,9 +31,9 @@ module RailsAdmin
           if entity.is_a?(RailsAdmin::AbstractModel)
             entity
           elsif entity.is_a?(Class) || entity.is_a?(String) || entity.is_a?(Symbol)
-            RailsAdmin::AbstractModel.new(entity)
+            RailsAdmin::AbstractModel.new_new(entity)
           else
-            RailsAdmin::AbstractModel.new(entity.class)
+            RailsAdmin::AbstractModel.new_new(entity.class)
           end
         end
         @groups = [RailsAdmin::Config::Fields::Group.new(self, :default).tap { |g| g.label { I18n.translate('admin.form.basic_info') } }]

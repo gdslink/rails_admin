@@ -86,7 +86,7 @@ module RailsAdmin
                   table_name, column = f.split '.'
                   type = nil
                 elsif f.is_a?(Hash)                                              #  <Model|table_name> => <attribute|column>
-                  am = f.keys.first.is_a?(Class) && AbstractModel.new(f.keys.first)
+                  am = f.keys.first.is_a?(Class) && AbstractModel.new_new(f.keys.first)
                   table_name = am && am.table_name || f.keys.first
                   column = f.values.first
                   property = am && am.properties.detect { |p| p.name == f.values.first.to_sym }
