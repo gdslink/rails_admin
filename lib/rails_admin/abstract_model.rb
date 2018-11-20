@@ -18,7 +18,7 @@ module RailsAdmin
       #alias_method :old_new, :new
       def new_new(m)
         m = m.constantize unless m.is_a?(Class)
-        (am = old_new(m)).model && am.adapter ? am : nil
+        (am = self.new(m)).model && am.adapter ? am : nil
       rescue LoadError, NameError
         puts "[RailsAdmin] Could not load model #{m}, assuming model is non existing. (#{$ERROR_INFO})" unless Rails.env.test?
         nil
