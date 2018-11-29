@@ -1,0 +1,147 @@
+<style>
+  #sign_alternative {
+    width: 100%;
+    text-align: center;
+    border-width: 1px;
+    border-color: #64669a;
+    margin: auto;
+    box-sizing: border-box;
+    border-style: solid;
+    padding: 15px 20px !important;
+    white-space: normal;
+    font-size: 12px;
+    display: flex;
+    position: relative;
+    background-color: rgba(255,255,255,0.75);
+  }
+
+  #sign_alternative_inputs > label{
+    min-width: 50%;
+    text-align: left;
+    margin-bottom: 5px;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  #sign_alternative label input[type=radio] {
+    width: 20px !important;
+    margin: 0;
+  }
+
+  div#sign_alternative_legend {
+    position: absolute;
+    top: -6px;
+    left: 10px;
+    height: 12px;
+    font-size: 11px;
+    line-height: 11px;
+    text-align: left;
+    padding: 0 8px;
+    background-color: white;
+    cursor: pointer;
+  }
+  #sign_alternative.collapsed div#sign_alternative_legend{
+    background-color: transparent;
+  }
+
+  div#sign_alternative_inputs {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+  }
+    #sign_alternative.collapsed{
+      padding: 0!important;
+      border-width: 0!important;
+      margin-bottom: 10px!important;
+    }
+  #sign_alternative.collapsed div#sign_alternative_inputs{
+    display: none!important;
+  }
+
+  span#currentLoginMode:after {
+    content: '\25b8';
+    font-size: 14px;
+    padding-left: 5px;
+    transition: all 0.4s ease;
+    transform: rotate(90deg);
+    display: inline-block;
+  }
+
+  #sign_alternative.collapsed span#currentLoginMode:after {
+    transform: rotate(0deg);
+  }
+
+  #currentLoginMode strong {
+    color: #999;
+  }
+</style>
+
+<script>
+  document.toggleSignin_alternative = function(){
+      document.querySelector("#sign_alternative").classList.toggle("collapsed");
+  }
+  document.signin_alternative = function(pIdp){
+      switch (pIdp.value){
+          case "ldap":
+              document.signInWithLdap();
+              break;
+          case "casecenter":
+              document.signInWithCC();
+              break;
+      }
+  }
+
+  document.signInWithLdap = function(){
+      document.querySelector("#user_email").name = "username"
+      document.querySelector("#user_password").name = "password"
+      document.querySelector("#new_user").action = "/users/auth/ldap/callback"
+      document.querySelector("#sign_in_alternative_LDAP").checked = true;
+      document.querySelector("#currentLoginMode").innerHTML = "<strong>LDAP</strong>";
+      document.querySelector("#login_links").style.display = "none"
+
+
+  }
+
+  document.signInWithCC = function()
+  {
+      document.querySelector("#user_email").name = "user[email]"
+      document.querySelector("#user_password").name = "user[password]"
+      document.querySelector("#new_user").action = "/users/sign_in?loginMode=CC"
+      document.querySelector("#sign_in_alternative_CC").checked = true;
+      document.querySelector("#currentLoginMode").innerHTML = "<strong>CASECenter</strong>";
+      document.querySelector("#login_links").style.display = "block"
+  }
+
+  document.autoSelectLoginMode = function(){
+      document.signInWithLdap();
+      if(document.location.href.split("?")[1]){
+          qry = document.location.href.split("?")[1];
+          qry = qry.split("&");
+          for (var q in qry ){
+            param = qry[q].split("=");
+            if(param[1] && param[0] == "loginMode"){
+                switch(param[1]){
+                    case "LDAP":
+                        document.signInWithLdap();
+                        break;
+                    case "CC":
+                        document.signInWithCC();
+                        break;
+                    default:
+                        document.signInWithLdap();
+                }
+            }
+          }
+      }
+  }
+
+  document.addEventListener("DOMContentLoaded",document.autoSelectLoginMode);
+
+</script>
+<fieldset id="sign_alternative" class="collapsed">
+  <div id="sign_alternative_legend" onclick="document.toggleSignin_alternative()"><%=t('admin.sign_in.sign_mode')%> : <span id="currentLoginMode"></span></div>
+  <div id="sign_alternative_inputs" class="collapsed">
+    <label><input id="sign_in_alternative_CC" type="radio" name="sign_in_alternative" value="casecenter"onclick="document.signin_alternative(this)"><%=t('admin.sign_in.sign_in_with_casecenter')%></label>
+    <label><input id="sign_in_alternative_LDAP" type="radio" name="sign_in_alternative" value="ldap" onclick="document.signin_alternative(this)"><%=t('admin.sign_in.sign_in_with_ldap')%></label>
+  </div>
+</fieldset>
