@@ -38,6 +38,12 @@
   </div>
 <% end %>
 
-
-
 </div>
+<% if CaseCenter::Config::Reader.get('encode_password') == "base64" %>
+  <%= javascript_include_tag "rails_admin/base64.js"  %>
+  <script>
+      $('#new_user').submit(function() {
+          $("#user_password").val( Base64.encode( $("#user_password").val() ) )
+      });
+  </script>
+<% end %>
