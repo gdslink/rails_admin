@@ -1,0 +1,11 @@
+<% if resource.errors.any? %>
+  <div id="error_explanation">
+    <ul>
+      <% resource.errors.full_messages.each do |message|
+        message = "Invalid email and password combination" if message.include?("not found") && (!action && (!["password_reset", "unlock"].include? action))
+       %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

@@ -2,7 +2,7 @@
 
 <%if resource.errors.size > 0 %>
   <div id='flash-alert'>
-    <%= custom_devise_error_messages! %>
+    <%= render :partial => "devise/shared/error_messages", locals: {action: "password_reset"}, resource: resource %>
   </div>
 <%end%>
 
