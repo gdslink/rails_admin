@@ -36,7 +36,7 @@ module RailsAdmin
               if @object.destroy
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 flash[:success] = t('admin.flash.successful', name: @model_config.label, action: t('admin.actions.delete.done'))
-                redirect_path = %w{Company Application}.include? @model_name ? dashboard_path : index_path
+                redirect_path = (%w{Company Application}.include? @model_name) ? dashboard_path : index_path
               else
                 flash[:error] = t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done'))
                 redirect_path = back_or_index
