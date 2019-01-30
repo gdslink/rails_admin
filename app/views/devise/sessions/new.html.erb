@@ -1,21 +1,23 @@
 <script type="text/javascript">
-  $(document).ready(function(){
-    if( top !== self){
-      top.location = self.location
-    }
-  });
+    $(document).ready(function () {
+        if (top !== self) {
+            top.location = self.location
+        }
+    });
 </script>
 <div id="main-login">
 
-<%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
+  <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
 
-      <div class="head_title"><%=t('devise.sessions.email')%></div>
-      <div class="small">&nbsp;</div><br class="clear">
-      <%=f.email_field :email, :class => "lg_log", :size => '30', :autocomplete => :off%>
+    <div class="head_title"><%= t('devise.sessions.email') %></div>
+    <div class="small">&nbsp;</div>
+    <br class="clear">
+    <%= f.email_field :email, :class => "lg_log", :size => '30', :autocomplete => :off %>
 
-      <div class="head_title"><%=t('devise.sessions.password')%></div>
-      <div class="small">&nbsp;</div><br class="clear">
-      <%=f.password_field :password, :class => "lg_log", :size => '30', :autocomplete => "off" %>
+    <div class="head_title"><%= t('devise.sessions.password') %></div>
+    <div class="small">&nbsp;</div>
+    <br class="clear">
+    <%= f.password_field :password, :class => "lg_log", :size => '30', :autocomplete => "off" %>
 
 
     <% if devise_mapping.rememberable? && resource_class.omniauth_providers.empty? -%>
@@ -31,20 +33,21 @@
       <% end -%>
     <% end -%>
 
+    <div class='button'>
+      <%= javascript_include_tag 'common/base64.js' %>
+      <% if CaseCenter::Config::Reader.get('encode_password') == "base64" -%>
+        <script type="text/javascript">
+            document.getElementById("new_user").addEventListener("submit", function () {
+                    document.getElementById("user_password").value = Base64.encode(document.getElementById("user_password").value);
+                }
+            );
+        </script>
+      <% end -%>
 
-  <div class='button'>
-    <%= f.submit t('devise.sessions.sign_in'), :class => "ra-button ui-state-highlight" %>
-    <p><%= render :partial => "devise/shared/links" %></p>
-  </div>
+      <%= f.submit t('devise.sessions.sign_in'), :class => "ra-button ui-state-highlight" %>
+      <p><%= render :partial => "devise/shared/links" %></p>
+    </div>
     <img src="/images/gds_link_logo.svg">
-<% end %>
+  <% end %>
 
 </div>
-<% if CaseCenter::Config::Reader.get('encode_password') == "base64" %>
-  <%= javascript_include_tag "rails_admin/base64.js"  %>
-  <script>
-      $('#new_user').submit(function() {
-          $("#user_password").val( Base64.encode( $("#user_password").val() ) )
-      });
-  </script>
-<% end %>
