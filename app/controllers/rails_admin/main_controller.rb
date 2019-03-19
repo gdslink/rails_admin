@@ -44,7 +44,7 @@ module RailsAdmin
         list_entries(@model_config).each do |e|
           if e.respond_to?(:name)
             model_result << {
-                :label => e.name , :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
+                :label => e.name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
             }
           end
         end
@@ -59,8 +59,7 @@ module RailsAdmin
     def list_entries(model_config = @model_config, auth_scope_key = :index, additional_scope = get_association_scope_from_params, pagination = !(params[:associated_collection] || params[:all] || params[:bulk_ids]))
       
       scope = model_config.abstract_model.scoped
-
-      if @abstract_model.model.name == "Ckeditor::Asset" then
+      if @abstract_model && @abstract_model.model.name == "Ckeditor::Asset" then
         @iframe_url = "/ckeditor/pictures?CKEditorFuncNum=2&mode=standalone&assetable_id=#{@current_scope_parameters["Company"].to_s}&assetable_type=Company"
       end
 
