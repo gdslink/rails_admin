@@ -34,7 +34,7 @@
     <% end -%>
 
     <div class='button'>
-      <%= javascript_include_tag 'common/base64.js' %>
+      <%= javascript_include_tag asset_path('common/base64.js') %>
       <% if CaseCenter::Config::Reader.get('encode_password') == "base64" -%>
         <script type="text/javascript">
             document.getElementById("new_user").addEventListener("submit", function () {
