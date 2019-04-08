@@ -62,7 +62,7 @@ en:
       changes: "Changes"
       created_at: "Date/Time"
       item: "Item"
-      message: "Message"
+      message: "Changes"
     actions:
       dashboard:
         title: "Site Administration"
