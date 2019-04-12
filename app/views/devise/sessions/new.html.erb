@@ -13,12 +13,13 @@
     <div class="head_title"><%= t('devise.sessions.email') %></div>
     <div class="small">&nbsp;</div>
     <br class="clear">
-    <%= f.email_field :email, :class => "lg_log", :size => '30', :autocomplete => :off %>
+    <input autocomplete="off" name="preventAutocompleteAndAutoFill" type="text" style="display:none;">
+    <%= f.email_field :email, :class => "lg_log", :size => '30', :autocomplete => "off" %>
 
     <div class="head_title"><%= t('devise.sessions.password') %></div>
     <div class="small">&nbsp;</div>
     <br class="clear">
-    <%= f.password_field :password, :class => "lg_log", :size => '30', :autocomplete => "off" %>
+    <%= f.password_field :password, :class => "lg_log", :size => '30', :autocomplete => "new-password" %>
 
 
     <% if devise_mapping.rememberable? && resource_class.omniauth_providers.empty? -%>
