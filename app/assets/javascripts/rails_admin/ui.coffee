@@ -41,11 +41,11 @@ $(document).on 'click', '[data-target]', ->
 
 $(document).on 'click', '.form-horizontal legend', ->
   if $(this).has('i.icon-chevron-down').length
-    $(this).siblings('.control-group:visible').hide('slow')
+    $(this).siblings(':visible').hide('slow')
     $(this).children('i').toggleClass('icon-chevron-down icon-chevron-right')
   else
     if $(this).has('i.icon-chevron-right').length
-      $(this).siblings('.control-group:hidden').show('slow')
+      $(this).siblings(':hidden').show('slow')
       $(this).children('i').toggleClass('icon-chevron-down icon-chevron-right')
 
 $(document).on 'click', 'form .tab-content .tab-pane a.remove_nested_one_fields', ->
