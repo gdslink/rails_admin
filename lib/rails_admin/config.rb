@@ -151,12 +151,16 @@ module RailsAdmin
       #
       # @see RailsAdmin::Config::DEFAULT_AUTHORIZE
       def authorize_with(*args, &block)
-        extension = args.shift
+
+        args = [:cancan] # <== 'Undefined method includes for nil::class' patch
+
+	       extension = args.shift 
+
         if(extension)
           @authorize = Proc.new {
             @authorization_adapter = RailsAdmin::AUTHORIZATION_ADAPTERS[extension].new(*([self] + args).compact)
           }
-        else
+       else
           @authorize = block if block
         end
         @authorize || DEFAULT_AUTHORIZE
