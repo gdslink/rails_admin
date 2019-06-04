@@ -23,13 +23,14 @@ module RailsAdmin
 
             elsif request.put? # UPDATE
               sanitize_params_for!(request.xhr? ? :modal : :update)
-
+              @object.make_associated_attributes_dirty if ["Role", "Table", "User"].include? @abstract_model.model_name
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:update, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
               end
               changes = @object.changes
               changes.delete(:authentication_token)
+              changes.each { |k,v| changes.delete(k) if v[0] == v[1] }   # delete the attribute from changes hash if old values = new values
               if @object.save
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
