@@ -47,7 +47,7 @@ module RailsAdmin
                   format.js   { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
                 end
               else
-                @UserPropertyValueTest = params[:user][:user_property_list]
+                @userPropertyValues = params[:user][:user_property_list]
                 handle_save_error
               end
 
