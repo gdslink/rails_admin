@@ -116,6 +116,8 @@ module RailsAdmin
         redirect_to edit_path(@current_scope_parameters.merge(id: @object.id, return_to: params[:return_to])), flash: {success: notice}
       elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )        
         redirect_to new_company_or_application_path, flash: {success: notice}
+      elsif ( !["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )  
+        redirect_to index_path, flash: {success: notice}
       else
         redirect_to back_or_index, flash: {success: notice}
       end
