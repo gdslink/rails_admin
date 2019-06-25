@@ -49,7 +49,7 @@ module RailsAdmin
               else
                 if params[:user].present?
                   if params[:user][:user_property_list].present?
-                    @UserPropertyValueTest = params[:user][:user_property_list]
+                    @userPropertyValues = params[:user][:user_property_list]
                   end
                 end
                 handle_save_error
