@@ -1,0 +1,243 @@
+%div{:style => "background-color: #F9F9F9;"}
+  %h1{:style => "padding-bottom: 1%; margin-top: 0px; padding-top:10px;"} Search for users
+  %form
+    %input{:name => "email", :type => "text", :id => "email", :style=>"margin-bottom: 5px; width:9%;"}/
+    %br/
+    %select{:name => "dropdown", :id => "dropdown", :style=>"margin-bottom: 5px; text-align-last: center;width:9%;"}
+      %option{:selected => "selected", :value => ""} -- Select a Role --
+      -roleNamesHash = {}
+      -@all_roles.each do |role|
+        -roleNamesHash[role.name] = role.id
+        %option{:value => role.name} #{role.name}
+    -userNamesHash = {}
+    -userRoleHash = Hash.new{|hsh, key| hsh[key] = [] }
+    -@all_users.each do |user|
+      -userNamesHash[user.name] = user.id
+      -user.roles.each do |role|
+        -userRoleHash[user.id].push role.id
+    -jsonUserRoles = userRoleHash.to_json.html_safe
+    -jsonUserNames = userNamesHash.to_json.html_safe
+    -jsonRoleNames = roleNamesHash.to_json.html_safe
+    %br/
+    %button{:onclick => "refreshSelect();", :type => "button"} Search
+  %br/
+  %hr/
+  %script#refreshSelectScript
+    :plain
+      function refreshSelect()
+      {
+      emailField = document.getElementById("email").value;
+      dropdown = document.getElementById("dropdown");
+      multiForm = document.getElementById("multi-form");
+      rightForm = document.getElementById("right-form");
+      hiddenInput = document.getElementById("userEmails");
+      listOfOptions = multiForm.options;
+      listOfRightOptions = rightForm.options;
+      listOfSelectedUsers = [];
+      for(var i = 0; i < listOfOptions.length; i++)
+      {
+      listOfSelectedUsers.push(listOfOptions[i].value);
+      }
+      for(var i = 0; i < listOfRightOptions.length; i++)
+      {
+      listOfSelectedUsers.push(listOfRightOptions[i].value);
+      }
+      selectedDropDown = "";
+      if(dropdown.options[dropdown.selectedIndex].value != "")
+      {
+      selectedDropDown = dropdown.options[dropdown.selectedIndex].value;
+      }
+      var users = #{jsonUserNames};
+      var roles = #{jsonRoleNames};
+      var userRoles = #{jsonUserRoles};
+      var wasRoleFound = 0;
+      if(emailField != "")
+      {
+      if(users.hasOwnProperty(emailField))
+      {
+      if(selectedDropDown != "")
+      {
+      selectedRoleId = roles[selectedDropDown]
+      selectedEmailId = users[emailField]
+      userRoles[selectedEmailId].forEach(function(roleId)
+      {
+      if(roleId == selectedRoleId)
+      {
+      if(listOfSelectedUsers.includes(emailField))
+      {
+      alert("User already exists in list");
+      }
+      else
+      {
+      var secondDrop = document.getElementById("multi-form");
+      var newOption = document.createElement("option");
+      newOption.text = emailField;
+      secondDrop.appendChild(newOption);
+      listOfSelectedUsers.push(emailField);
+      wasRoleFound = 1;
+      }
+      }
+      });
+      if(wasRoleFound == 0)
+      {
+      alert("Email with selected role not found");
+      }
+      }
+      else
+      {
+      if(listOfSelectedUsers.includes(emailField))
+      {
+      alert("User already exists in list");
+      }
+      else
+      {
+      var secondDrop = document.getElementById("multi-form");
+      var newOption = document.createElement("option");
+      newOption.text = emailField;
+      secondDrop.appendChild(newOption);
+      listOfSelectedUsers.push(emailField);
+      }
+      }
+      }
+      else
+      {
+      alert("Email not found in user list");
+      }
+      }
+      else if(selectedDropDown != "")
+      {
+      selectedRoleId = roles[selectedDropDown]
+      Object.keys(userRoles).forEach(function(userId)
+      {
+      if(userRoles[userId].includes(selectedRoleId))
+      {
+      Object.keys(users).forEach(function(userEmail)
+      {
+      if(users[userEmail] == userId)
+      {
+      if(listOfSelectedUsers.includes(userEmail))
+      {
+      
+      }
+      else
+      {
+      var secondDrop = document.getElementById("multi-form");
+      var newOption = document.createElement("option");
+      newOption.text = userEmail;
+      secondDrop.appendChild(newOption);
+      listOfSelectedUsers.push(userEmail);
+      }
+      }
+      });
+      }
+      });
+      }
+      multiForm = document.getElementById("multi-form");
+      multiForm[0].style.display='none';
+      multiForm[0].offsetHeight;
+      multiForm[0].style.display='block';
+      }
+  %script#addToRight
+    :plain
+      function addToRight()
+      {
+      var selectHtml = document.getElementById("multi-form");
+      var rightForm = document.getElementById("right-form");
+      hiddenInput = document.getElementById("userEmails");
+      var options = selectHtml.options;
+      listOfSelected = [...selectHtml.options].filter(option => option.selected).map(option => option.value);
+      if(hiddenInput.value != "")
+      {
+      usersToUpdate = hiddenInput.value.split(',');
+      }
+      else
+      {
+      usersToUpdate = [];
+      }
+      listOfSelected.forEach(function(row)
+      {
+      for(i = 0; i < options.length; i++)
+      {
+      if(options[i].value == row)
+      {
+      var option = document.createElement("option");
+      option.text = options[i].text;
+      rightForm.add(option);
+      usersToUpdate.push(options[i].text);
+      selectHtml.remove(options[i].index);
+      hiddenInput.value = usersToUpdate;
+      }
+      }
+      });
+      }
+  %script#removeFromRight
+    :plain
+      function removeFromRight()
+      {
+      var selectHtml = document.getElementById("multi-form");
+      var rightForm = document.getElementById("right-form");
+      var options = rightForm.options;
+      listOfSelected = [...rightForm.options].filter(option => option.selected).map(option => option.value);
+      listOfSelected.forEach(function(row)
+      {
+      for(i = 0; i < options.length; i++)
+      {
+      if(options[i].value == row)
+      {
+      var option = document.createElement("option");
+      option.text = options[i].text;
+      selectHtml.add(option);
+      rightForm.remove(options[i].index);
+      usersToUpdate.forEach(function(e)
+      {
+      if(row == e)
+      {
+      indexToRemove = usersToUpdate.findIndex(user => user == e);
+      usersToUpdate.splice(indexToRemove,1);
+      hiddenInput.value = usersToUpdate;
+      }
+      });
+      }
+      }
+      });
+      }
+  %br/
+  = form_tag('/admin/user/bulk_properties?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put) do
+    .ra-multiselect{:style => "margin-left:10%"}
+      .ra-multiselect-column.ra-multiselect-left{:style => "display: inline;"}
+        .wrapper
+          %select.form-control.ra-multiselect-collection{:id => "multi-form", :multiple => "multiple", :style => "float: left;width: 40%;"}
+      .ra-multiselect-column.ra-multiselect-center{:style => "display: inline;height: 106px;float: left;width:9%"}
+        %button{:id=>"addButton", :onclick => "return addToRight();", :type => "button", :href => "#", :style => "float: left;font: 11px Arial;text-decoration: none;background-color: #007abc;color: #ffffff;width: 99%;text-align: center;margin-top: 25%;border-radius: 3px;border-color: #007abc;border-style: solid;margin-left: 1px;padding:0px; height:21px;border-width: 0px;"}
+          %div{:id=>"addDiv", :onmouseover=>'this.style.padding="0px 0px 0px 5px"', :onmouseout=>'this.style.padding="0px 0px 0px 0px"', :style=>"transition: all 0.4s ease 0s;height:21px;line-height: 21px;"}
+            Add
+          :css
+            #addDiv:after {content: "\20\f054"; font-family: FontAwesome;}
+        :css
+          #removeDiv:before {content: "\f053\20"; font-family: FontAwesome;}
+        %button{:id=>"removeButton", :onclick => "return removeFromRight()", :type => "button", :href => "#", :style => "float: left;font: 11px Arial;text-decoration: none;background-color: #007abc;color: #fdfdfd;width: 99%;text-align: center;border-radius: 3px;border-color: #007abc;border-style: solid;margin-top: 1%;margin-left: 1px;padding:0px;height:21px;border-width: 0px;"} 
+          %div{:id=>"removeDiv", :onmouseover=>'this.style.padding="0px 5px 0px 0px"', :onmouseout=>'this.style.padding="0px 0px 0px 0px"', :style=>"transition: all 0.4s ease 0s;height:21px;line-height: 21px;"}
+            Remove
+      .ra-multiselect-column.ra-multiselect-right{:style => "display: inline;"}
+        .wrapper
+          %select.form-control.ra-multiselect-selection{:id => "right-form", :multiple => "multiple", :style => "float: left;width: 40%;"}
+    %br/
+    %br/
+    %br/
+    %br/
+    %br/
+    %br/
+    %br/
+    %br/
+    %br/
+    %hr/
+    %input{:name => "userEmails", :id =>"userEmails", :type => "hidden", :value => ""}
+    %h1{:style => "padding-bottom: 1%;"}List of user properties
+    -@all_properties.each do |prop|
+      %input{:name => "prop"+prop.name+"checkbox", :type => "hidden", :value=>''}
+      %label{:style => "display:block; font-size:14px;"} #{prop.name}
+      %input{:name => "prop"+prop.name+"checkbox", :type => "checkbox", :id => "prop"+prop.name+"checkbox"}
+      %input{:name => "prop"+prop.name, :type => "text", :id => "prop"+prop.name}
+      %br
+      %br
+    = submit_tag('Submit');
