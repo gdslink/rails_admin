@@ -78,7 +78,8 @@
               }
 
             }
-          }
+          },
+            appendTo: (document.getElementById("modal") || null) //fix scroll issue on inline edit screens
         })
         .keyup(function() {
           /* Clear select options and trigger change if selected item is deleted */
