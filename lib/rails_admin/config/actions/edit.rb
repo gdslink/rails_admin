@@ -32,6 +32,15 @@ module RailsAdmin
               changes.delete(:authentication_token)
               changes.each { |k,v| changes.delete(k) if v[0] == v[1] }   # delete the attribute from changes hash if old values = new values
               if @object.save
+                if params[:checkboxes].present?
+                  @object.filter_screen_flows.each do |fsf|
+                    if params[:checkboxes].exclude?(fsf.name)
+                      fsf.destroy
+                    else
+                      fsf.add_read_only(params[:checkboxes])
+                    end
+                  end
+                end
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
                 respond_to do |format|

@@ -29,7 +29,6 @@ module RailsAdmin
               end
 
             elsif request.post? # CREATE
-
               @modified_assoc = []
               @object = @abstract_model.new
               sanitize_params_for!(request.xhr? ? :modal : :create)
@@ -38,8 +37,12 @@ module RailsAdmin
               @authorization_adapter && @authorization_adapter.attributes_for(:create, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
               end
-
               if @object.save
+                if params[:checkboxes].present?
+                  @object.filter_screen_flows.each do |fsf|
+                    fsf.add_read_only(params[:checkboxes])
+                  end
+                end
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.create_object(@object, @abstract_model, _current_user)
                 respond_to do |format|

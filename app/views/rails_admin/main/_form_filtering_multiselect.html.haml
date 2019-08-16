@@ -67,9 +67,48 @@
 
 %input{name: form.dom_name(field), type: "hidden", value: ""}
 
+- rubyModel = params[:model_name]
+- if rubyModel == "filter" && params[:action] == "edit"
+  - id = params[:id]
+  - jsonFsf = []
+  - filterScreenFlows = FilterScreenFlow.where(filter_id: id)
+  - filterScreenFlows.each do |fsf|
+    - concat = "name:"+fsf.name+","+"read_only:"+fsf.sf_read_only.to_s
+    - actualJson = {'name'=>fsf.name, 'read_only'=>fsf.sf_read_only}
+    - jsonFsf.push(actualJson)
+
 - selected_ids = (hdv = field.form_default_value).nil? ? selected_ids : hdv
 = form.select field.method_name, collection, { selected: selected_ids, object: form.object }, field.html_attributes.reverse_merge({data: { filteringmultiselect: true, options: js_data.to_json }, multiple: true})
 - if authorized?(:new, config.abstract_model) && field.inline_add
   - path_hash = { model_name: config.abstract_model.to_param, modal: true }
   - path_hash.merge!({ associations: { field.inverse_of => (form.object.persisted? ? form.object.id : 'new') } }) if field.inverse_of
   = link_to "<i class=\"icon-plus icon-white\"></i> ".html_safe + wording_for(:link, :new, config.abstract_model), '#', data: { link: new_path(path_hash) }, class: "create btn btn-info", style: 'margin-left:10px'
+
+:javascript
+  rubyModel = "#{rubyModel}";
+  console.log(rubyModel);
+  jsonFsf = #{jsonFsf.to_json};
+  console.log(jsonFsf);
+
+%script#addToRight
+  :plain
+    function selectLi(el)
+    {
+      console.log("addtoright");
+      if ($(el).css( "background-color" )=="rgb(204, 204, 204)"){
+        $(el).css( "background-color", "white");
+        $(el).attr('selected',false);
+      } 
+      else {
+        $(el).css("background-color", "#ccc");
+        $(el).attr('selected',true);
+        $("#unorderedRight li").each(function(i, obj)
+        {
+          if($(obj).attr('selected') == 'selected' && obj !== el)
+          {
+          $(obj).attr('selected', false);
+          $(obj).css( "background-color", "white");
+          }
+        });
+      }
+    }
