@@ -59,9 +59,6 @@ module RailsAdmin
     def list_entries(model_config = @model_config, auth_scope_key = :index, additional_scope = get_association_scope_from_params, pagination = !(params[:associated_collection] || params[:all] || params[:bulk_ids]))
       
       scope = model_config.abstract_model.scoped
-      if @abstract_model && @abstract_model.model.name == "Ckeditor::Asset" then
-        @iframe_url = "/ckeditor/pictures?CKEditorFuncNum=2&mode=standalone&assetable_id=#{@current_scope_parameters["Company"].to_s}&assetable_type=Company"
-      end
 
       if auth_scope = @authorization_adapter && @authorization_adapter.query(auth_scope_key, model_config.abstract_model)
         scope = scope.merge(auth_scope)

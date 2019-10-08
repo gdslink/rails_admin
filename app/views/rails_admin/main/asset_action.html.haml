@@ -1,0 +1,6 @@
+%div{:style => "background-color: #F9F9F9;"}
+  %h1{:style => "padding-bottom: 1%; margin-top: 0px; padding-top:10px;"} Upload Asset
+  = form_tag('/admin/picture_asset/asset_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, multipart: true) do
+    = file_field_tag 'picture'
+    %br
+    = submit_tag 'Submit'
