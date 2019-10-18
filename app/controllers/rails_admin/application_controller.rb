@@ -77,10 +77,10 @@ module RailsAdmin
           sign_out auth_user
           redirect_to "/"
         end
-      end 
+      end
 
       auth_user
-      
+
     end
 
     private
@@ -124,8 +124,8 @@ module RailsAdmin
       instance_eval(&RailsAdmin::Config.scope_with)
     end
 
-    def _get_scope_models!(expire_cache = nil)
-      get_scope_models(expire_cache) if @scope_adapter
+    def _get_scope_models!
+      get_scope_models if @scope_adapter
     end
 
     def _get_scope_parameters!
@@ -157,7 +157,7 @@ module RailsAdmin
           end
           raise CanCan::AccessDenied if assoc != nil and not params.include?(model.name)
         else
-          
+
         end
       end
     end
