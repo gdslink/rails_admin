@@ -108,7 +108,7 @@ module RailsAdmin
       {sort: column, sort_reverse: (params[:sort_reverse] == reversed_sort.to_s)}
     end
 
-    def redirect_to_on_success      
+    def redirect_to_on_success
       notice = t('admin.flash.successful', name: @model_config.label, action: t("admin.actions.#{@action.key}.done"))
       if params[:_add_another]
         redirect_to new_path(@current_scope_parameters.merge(return_to: params[:return_to])), flash: {success: notice}
@@ -118,6 +118,8 @@ module RailsAdmin
         redirect_to new_company_or_application_path, flash: {success: notice}
       elsif ( !["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )  
         redirect_to index_path, flash: {success: notice}
+      elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "edit"  )  
+        redirect_to '/admin', flash: {success: notice}
       else
         redirect_to back_or_index, flash: {success: notice}
       end
