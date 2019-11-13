@@ -31,6 +31,141 @@ module RailsAdmin
       super if @scope_adapter
     end
 
+    def import_attachments
+      s3 = Aws::S3::Resource.new(
+        access_key_id: CaseCenter::Config::Reader.get("aws_access_key_id"), 
+        secret_access_key: CaseCenter::Config::Reader.get("aws_secret_key"), 
+        region: "eu-west-2")
+      bucketName = CaseCenter::Config::Reader.get("s3_assets_bucket")
+      bucket = s3.bucket(bucketName)
+      compId = @company.id
+      pref = "ckeditor_assets/attachments/"+@company.key
+      bucketObjects = bucket.objects(prefix: "#{pref}").collect(&:key)
+      result = ActiveRecord::Base.connection.exec_query("SELECT data_file_name, assetable_type from ckeditor_assets where type = 'Ckeditor::AttachmentFile' and assetable_id = #{compId}")
+      mySqlNames = result.to_a.map{|myItem|myItem["data_file_name"]}
+      bucketObjects.each do |b|
+        splitB = b.split('/')[-1]
+        normalizedB = splitB.downcase.tr(" ", "_")
+        if mySqlNames.include?(normalizedB)
+          result.rows.each do |row|
+            if row[0] == normalizedB
+              @recordId = row[1]
+              @records = @application.get_mongoid_class.find_by(id: @recordId) rescue nil
+            end
+          end
+          fileDownloaded = s3.bucket(bucketName).object("#{b}")
+          fileDownloaded.get(response_target: "#{Rails.root}/tmp/#{normalizedB}")
+          @newAsset = Attachment.new
+          attFile = File.open("#{Rails.root}/tmp/#{normalizedB}")
+          currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: attFile.path).strip
+          if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+            Mongoid.override_client(:attachDb)
+          end
+          grid_fs = Mongoid::GridFS
+          encFile = File.open(attFile)
+          encData = Mongoid::EncryptedFields.cipher.encrypt(encFile.read)
+          File.open(encFile, 'wb') do |f|
+            f.write(encData)
+          end
+          grid_file = grid_fs.put(attFile.path)
+          @newAsset.data = grid_file.id #Attachment.data is equal to the BSON::ObjectId of the GridFs file.
+          @newAsset.assetable_id = @records.system.company_id
+
+          @newAsset.assetable_type = @recordId
+          @newAsset.data_file_name = normalizedB
+          @newAsset.user = current_user.email
+
+          @newAsset.data_file_size = File.size(attFile.path).to_i
+          @newAsset.updated_at = Time.now.strftime("%a %b %e %Y, %k:%M:%S")
+          attFile.close
+          if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+            Mongoid.override_client(:default)
+          end
+          @newAsset.save!
+          begin
+            @unique_id = @newAsset.id.to_s
+          rescue Exception => e
+            @newAsset.destroy
+            raise e
+          ensure
+            count = Attachment.where(:assetable_type => @recordId).size
+            @records.system.update_attributes(
+              attachments_count: count,
+              edited_by: current_user.email,
+              edited_by_role: current_user.roles.map(&:name)
+            )
+          end
+        end
+      end
+      redirect_to "/admin/Company/"+@company.id.to_s+"/edit?locale=en"
+    end
+
+    def import_assets
+      s3 = Aws::S3::Resource.new(
+        access_key_id: CaseCenter::Config::Reader.get("aws_access_key_id"), 
+        secret_access_key: CaseCenter::Config::Reader.get("aws_secret_key"), 
+        region: "eu-west-2")
+      bucketName = CaseCenter::Config::Reader.get("s3_assets_bucket")
+      bucket = s3.bucket(bucketName)
+      compId = @company.id
+      pref = "ckeditor_assets/pictures/"+@company.key
+      bucketObjects = bucket.objects(prefix: "#{pref}").collect(&:key)
+      result = ActiveRecord::Base.connection.exec_query("SELECT data_file_name from ckeditor_assets where type = 'Ckeditor::Picture' and assetable_id = #{compId}")
+      mySqlNames = result.to_a.map{|myItem|myItem["data_file_name"]}
+      bucketObjects.each do |b|
+        splitB = b.split('/')[-1]
+        normalizedB = splitB.downcase.tr(" ", "_")
+        if mySqlNames.include?(normalizedB)
+          fileDownloaded = s3.bucket(bucketName).object("#{b}")
+          fileDownloaded.get(response_target: "#{Rails.root}/tmp/#{normalizedB}")
+          file = File.open("#{Rails.root}/tmp/#{normalizedB}")
+          picture_asset = PictureAsset.new
+          picture_asset.data_file_name = normalizedB
+          picture_asset.data_content_type = MIME::Types.type_for("#{Rails.root}/tmp/#{normalizedB}").first.content_type
+          if(["image/png", "image/jpeg", "image/jpg", "image/gif", "image/tiff"].include? picture_asset.data_content_type)
+            if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+              Mongoid.override_client(:attachDb)
+            end
+            grid_fs = Mongoid::GridFS
+            thumbFilename = "#{Rails.root}/tmp/thumb"+"#{normalizedB}"
+            line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
+            line.run(in: file.path, resolution: "30x30", out: thumbFilename)
+            thumbFile = File.open(thumbFilename)
+            encThumbData = Mongoid::EncryptedFields.cipher.encrypt(thumbFile.read)
+            File.open(thumbFile, 'wb') do |f|
+              f.write(encThumbData)
+            end
+            encData = Mongoid::EncryptedFields.cipher.encrypt(file.read)
+            File.open(file, 'wb') do |f|
+              f.write(encData)
+            end
+            grid_file = grid_fs.put(file.path)
+            picture_asset.data_file_size = File.size(file).to_i
+            picture_asset.assetable_id = @company.id.to_i
+            picture_asset.image_id = grid_file.id
+            grid_thumb_file = grid_fs.put(thumbFile.path)
+            picture_asset.thumb_image_id = grid_thumb_file.id
+            File.delete(thumbFile.path)
+            File.delete(file.path)
+            if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+              Mongoid.override_client(:default)
+            end
+            if picture_asset.save
+            else
+              grid_fs.delete(picture_asset.image_id)
+              grid_fs.delete(picture_asset.thumb_image_id)
+              picture_asset.errors.full_messages.each do |message|
+                flash[:error] = message
+              end
+            end
+          else
+            flash[:error] = "Upload must be an image"
+          end
+        end
+      end
+      redirect_to "/admin/picture_asset"
+    end
+
     def bulk_action
       send(params[:bulk_action]) if params[:bulk_action].in?(RailsAdmin::Config::Actions.all(controller: self, abstract_model: @abstract_model).select(&:bulkable?).collect(&:route_fragment))
     end
