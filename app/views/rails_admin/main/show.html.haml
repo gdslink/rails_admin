@@ -13,4 +13,21 @@
                 %span.label.label-info{class: "#{field.type_css_class} #{field.css_class}"}
                   = field.label
               %dd.well
-                = field.pretty_value
+                - if @model_name == 'Screen' and field.name == :html
+                  = render inline: field.pretty_value.gsub(/<%=render(.*)%>/, '')
+                  :javascript
+                    //set style for screen elements to avoid stylings from other CSS's
+                    var els = document.querySelectorAll("div#doc1")[0].getElementsByTagName('fieldset');
+                    for (var i = 0; i < els.length; i++) {
+                        els[i].style.border = 0;};
+                    var bts = document.querySelectorAll('div#doc1')[0].querySelectorAll('input')
+                    for (var i = 0; i < bts.length; i++) {
+                        bts[i].setAttribute('disabled', 'true')
+                    };
+                -else
+                  = field.pretty_value
+
+
+
+
+
