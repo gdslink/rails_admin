@@ -35,7 +35,7 @@ module RailsAdmin
       s3 = Aws::S3::Resource.new(
         access_key_id: CaseCenter::Config::Reader.get("aws_access_key_id"), 
         secret_access_key: CaseCenter::Config::Reader.get("aws_secret_key"), 
-        region: "eu-west-2")
+        region: CaseCenter::Config::Reader.get("s3_region"))
       bucketName = CaseCenter::Config::Reader.get("s3_assets_bucket")
       bucket = s3.bucket(bucketName)
       compId = @company.id
@@ -104,7 +104,7 @@ module RailsAdmin
       s3 = Aws::S3::Resource.new(
         access_key_id: CaseCenter::Config::Reader.get("aws_access_key_id"), 
         secret_access_key: CaseCenter::Config::Reader.get("aws_secret_key"), 
-        region: "eu-west-2")
+        region: CaseCenter::Config::Reader.get("s3_region"))
       bucketName = CaseCenter::Config::Reader.get("s3_assets_bucket")
       bucket = s3.bucket(bucketName)
       compId = @company.id
