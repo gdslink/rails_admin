@@ -128,8 +128,8 @@ module RailsAdmin
     def new_company_or_application_path
       if @abstract_model.model_name == "Application" 
         "/admin?Company=#{@current_scope_parameters["Company"]}&Application=#{@object.id.to_s}&locale=#{params["locale"]}"
-      elsif @abstract_model.model_name == "Company" 
-        "/admin?Company=#{@object.id.to_s}&Application=#{@current_scope_parameters["Application"]}&locale=#{params["locale"]}"
+      elsif @abstract_model.model_name == "Company"
+        "/admin?Company=#{@object.id.to_s}&locale=#{params["locale"]}"
       end
     end
 
