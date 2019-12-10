@@ -72,8 +72,15 @@ module RailsAdmin
                 if @abstract_model.model_name == "Environment"  
                   # handle Environment's schedule values history. apply updates on the temp copies and read changes
                   @object.schedule_values.each_with_index do |obj, i|
-                    obj.attributes.keys.each{|attr| old_schedule_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr }
+                    obj.attributes.keys.each do |attr| 
+                      if old_schedule_values[i].nil?
+                        old_schedule_values.push(obj.dup)
+                      else
+                        old_schedule_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr 
+                      end
+                    end
                     schedule_changes.merge!(old_schedule_values[i].changes)
+                    ["environment_id", "schedule_id", "key"].each {|k| schedule_changes.delete(k) }
                     schedule_changes_itemized.merge!(schedule_changes)
                     schedule_changes.each{ |k,v| schedule_changes_itemized[obj.key.to_s + "." + k] =  schedule_changes_itemized.delete k    }
                    end                    
@@ -81,8 +88,15 @@ module RailsAdmin
 
                   # handle Environments property values history. apply updates on the temp copies and read changes
                   @object.environment_property_values.each_with_index do |obj, i|
-                    obj.attributes.keys.each{|attr| old_env_property_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr }
+                    obj.attributes.keys.each do |attr| 
+                      if old_env_property_values[i].nil?
+                        old_env_property_values.push(obj.dup)
+                      else
+                        old_env_property_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr
+                      end
+                    end
                     env_property_changes.merge!(old_env_property_values[i].changes)
+                    ["environment_id", "schedule_id", "run_interval", "run_interval_unit", "start_time", "email", "environment_property_id", "key"].each {|k| env_property_changes.delete(k) }
                     env_property_changes_itemized.merge!(env_property_changes)
                     env_property_changes.each{ |k,v| env_property_changes_itemized[obj.key.to_s + "." + k] =  env_property_changes_itemized.delete k    }
                    end     
@@ -93,8 +107,15 @@ module RailsAdmin
                   # handle User's property values history. apply updates on the temp copies and read changes
                   @object.reload
                   @object.user_property_values.each_with_index do |obj, i|
-                    obj.attributes.keys.each{|attr| old_user_properties_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr }
+                    obj.attributes.keys.each do |attr| 
+                      if old_user_properties_values[i].nil?
+                        old_user_properties_values.push(obj.dup)
+                      else 
+                        old_user_properties_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr 
+                      end
+                    end
                     user_property_changes.merge!(old_user_properties_values[i].changes)
+                    ["user_id", "company_id", "id", "key"].each {|k| user_property_changes.delete(k) }
                     user_property_changes_itemized.merge!(user_property_changes)
                     user_property_changes.each{ |k,v| user_property_changes_itemized[obj.key.to_s + "." + k] =  user_property_changes_itemized.delete k }
                    end    
