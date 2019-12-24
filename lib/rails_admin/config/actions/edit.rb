@@ -96,7 +96,7 @@ module RailsAdmin
                       end
                     end
                     env_property_changes.merge!(old_env_property_values[i].changes)
-                    ["environment_id", "schedule_id", "run_interval", "run_interval_unit", "start_time", "email", "environment_property_id", "key"].each {|k| env_property_changes.delete(k) }
+                    ["environment_id", "environment_property_id", "key"].each {|k| env_property_changes.delete(k) }
                     env_property_changes_itemized.merge!(env_property_changes)
                     env_property_changes.each{ |k,v| env_property_changes_itemized[obj.key.to_s + "." + k] =  env_property_changes_itemized.delete k    }
                    end     
