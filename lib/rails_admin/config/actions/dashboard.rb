@@ -14,7 +14,6 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
-            authorize! :dashboard, @current_user
             @history = @auditing_adapter && @auditing_adapter.latest || []
             if @action.statistics?
               @abstract_models = RailsAdmin::Config.visible_models(controller: self).collect(&:abstract_model)
