@@ -28,6 +28,19 @@ module RailsAdmin
                          else
                            User.current_user.current_scope['Application'] || nil
                          end
+
+        binding.pry 
+
+        if abstract_model.to_s == "PictureAsset"
+          create(message: [message].flatten.join(', '),
+           item: object.data_file_name,
+           table: abstract_model.to_s,
+           username: user.try(:email),
+           application_id: application_id
+          )
+          return
+        end  
+                               
         create(message: [message].flatten.join(', '),
                item: object.id,
                table: abstract_model.to_s,

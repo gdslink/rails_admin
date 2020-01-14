@@ -52,6 +52,7 @@ module RailsAdmin
                 File.delete(thumbFile.path)
                 Mongoid.override_client(:default)
                 if picture_asset.save
+                  @auditing_adapter && @auditing_adapter.create_object(picture_asset, @abstract_model, _current_user)
                   respond_to do |format|
                     format.html { redirect_to_on_success }
                     format.js { render json: {id: picture_asset.id.to_s, label: @model_config.with(object: picture_asset).object_label} }
