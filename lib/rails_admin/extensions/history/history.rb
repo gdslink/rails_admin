@@ -29,8 +29,6 @@ module RailsAdmin
                            User.current_user.current_scope['Application'] || nil
                          end
 
-        binding.pry 
-
         if abstract_model.to_s == "PictureAsset"
           create(message: [message].flatten.join(', '),
            item: object.data_file_name,
