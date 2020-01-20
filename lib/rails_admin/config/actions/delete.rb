@@ -35,13 +35,25 @@ module RailsAdmin
               @auditing_adapter && @auditing_adapter.delete_object(@object, @abstract_model, _current_user)
               if @object.destroy
                 if @abstract_model.model_name == "PictureAsset"
+                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    Mongoid.override_client(:attachDb)
+                  end
                   grid_fs = Mongoid::GridFS
                   grid_fs.delete(@object.image_id)
                   grid_fs.delete(@object.thumb_image_id)
+                  Mongoid.override_client(:default)
                   if(@company.logo_image_file_name == @object.thumb_image_id.to_s)
                     @company.logo_image_file_name = ""
                     @company.save
                   end
+                end
+                if @abstract_model.model_name == "XslSheet"
+                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    Mongoid.override_client(:attachDb)
+                  end
+                  grid_fs = Mongoid::GridFS
+                  grid_fs.delete(@object.stylesheet_id.to_s)
+                  Mongoid.override_client(:default)
                 end
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 flash[:success] = t('admin.flash.successful', name: @model_config.label, action: t('admin.actions.delete.done'))

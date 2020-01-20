@@ -1,0 +1,6 @@
+%div{:style => "background-color: #F9F9F9;"}
+  %h1{:style => "padding-bottom: 1%; margin-top: 0px; padding-top:10px;"} Upload Stylesheet
+  = form_tag('/admin/xsl_sheet/xsl_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, multipart: true) do
+    = file_field_tag 'stylesheet'
+    %br
+    = submit_tag 'Submit'
