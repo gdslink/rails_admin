@@ -7,6 +7,7 @@ module RailsAdmin
 
     layout :get_layout
 
+    before_filter :set_nocache_headers
     before_filter :get_model, except: [:update_scope, :dashboard, :global_search]
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
     before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard, :global_search]
@@ -72,6 +73,12 @@ module RailsAdmin
     end
 
   private
+
+    def set_nocache_headers
+        response.headers["Cache-Control"] = "no-cache, no-store"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "Mon, 01 Jan 1990 00:00:00 GMT"
+    end
 
     def get_layout
       "rails_admin/#{request.headers['X-PJAX'] ? 'pjax' : 'application'}"
