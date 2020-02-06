@@ -1,0 +1,82 @@
+%div{:style => "background-color: #F9F9F9;"}
+  = form_tag('/admin/pattern/pattern_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, multipart: true, :class => "new_pattern form-horizontal denser") do
+    %span.object-infos{"data-model-label" => "Pattern", "data-object-label" => "Pattern (new)", :style => "display:none"}
+    %fieldset
+      %legend{:style => "display:none"}
+        %i.icon-chevron-down
+        Basic info
+      #pattern_name_field.form-group.control-group.string_type.name_field
+        %label.col-sm-2.control-label{:for => "pattern_name"} Name
+        .controls.col-sm-10
+          %input#pattern_name.form-control{"data-kwimpalaid" => "1580116335176-2", "data-kwimpalastatus" => "alive", :maxlength => "255", :name => "pattern[name]", :required => "required", :size => "50", :type => "text"}/
+          %span.help-block Required. Length up to 255.
+      #pattern_description_field.form-group.control-group.string_type.description_field
+        %label.col-sm-2.control-label{:for => "pattern_description"} Description
+        .controls.col-sm-10
+          %input#pattern_description.form-control{:maxlength => "255", :name => "pattern[description]", :size => "50", :type => "text"}/
+          %span.help-block Optional. Length up to 255.
+      #pattern_pattern_type_field.form-group.control-group.enum_type.pattern_type_field
+        %label.col-sm-2.control-label{:for => "pattern_pattern_type"} Template type
+        .controls.col-sm-10{"data-children-count" => "2"}
+          %select#pattern_pattern_type{"data-enumeration" => "true", :name => "pattern[pattern_type]", :placeholder => "Search", :required => "required", :style => "display: none;"}
+            %option{:value => "rtf"} rtf
+            %option{:value => "csv"} csv
+            %option{:selected => "selected", :value => "pdf"} pdf
+          %span.help-block Required.
+      #pattern_pattern_field.form-group.control-group.paperclip_type.pattern_field{:style => "display: none;"}
+        %label.col-sm-2.control-label{:for => "pattern_pattern"} Pattern
+        .controls.col-sm-10
+          .toggle
+            %input#pattern_pattern{"data-fileupload" => "true", :name => "pattern[pattern]", :type => "file"}/
+          %span.help-block Required.
+      #pattern_html_block_id_field.form-group.control-group.belongs_to_association_type.html_block_field{:style => "display: block;"}
+        %label.col-sm-2.control-label{:for => "pattern_html_block_id"} Pattern
+        .controls.col-sm-10{"data-children-count" => "2"}
+          %select#pattern_html_block_id{"data-filteringselect" => "true", "data-options" => "{\"xhr\":false,\"remote_source\":\"/admin/html_block?associated_collection=html_block\\u0026compact=true\\u0026current_action=create\\u0026locale=en\\u0026source_abstract_model=pattern\"}", :name => "pattern[html_block_id]", :placeholder => "Search", :style => "display: none;"}
+            - @htmlBlocks = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application']).pluck(:name) 
+            - @htmlBlocks.each do |b|
+              %option{:name => b, :value=> b}="#{b}"
+          %span.help-block Required.
+      .controls.col-sm-12
+        :javascript
+          var html_block_div = $("div#pattern_html_block_id_field")
+          var pattern_div = $("div#pattern_pattern_field")
+
+          toggle_pattern = function() {
+            if ($('select#pattern_pattern_type option:selected').text() != "pdf") {
+              html_block_div.hide();
+              html_block_div.find("input").removeAttr("required")
+              pattern_div.show();
+              pattern_div.find("input#pattern_pattern").attr("required", "required")
+            }
+            else {
+              html_block_div.show();
+              html_block_div.find("input").attr("required", "required")
+              pattern_div.hide();
+              pattern_div.find("input#pattern_pattern").removeAttr("required")
+            }
+          }
+
+          $(document).ready(function(){
+            pattern_div.find("span.help-block").html("Required.")
+            html_block_div.find("span.help-block").html("Required.")
+            toggle_pattern();
+          });
+
+          $('select#pattern_pattern_type').on('change', function(e) {
+            toggle_pattern();
+          });
+    #submit_buttons.form-group.form-actions
+      .col-sm-offset-2.col-sm-10
+        %input{:name => "return_to", :type => "hidden", :value => "https://casecenter-test.dataview360.com/admin/pattern?locale=en"}/
+        %button.btn.btn-primary{"data-disable-with" => "Save", :name => "_save", :type => "submit"}
+          %i.icon-white.icon-ok
+            Save
+        %span.extra_buttons
+          %button.btn.btn-info{"data-disable-with" => "Save and add another", :name => "_add_another", :type => "submit"}
+            Save and add another
+          %button.btn.btn-info{"data-disable-with" => "Save and edit", :name => "_add_edit", :type => "submit"}
+            Save and edit
+          %button.btn.btn-default{"data-disable-with" => "Cancel", :formnovalidate => "", :name => "_continue", :type => "submit"}
+            %i.icon-remove
+            Cancel

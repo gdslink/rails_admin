@@ -74,12 +74,43 @@ module RailsAdmin
                     end
                   end
                 end
+                if @model_name == "Email"
+                  patId = Pattern.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:pattern_id]).pluck(:_id)[0]
+                  @object.pattern_id = patId.to_s
+                  @object.save
+                end
                 if params[:checkboxes].present?
                   @object.filter_screen_flows.each do |fsf|
                     if params[:checkboxes].exclude?(fsf.name)
                       fsf.destroy
                     else
                       fsf.add_read_only(params[:checkboxes])
+                    end
+                  end
+                end
+                if @model_name == "Pattern"
+                  if params[:pattern][:pattern_type] =="pdf"
+                    @object.html_block_id = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:id)[0]
+                    @object.save
+                  else
+                    @object.pattern_file_name = params[:pattern_file_input].original_filename
+                    tempFile = params[:pattern_file_input].tempfile
+                    file = File.open(tempFile)
+                    if params[:pattern_file_input].content_type == "text/csv" || params[:pattern_file_input].content_type == "application/vnd.ms-excel" || params[:pattern_file_input].content_type == "application/rtf"
+                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                        Mongoid.override_client(:attachDb)
+                      end
+                      grid_fs = Mongoid::GridFS
+                      encData = Mongoid::EncryptedFields.cipher.encrypt(file.read)
+                      File.open(file, 'wb') do |f|
+                        f.write(encData)
+                      end
+                      grid_file = grid_fs.put(file.path)
+                      @object.pattern_file_id = grid_file.id
+                      Mongoid.override_client(:default)
+                      @object.save
+                    else
+                      flash[:error] = "Upload must be an rtf/csv"
                     end
                   end
                 end

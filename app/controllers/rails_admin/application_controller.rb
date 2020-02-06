@@ -147,7 +147,7 @@ module RailsAdmin
       return if not @scope_adapter or not @authorization_adapter
       return if @scope_adapter.models.map{|m| m.name}.include?(@abstract_model.model.name)
       @scope_adapter.models.each do |model|
-        if @abstract_model.model.name != "PictureAsset" && @abstract_model.model.name != "XslSheet"
+        if @abstract_model.model.name != "PictureAsset" && @abstract_model.model.name != "XslSheet" && @abstract_model.model.name != "Pattern"
           assoc = @abstract_model.belongs_to.map{|a|
             a if  a.association and a.association.name.to_s.downcase == model.name.downcase}.reject{|a| a.nil?
           }.first

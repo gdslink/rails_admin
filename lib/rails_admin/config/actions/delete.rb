@@ -55,6 +55,14 @@ module RailsAdmin
                   grid_fs.delete(@object.stylesheet_id.to_s)
                   Mongoid.override_client(:default)
                 end
+                if @abstract_model.model_name == "Pattern"
+                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    Mongoid.override_client(:attachDb)
+                  end
+                  grid_fs = Mongoid::GridFS
+                  grid_fs.delete(@object.pattern_file_id.to_s)
+                  Mongoid.override_client(:default)
+                end
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 flash[:success] = t('admin.flash.successful', name: @model_config.label, action: t('admin.actions.delete.done'))
                 redirect_path = (%w{Company Application}.include? @model_name) ? dashboard_path : index_path

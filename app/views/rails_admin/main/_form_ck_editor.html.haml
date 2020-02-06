@@ -1,10 +1,68 @@
 :ruby
   js_data = {
-    jspath: field.location ? field.location : field.base_location + "ckeditor.js",
     base_location: field.base_location,
     options: {
       customConfig: field.config_js ? field.config_js : field.base_location + "config.js"
     }
   }
+  if params[:model_name] == "email"
+    @appPatterns = Pattern.where(:application_id=>User.current_user.current_scope['Application']).pluck(:name)
+    appPats = @appPatterns.to_json.html_safe
+    if params[:action] == "edit"
+      patternBson = Email.where(:application_id=>params[:Application], :id=>params[:id]).pluck(:pattern_id)[0]
+      if patternBson.length > 0
+        strToBson = BSON::ObjectId.from_string(patternBson)
+        selectedPatternBson = Pattern.where(:application_id=>params[:Application], :_id=>strToBson).pluck(:name)
+      end
+    end
+  end
 
 = form.text_area field.method_name, field.html_attributes.reverse_merge(data: { richtext: 'ckeditor', options: js_data.to_json }).reverse_merge({ value: field.form_value })
+:javascript
+  if (window.location.href.indexOf("admin/email/") > -1) {
+    theFieldset = document.getElementsByTagName("fieldset")[2];
+    newForm = document.getElementById("new_email");
+    editForm = document.getElementById("edit_email");
+    pats = #{appPats};
+    theFieldset.innerHTML += "<div class='form-group control-group belongs_to_association_type pattern_field ' id='email_pattern_id_field'><label class='col-sm-2 control-label' for='email_model_pattern_id'>Attach template</label><div class='controls col-sm-10' data-children-count='2'><select data-filteringselect='true' placeholder='Search' name='email[pattern_id]' id='email_model_pattern_id' style='display: none;'><option value=''></option></select><span class='help-block'>Optional. </span></div></div>";
+    var hidInput = document.createElement("input");
+    hidInput.type = "hidden";
+    hidInput.name = "pattern_id";
+    hidInput.id = "pattern_id";
+    hidInput.value = "";
+    if(newForm == null)
+    {
+      patternName = '#{selectedPatternBson}';
+      safePatternName = patternName.substr(patternName.lastIndexOf("[") + 2,     patternName.lastIndexOf("]")-3);
+      theColSm10 = document.getElementsByClassName("controls col-sm-10")[8];
+      theColSm10.innerHTML += "<span class='help-block'>Required. </span>";
+      editForm.appendChild(hidInput);
+      var sel = document.getElementById('email_model_pattern_id');
+      pats.forEach(function(pat){
+        let opt = document.createElement('option');
+        opt.value=pat;
+        opt.innerHTML += pat;
+        if(pat == safePatternName)
+          opt.selected = true;
+        sel.appendChild(opt);
+      });
+      document.getElementById("pattern_id").value = $("#email_model_pattern_id").val();
+    }
+    else
+    {
+      theColSm10 = document.getElementsByClassName("controls col-sm-10")[7];
+      theColSm10.innerHTML += "<span class='help-block'>Required. </span>";
+      newForm.appendChild(hidInput);
+      var sel = document.getElementById('email_model_pattern_id');
+      pats.forEach(function(pat){
+        let opt = document.createElement('option');
+        opt.value=pat;
+        opt.innerHTML += pat;
+        sel.appendChild(opt);
+      });
+    }
+    
+    $("#email_model_pattern_id").change(function(){
+      document.getElementById("pattern_id").value = $("#email_model_pattern_id").val();
+    });  
+  }
