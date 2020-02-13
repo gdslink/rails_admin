@@ -36,7 +36,8 @@ module RailsAdmin
                 image_html = v.image_tag(thumb_url, class: 'img-thumbnail')
                 url != thumb_url ? v.link_to(image_html, url, target: '_blank') : image_html
               else
-                v.link_to(nil, url, target: '_blank')
+                # v.link_to(nil, url, target: '_blank')
+                v.link_to(self.bindings[:object].send(@abstract_model.model.name.underscore + "_file_name"), url, target: '_blank')
               end
             end
           end

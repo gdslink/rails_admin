@@ -19,6 +19,7 @@ module RailsAdmin
           end
 
           def resource_url(thumb = false)
+            return value.expiring_url if value.try(:s3_permissions) == "private"
             value.try(:url, (thumb || :original))
           end
         end

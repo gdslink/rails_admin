@@ -22,8 +22,43 @@ module RailsAdmin
               end
 
             elsif request.put? # UPDATE
+              # make a temp copy of the associated objects, so we manually apply updates to them and read changes by utilising ActiveRecord::Dirty:changes
+              if @abstract_model.model_name == "Environment"
+                old_schedule_values = []
+                schedule_changes = {}
+                schedule_changes_itemized = {}
+
+                @object.schedule_values.each do |obj|
+                  old_schedule_values.push(obj.dup)
+                  old_schedule_values.last.id = obj.id
+                  old_schedule_values.last.clear_changes_information
+                end
+
+                old_env_property_values = []
+                env_property_changes = {}
+                env_property_changes_itemized = {}
+
+                @object.environment_property_values.each do |obj|
+                  old_env_property_values.push(obj.dup)
+                  old_env_property_values.last.id = obj.id
+                  old_env_property_values.last.clear_changes_information
+                end
+              end
+
+              if @abstract_model.model_name == "User"
+                old_user_properties_values = []
+                user_property_changes = {}
+                user_property_changes_itemized = {}
+
+                @object.user_property_values.each do |obj|
+                  old_user_properties_values.push(obj.dup)
+                  old_user_properties_values.last.id = obj.id
+                  old_user_properties_values.last.clear_changes_information
+                end
+              end
+
               sanitize_params_for!(request.xhr? ? :modal : :update)
-              @object.make_associated_attributes_dirty if ["Role", "Table", "User"].include? @abstract_model.model_name
+              @object.make_associated_attributes_dirty if ["Role", "Table", "User", "Filter", "PopulateAction", "DataViewConnector"].include? @abstract_model.model_name
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:update, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
@@ -31,7 +66,62 @@ module RailsAdmin
               changes = @object.changes
               changes.delete(:authentication_token)
               changes.each { |k,v| changes.delete(k) if v[0] == v[1] }   # delete the attribute from changes hash if old values = new values
+
               if @object.save
+                @object.reload
+                if @model_name == "Environment"
+                  # handle Environment's schedule values history. apply updates on the temp copies and read changes
+                  @object.schedule_values.each_with_index do |obj, i|
+                    obj.attributes.keys.each do |attr|
+                      if old_schedule_values[i].nil?
+                        old_schedule_values.push(obj.dup)
+                      else
+                        old_schedule_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr
+                      end
+                    end
+                    schedule_changes.merge!(old_schedule_values[i].changes)
+                    ["environment_id", "schedule_id", "key"].each {|k| schedule_changes.delete(k) }
+                    schedule_changes_itemized.merge!(schedule_changes)
+                    schedule_changes.each{ |k,v| schedule_changes_itemized[obj.key.to_s + "." + k] =  schedule_changes_itemized.delete k    }
+                   end
+                  changes.merge!(schedule_changes_itemized)
+
+                  # handle Environments property values history. apply updates on the temp copies and read changes
+                  @object.environment_property_values.each_with_index do |obj, i|
+                    obj.attributes.keys.each do |attr|
+                      if old_env_property_values[i].nil?
+                        old_env_property_values.push(obj.dup)
+                      else
+                        old_env_property_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr
+                      end
+                    end
+                    env_property_changes.merge!(old_env_property_values[i].changes)
+                    ["environment_id", "environment_property_id", "key"].each {|k| env_property_changes.delete(k) }
+                    env_property_changes_itemized.merge!(env_property_changes)
+                    env_property_changes.each{ |k,v| env_property_changes_itemized[obj.key.to_s + "." + k] =  env_property_changes_itemized.delete k    }
+                   end
+                  changes.merge!(env_property_changes_itemized)
+                end
+
+                if @model_name == "User"
+                  # handle User's property values history. apply updates on the temp copies and read changes
+                  @object.reload
+                  @object.user_property_values.each_with_index do |obj, i|
+                    obj.attributes.keys.each do |attr|
+                      if old_user_properties_values[i].nil?
+                        old_user_properties_values.push(obj.dup)
+                      else
+                        old_user_properties_values[i][attr] = obj[attr] unless ["created_at", "updated_at"].include? attr
+                      end
+                    end
+                    user_property_changes.merge!(old_user_properties_values[i].changes)
+                    ["user_id", "company_id", "id", "key"].each {|k| user_property_changes.delete(k) }
+                    user_property_changes_itemized.merge!(user_property_changes)
+                    user_property_changes.each{ |k,v| user_property_changes_itemized[obj.key.to_s + "." + k] =  user_property_changes_itemized.delete k }
+                   end
+                   changes.merge!(user_property_changes_itemized)
+                end
+
                 if @model_name == "Company"
                   if params[:picture].present?
                     tempFile = params[:picture].tempfile
@@ -88,6 +178,7 @@ module RailsAdmin
                     end
                   end
                 end
+
                 if @model_name == "Pattern"
                   if params[:pattern][:pattern_type] =="pdf"
                     @object.html_block_id = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:id)[0]
@@ -114,6 +205,7 @@ module RailsAdmin
                     end
                   end
                 end
+
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
                 respond_to do |format|

@@ -5,6 +5,7 @@ module RailsAdmin
   class CSVConverter
     UTF8_ENCODINGS = [nil, '', 'utf8', 'utf-8', 'unicode', 'UTF8', 'UTF-8', 'UNICODE', 'utf8mb4']
     TARGET_ENCODINGS = %w(UTF-8 UTF-16LE UTF-16BE UTF-32LE UTF-32BE UTF-7 ISO-8859-1 ISO-8859-15 IBM850 MacRoman Windows-1252 ISO-8859-3 IBM852 ISO-8859-2 Windows-1250 IBM855 ISO-8859-5 KOI8-R MacCyrillic Windows-1251 IBM866 GB2312 GBK GB18030 Big5 Big5-HKSCS EUC-TW EUC-JP ISO-2022-JP Shift_JIS EUC-KR)
+
     def initialize(objects = [], schema = {})
       return self if (@objects = objects).blank?
 
@@ -23,11 +24,11 @@ module RailsAdmin
         methods = [(values[:only] || []) + (values[:methods] || [])].flatten.compact
 
         hash[key] = {
-          association: association,
-          model: abstract_model.model,
-          abstract_model: abstract_model,
-          model_config: model_config,
-          fields: methods.collect { |m| export_fields_for(m, model_config).first },
+            association: association,
+            model: abstract_model.model,
+            abstract_model: abstract_model,
+            model_config: model_config,
+            fields: methods.collect { |m| export_fields_for(m, model_config).first },
         }
         hash
       end
@@ -54,7 +55,7 @@ module RailsAdmin
       [!options[:skip_header], @encoding_to.to_s, csv_string]
     end
 
-  private
+    private
 
     def association_for(key)
       export_fields_for(key).detect(&:association?)
@@ -80,23 +81,26 @@ module RailsAdmin
       @fields.collect do |field|
         ::I18n.t('admin.export.csv.header_for_root_methods', name: field.label, model: @abstract_model.pretty_name)
       end +
-        @associations.flat_map do |_association_name, option_hash|
-          option_hash[:fields].collect do |field|
-            ::I18n.t('admin.export.csv.header_for_association_methods', name: field.label, association: option_hash[:association].label)
+          @associations.flat_map do |_association_name, option_hash|
+            option_hash[:fields].collect do |field|
+              ::I18n.t('admin.export.csv.header_for_association_methods', name: field.label, association: option_hash[:association].label)
+            end
           end
-        end
     end
 
     def generate_csv_row(object)
       @fields.collect do |field|
-        field.with(object: object).export_value
+        value = (field.with(object: object).export_value.is_a? String) ? field.with(object: object).export_value.gsub("\r\n", "\\r\\n") : field.with(object: object).export_value
       end +
-        @associations.flat_map do |association_name, option_hash|
-          associated_objects = [object.send(association_name)].flatten.compact
-          option_hash[:fields].collect do |field|
-            associated_objects.collect { |ao| field.with(object: ao).export_value.presence || @empty }.join(',')
+          @associations.flat_map do |association_name, option_hash|
+            associated_objects = [object.send(association_name)].flatten.compact
+            option_hash[:fields].collect do |field|
+              associated_objects.collect { |ao|
+                value = field.with(object: ao).export_value.presence || @empty
+                value = (value.is_a? String) ? value.gsub("\r\n", "\\r\\n") : value
+              }.join(',')
+            end
           end
-        end
     end
   end
 end
