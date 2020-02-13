@@ -142,6 +142,7 @@ en:
       options_for: "Options for %{name}"
       empty_value_for_associated_objects: "<empty>"
       click_to_reverse_selection: 'Click to reverse selection'
+      empty_fields_error: "Export error: no field selected."
       csv:
         header_for_root_methods: "%{name}" # 'model' is available
         header_for_association_methods: "%{name} [%{association}]"
