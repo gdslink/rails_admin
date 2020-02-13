@@ -59,6 +59,7 @@ module RailsAdmin
 
               sanitize_params_for!(request.xhr? ? :modal : :update)
               @object.make_associated_attributes_dirty if ["Role", "Table", "User", "Filter", "PopulateAction", "DataViewConnector"].include? @abstract_model.model_name
+              @object.check_child_parents = true if @model_name == "Table" #set flag on this object specifially, so that rails doesn't try to validate each child too
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:update, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)

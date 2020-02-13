@@ -31,7 +31,7 @@ module RailsAdmin
               @modified_assoc = []
               @object = @abstract_model.new
               sanitize_params_for!(request.xhr? ? :modal : :create)
-
+              @object.check_child_parents = true if @model_name == "Table" #set flag on this object specifially, so that rails doesn't try to validate each child too
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:create, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
