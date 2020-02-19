@@ -19,9 +19,22 @@
 
       var edit_url = dom_widget.find('select').first().data('options') && dom_widget.find('select').first().data('options')['edit-url'];
       if(typeof(edit_url) != 'undefined' && edit_url.length) {
-        dom_widget.on('dblclick', '.ra-multiselect option:not(:disabled)', function(e){
-          widget._bindModalOpening(e, edit_url.replace('__ID__', this.value))
-        });
+
+        // EDGE doesn't recognize dblclick event on the <option> tag. workaround below.
+        // dom_widget.on('dblclick', '.ra-multiselect option:not(:disabled)', function(e){
+        //   widget._bindModalOpening(e, edit_url.replace('__ID__', this.value))
+        // });
+
+        
+        //add event listener on the <select> tag instead of the <option> tag. check this.value is not null to prevent pop-ups for the disabled select options
+        for (i = 0; i < dom_widget.find('select').length; i++) {
+          dom_widget.find('select')[i].addEventListener("dblclick", function(e){
+                  if(typeof(this.value) != 'undefined' && this.value.length) {
+                    widget._bindModalOpening(e, edit_url.replace('__ID__', this.value )) 
+                  }
+              });
+        }
+
       }
 
       dom_widget.find('.create').unbind().bind("click", function(e){
