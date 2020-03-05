@@ -7,6 +7,7 @@
   }
   if params[:model_name] == "email"
     @appPatterns = Pattern.where(:application_id=>User.current_user.current_scope['Application']).pluck(:name)
+    @appPatterns.sort!
     appPats = @appPatterns.to_json.html_safe
     if params[:action] == "edit"
       patternBson = Email.where(:application_id=>params[:Application], :id=>params[:id]).pluck(:pattern_id)[0]

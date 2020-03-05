@@ -19,9 +19,9 @@
         %label.col-sm-2.control-label{:for => "pattern_pattern_type"} Template type
         .controls.col-sm-10{"data-children-count" => "2"}
           %select#pattern_pattern_type{"data-enumeration" => "true", :name => "pattern[pattern_type]", :placeholder => "Search", :required => "required", :style => "display: none;"}
-            %option{:value => "rtf"} rtf
             %option{:value => "csv"} csv
             %option{:selected => "selected", :value => "pdf"} pdf
+            %option{:value => "rtf"} rtf            
           %span.help-block Required.
       #pattern_pattern_field.form-group.control-group.paperclip_type.pattern_field{:style => "display: none;"}
         %label.col-sm-2.control-label{:for => "pattern_pattern"} Pattern
