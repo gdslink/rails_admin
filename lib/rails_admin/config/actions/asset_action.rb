@@ -49,8 +49,9 @@ module RailsAdmin
                 picture_asset.image_id = grid_file.id
                 grid_thumb_file = grid_fs.put(thumbFile.path)
                 picture_asset.thumb_image_id = grid_thumb_file.id
-                File.delete(thumbFile.path)
                 Mongoid.override_client(:default)
+                thumbFile.close
+                File.delete(thumbFile.path)
                 if picture_asset.save
                   @auditing_adapter && @auditing_adapter.create_object(picture_asset, @abstract_model, _current_user)
                   respond_to do |format|

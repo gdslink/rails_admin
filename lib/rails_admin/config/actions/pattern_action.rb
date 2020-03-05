@@ -53,6 +53,7 @@ module RailsAdmin
                 pattern.pattern_type = params[:pattern][:pattern_type]
                 pattern.application_id = params[:Application].to_i
                 pattern.html_block_id = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:id)[0]
+                pattern.html_block_key = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:key)[0]
               end
               if pattern.save
                 respond_to do |format|
