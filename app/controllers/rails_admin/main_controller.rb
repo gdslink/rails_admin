@@ -7,6 +7,7 @@ module RailsAdmin
 
     layout :get_layout
 
+    before_filter :set_nocache_headers
     before_filter :get_model, except: [:update_scope, :dashboard, :global_search]
     before_filter :get_object, only: RailsAdmin::Config::Actions.all(:member).collect(&:action_name)
     before_filter :check_scope_on_query, :except => [:index, :update_scope, :dashboard, :global_search]
@@ -73,6 +74,12 @@ module RailsAdmin
 
   private
 
+    def set_nocache_headers
+        response.headers["Cache-Control"] = "no-cache, no-store"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "Mon, 01 Jan 1990 00:00:00 GMT"
+    end
+
     def get_layout
       "rails_admin/#{request.headers['X-PJAX'] ? 'pjax' : 'application'}"
     end
@@ -108,7 +115,7 @@ module RailsAdmin
       {sort: column, sort_reverse: (params[:sort_reverse] == reversed_sort.to_s)}
     end
 
-    def redirect_to_on_success      
+    def redirect_to_on_success
       notice = t('admin.flash.successful', name: @model_config.label, action: t("admin.actions.#{@action.key}.done"))
       if params[:_add_another]
         redirect_to new_path(@current_scope_parameters.merge(return_to: params[:return_to])), flash: {success: notice}
@@ -118,6 +125,8 @@ module RailsAdmin
         redirect_to new_company_or_application_path, flash: {success: notice}
       elsif ( !["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )  
         redirect_to index_path, flash: {success: notice}
+      elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "edit"  )  
+        redirect_to '/admin', flash: {success: notice}
       else
         redirect_to back_or_index, flash: {success: notice}
       end
@@ -126,8 +135,8 @@ module RailsAdmin
     def new_company_or_application_path
       if @abstract_model.model_name == "Application" 
         "/admin?Company=#{@current_scope_parameters["Company"]}&Application=#{@object.id.to_s}&locale=#{params["locale"]}"
-      elsif @abstract_model.model_name == "Company" 
-        "/admin?Company=#{@object.id.to_s}&Application=#{@current_scope_parameters["Application"]}&locale=#{params["locale"]}"
+      elsif @abstract_model.model_name == "Company"
+        "/admin?Company=#{@object.id.to_s}&locale=#{params["locale"]}"
       end
     end
 

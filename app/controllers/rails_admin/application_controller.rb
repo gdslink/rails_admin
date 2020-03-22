@@ -90,7 +90,13 @@ module RailsAdmin
     end
 
     def _set_locale
-      I18n.locale = get_locale || extract_locale_from_accept_language_header
+      unless extract_locale_from_accept_language_header.nil? && get_locale.nil?
+        if I18n.available_locales.index(get_locale || extract_locale_from_accept_language_header.to_sym)
+          I18n.locale = get_locale || extract_locale_from_accept_language_header
+        else
+          I18n.locale = I18n.default_locale
+        end
+      end
     end
 
 
@@ -124,8 +130,8 @@ module RailsAdmin
       instance_eval(&RailsAdmin::Config.scope_with)
     end
 
-    def _get_scope_models!
-      get_scope_models if @scope_adapter
+    def _get_scope_models!(expire_cache = nil)
+      get_scope_models(expire_cache) if @scope_adapter
     end
 
     def _get_scope_parameters!
