@@ -224,7 +224,7 @@
       options.each(function(i, option) {
         widget.element.find('option[value="' + option.value + '"]').removeAttr("selected");
       });
-      $(options).appendTo(this.collection).attr('selected', false);
+      //$(options).appendTo(this.collection).attr('selected', false);
     },
 
     _query: function(query, success) {
@@ -284,7 +284,7 @@
           widget.element.append($('<option></option>').attr('value', option.value).attr('selected', "selected"));
         }
       });
-      $(options).appendTo(this.selection).attr('selected', false);
+      //$(options).appendTo(this.selection).attr('selected', false);
     },
 
     _move: function(direction, options) {
