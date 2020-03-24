@@ -11,7 +11,6 @@ module RailsAdmin
           nested_in: false,
         )
 
-        @template.render(partial: 'rails_admin/main/submit_buttons') +
         object_infos +
           visible_groups(options[:model_config], generator_action(options[:action], options[:nested_in])).collect do |fieldset|
             fieldset_for fieldset, options[:nested_in]
