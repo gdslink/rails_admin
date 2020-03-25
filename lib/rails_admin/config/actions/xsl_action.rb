@@ -31,10 +31,23 @@ module RailsAdmin
                   Mongoid.override_client(:attachDb)
                 end
                 grid_fs = Mongoid::GridFS
-                encData = Mongoid::EncryptedFields.cipher.encrypt(file.read)
+
+                #Encryption
+                public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                cipher.encrypt
+                key = cipher.random_key
+                encData = cipher.update(File.read(file))
+                encData << cipher.final
+                #End Encryption
+                
                 File.open(file, 'wb') do |f|
                   f.write(encData)
                 end
+                encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                stylesheet.aes_key = encrypted_aes
+
                 grid_file = grid_fs.put(file.path)
                 stylesheet.stylesheet_id = grid_file.id
                 Mongoid.override_client(:default)
@@ -52,6 +65,7 @@ module RailsAdmin
                   stylesheet.errors.full_messages.each do |message|
                     flash[:error] = message
                   end
+                file.close
                 File.delete(file.path)
                 end
               else 

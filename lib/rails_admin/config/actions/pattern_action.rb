@@ -31,20 +31,104 @@ module RailsAdmin
                 pattern.pattern_file_size = File.size(tempFile).to_i
                 pattern.application_id = params[:Application].to_i
                 pattern.pattern_content_type = params[:pattern][:pattern].content_type
-                if params[:pattern][:pattern].content_type == "text/csv" || params[:pattern][:pattern].content_type == "application/vnd.ms-excel" || params[:pattern][:pattern].content_type == "application/rtf"
-                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                    Mongoid.override_client(:attachDb)
+                if pattern.pattern_type == "csv"
+                  if params[:pattern][:pattern].content_type == "text/csv" || params[:pattern][:pattern].content_type == "application/vnd.ms-excel"
+                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                      Mongoid.override_client(:attachDb)
+                    end
+                    grid_fs = Mongoid::GridFS
+                    #Encryption
+                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                    cipher.encrypt
+                    key = cipher.random_key
+                    encData = cipher.update(File.read(file))
+                    encData << cipher.final
+                    #End of Encryption
+
+                    File.open(file, 'wb') do |f|
+                      f.write(encData)
+                    end
+
+                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                    pattern.aes_key = encrypted_aes
+
+                    grid_file = grid_fs.put(file.path)
+                    pattern.pattern_file_id = grid_file.id
+                    Mongoid.override_client(:default)
+                    if pattern.save
+                      respond_to do |format|
+                        format.html { redirect_to_on_success }
+                        format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
+                      end
+                    else 
+                      if params[:pattern][:pattern]
+                        if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                          Mongoid.override_client(:attachDb)
+                        end
+                        grid_fs.delete(pattern.pattern_file_id)
+                        Mongoid.override_client(:default)
+                      end
+                      pattern.errors.full_messages.each do |message|
+                        flash[:error] = message
+                      end
+                    end
+                    if params[:pattern][:pattern]
+                      File.delete(file.path)
+                    end
+                  else
+                    flash[:error] = "Upload must be a csv"
                   end
-                  grid_fs = Mongoid::GridFS
-                  encData = Mongoid::EncryptedFields.cipher.encrypt(file.read)
-                  File.open(file, 'wb') do |f|
-                    f.write(encData)
+                elsif pattern.pattern_type == "rtf"
+                  if params[:pattern][:pattern].content_type == "application/rtf" || params[:pattern][:pattern].content_type == "application/msword"
+                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                      Mongoid.override_client(:attachDb)
+                    end
+                    grid_fs = Mongoid::GridFS
+                    #Encryption
+                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                    cipher.encrypt
+                    key = cipher.random_key
+                    encData = cipher.update(File.read(file))
+                    encData << cipher.final
+                    #End of Encryption
+
+                    File.open(file, 'wb') do |f|
+                      f.write(encData)
+                    end
+
+                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                    pattern.aes_key = encrypted_aes
+
+                    grid_file = grid_fs.put(file.path)
+                    pattern.pattern_file_id = grid_file.id
+                    Mongoid.override_client(:default)
+                    if pattern.save
+                      respond_to do |format|
+                        format.html { redirect_to_on_success }
+                        format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
+                      end
+                    else 
+                      if params[:pattern][:pattern]
+                        if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                          Mongoid.override_client(:attachDb)
+                        end
+                        grid_fs.delete(pattern.pattern_file_id)
+                        Mongoid.override_client(:default)
+                      end
+                      pattern.errors.full_messages.each do |message|
+                        flash[:error] = message
+                      end
+                    end
+                    if params[:pattern][:pattern]
+                      File.delete(file.path)
+                    end
+                  else
+                    flash[:error] = "Upload must be an rtf"
                   end
-                  grid_file = grid_fs.put(file.path)
-                  pattern.pattern_file_id = grid_file.id
-                  Mongoid.override_client(:default)
-                else
-                  flash[:error] = "Upload must be an rtf/csv"
                 end
               else
                 pattern = Pattern.new()
@@ -54,26 +138,26 @@ module RailsAdmin
                 pattern.application_id = params[:Application].to_i
                 pattern.html_block_id = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:id)[0]
                 pattern.html_block_key = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:key)[0]
-              end
-              if pattern.save
+                if pattern.save
                 respond_to do |format|
                   format.html { redirect_to_on_success }
                   format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
                 end
-              else 
-                if params[:pattern][:pattern]
-                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                    Mongoid.override_client(:attachDb)
+                else 
+                  if params[:pattern][:pattern]
+                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                      Mongoid.override_client(:attachDb)
+                    end
+                    grid_fs.delete(pattern.pattern_file_id)
+                    Mongoid.override_client(:default)
                   end
-                  grid_fs.delete(pattern.pattern_file_id)
-                  Mongoid.override_client(:default)
+                  pattern.errors.full_messages.each do |message|
+                    flash[:error] = message
+                  end
                 end
-                pattern.errors.full_messages.each do |message|
-                  flash[:error] = message
+                if params[:pattern][:pattern]
+                  File.delete(file.path)
                 end
-              end
-              if params[:pattern][:pattern]
-                File.delete(file.path)
               end
             end
           end

@@ -90,3 +90,32 @@
       %button.btn{type: "submit", name: "_continue"}
         %i.icon-remove
         = t("admin.form.cancel")
+
+:javascript
+  disableButtons = function(state) {
+      let buttons = document.querySelectorAll("button[name='csv'], button[name='json'], button[name='xml']");
+      for (let item of buttons) {
+          item.disabled = state;
+      }
+  }
+
+  var fields = document.querySelectorAll("#fields_to_export input[type='checkbox']:not([id='check_all'])");
+  var check_all = document.getElementById("check_all");
+  check_all.addEventListener("click", function() {
+      if (this.checked) {
+          disableButtons(false);
+      } else {
+          disableButtons(true);
+      }
+  });
+
+  for (let item of fields) {
+      item.addEventListener("click", function() {
+          let checked = document.querySelectorAll("#fields_to_export input[type='checkbox']:not([id='check_all']):checked");
+          if (checked.length > 0) {
+              disableButtons(false);
+          } else {
+              disableButtons(true);
+          }
+      })
+  }
