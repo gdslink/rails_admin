@@ -57,6 +57,7 @@ module RailsAdmin
                     grid_file = grid_fs.put(file.path)
                     pattern.pattern_file_id = grid_file.id
                     Mongoid.override_client(:default)
+                    @object = pattern
                     if pattern.save
                       respond_to do |format|
                         format.html { redirect_to_on_success }
