@@ -198,32 +198,34 @@ module RailsAdmin
                     @object.html_block_key = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:key)[0]
                     @object.save
                   else
-                    @object.pattern_file_name = params[:pattern_file_input].original_filename
-                    tempFile = params[:pattern_file_input].tempfile
-                    file = File.open(tempFile)
-                    if params[:pattern_file_input].content_type == "text/csv" || params[:pattern_file_input].content_type == "application/vnd.ms-excel" || params[:pattern_file_input].content_type == "application/rtf"
-                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                        Mongoid.override_client(:attachDb)
+                    if params[:pattern_file_input]
+                      @object.pattern_file_name = params[:pattern_file_input].original_filename
+                      tempFile = params[:pattern_file_input].tempfile
+                      file = File.open(tempFile)
+                      if params[:pattern_file_input].content_type == "text/csv" || params[:pattern_file_input].content_type == "application/vnd.ms-excel" || params[:pattern_file_input].content_type == "application/rtf"
+                        if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                          Mongoid.override_client(:attachDb)
+                        end
+                        grid_fs = Mongoid::GridFS
+                        #Encryption
+                        public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                        public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                        cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                        cipher.encrypt
+                        key = cipher.random_key
+                        encData = cipher.update(File.read(file))
+                        encData << cipher.final
+                        #End of Encryption
+                        File.open(file, 'wb') do |f|
+                          f.write(encData)
+                        end
+                        grid_file = grid_fs.put(file.path)
+                        @object.pattern_file_id = grid_file.id
+                        Mongoid.override_client(:default)
+                        @object.save
+                      else
+                        flash[:error] = "Upload must be an rtf/csv"
                       end
-                      grid_fs = Mongoid::GridFS
-                      #Encryption
-                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                      cipher.encrypt
-                      key = cipher.random_key
-                      encData = cipher.update(File.read(file))
-                      encData << cipher.final
-                      #End of Encryption
-                      File.open(file, 'wb') do |f|
-                        f.write(encData)
-                      end
-                      grid_file = grid_fs.put(file.path)
-                      @object.pattern_file_id = grid_file.id
-                      Mongoid.override_client(:default)
-                      @object.save
-                    else
-                      flash[:error] = "Upload must be an rtf/csv"
                     end
                   end
                 end
