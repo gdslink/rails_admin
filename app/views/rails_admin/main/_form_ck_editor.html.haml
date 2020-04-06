@@ -11,9 +11,13 @@
     appPats = @appPatterns.to_json.html_safe
     if params[:action] == "edit"
       patternBson = Email.where(:application_id=>params[:Application], :id=>params[:id]).pluck(:pattern_id)[0]
-      if patternBson.length > 0
-        strToBson = BSON::ObjectId.from_string(patternBson)
-        selectedPatternBson = Pattern.where(:application_id=>params[:Application], :_id=>strToBson).pluck(:name)
+      if !patternBson.nil?
+        if patternBson.length > 0
+          if BSON::Object.from_string(patternBson)
+            strToBson = BSON::ObjectId.from_string(patternBson)
+            selectedPatternBson = Pattern.where(:application_id=>params[:Application], :_id=>strToBson).pluck(:name)
+          end
+        end
       end
     end
   end
