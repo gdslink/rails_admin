@@ -13,7 +13,7 @@
       patternBson = Email.where(:application_id=>params[:Application], :id=>params[:id]).pluck(:pattern_id)[0]
       if !patternBson.nil?
         if patternBson.length > 0
-          if BSON::Object.from_string(patternBson)
+          if BSON::ObjectId.from_string(patternBson)
             strToBson = BSON::ObjectId.from_string(patternBson)
             selectedPatternBson = Pattern.where(:application_id=>params[:Application], :_id=>strToBson).pluck(:name)
           end
