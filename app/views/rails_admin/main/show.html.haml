@@ -17,17 +17,25 @@
                   = render inline: field.pretty_value.gsub(/<%=render(.*)%>/, '')
                   :javascript
                     //set style for screen elements to avoid stylings from other CSS's
-                    var els = document.querySelectorAll("div#doc1")[0].getElementsByTagName('fieldset');
-                    for (var i = 0; i < els.length; i++) {
-                        els[i].style.border = 0;};
-                    var bts = document.querySelectorAll('div#doc1')[0].querySelectorAll('input')
-                    for (var i = 0; i < bts.length; i++) {
+                    window.onload = function(e){ 
+                      html_iframe = document.getElementById('sourceIframe');
+                      html_innerDoc = html_iframe.contentDocument || html_iframe.contentWindow.document;
+
+                      var bts = html_innerDoc.querySelectorAll('input');
+                      for (var i = 0; i < bts.length; i++) {
                         bts[i].setAttribute('disabled', 'true')
-                    };
+                      }
+
+                      var els = html_innerDoc.getElementsByTagName('fieldset');
+                      for (var i = 0; i < els.length; i++) {
+                        els[i].style.border = 0;
+                      }                     
+
+                      if(document.readyState == 'complete'){
+                          document.querySelector("#loading").style.display="none";                       
+                      }
+
+                    }
                 -else
                   = field.pretty_value
-
-
-
-
 
