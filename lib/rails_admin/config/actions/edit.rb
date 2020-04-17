@@ -177,11 +177,7 @@ module RailsAdmin
                     end
                   end
                 end
-                if @model_name == "Email"
-                  patId = Pattern.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:pattern_id]).pluck(:_id)[0]
-                  @object.pattern_id = patId.to_s
-                  @object.save
-                end
+
                 if params[:checkboxes].present?
                   @object.filter_screen_flows.each do |fsf|
                     if params[:checkboxes].exclude?(fsf.name)
