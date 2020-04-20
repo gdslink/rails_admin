@@ -33,7 +33,8 @@
         %label.col-sm-2.control-label{:for => "pattern_html_block_id"} Pattern
         .controls.col-sm-10{"data-children-count" => "2"}
           %select#pattern_html_block_id{"data-filteringselect" => "true", "data-options" => "{\"xhr\":false,\"remote_source\":\"/admin/html_block?associated_collection=html_block\\u0026compact=true\\u0026current_action=create\\u0026locale=en\\u0026source_abstract_model=pattern\"}", :name => "pattern[html_block_id]", :placeholder => "Search", :style => "display: none;"}
-            - @htmlBlocks = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application']).pluck(:name) 
+            - @htmlBlocks = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application']).pluck(:name)
+            - @htmlBlocks.sort!
             - @htmlBlocks.each do |b|
               %option{:name => b, :value=> b}="#{b}"
           %span.help-block Required.
