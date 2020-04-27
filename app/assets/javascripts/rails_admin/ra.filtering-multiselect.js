@@ -223,6 +223,7 @@
       var widget = this;
       options.each(function(i, option) {
         widget.element.find('option[value="' + option.value + '"]').removeAttr("selected");
+        widget.element.find('option[value="' + option.value + '"]')[0].selected = false
       });
       //$(options).appendTo(this.collection).attr('selected', false);
     },
@@ -279,7 +280,8 @@
       options.each(function(i, option) {
         var el = widget.element.find('option[value="' + option.value + '"]');
         if (el.length) {
-          el.attr("selected", "selected");
+          //el.attr("selected", "selected");
+          el[0].selected=true
         } else {
           widget.element.append($('<option></option>').attr('value', option.value).attr('selected', "selected"));
         }
