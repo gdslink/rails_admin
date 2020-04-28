@@ -64,11 +64,21 @@ module RailsAdmin
           end
           grid_fs = Mongoid::GridFS
           encFile = File.open(attFile)
-          encData = Mongoid::EncryptedFields.cipher.encrypt(encFile.read)
+          #Encryption
+          public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+          public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+          cipher = OpenSSL::Cipher.new('aes-256-cbc')
+          cipher.encrypt
+          key = cipher.random_key
+          encData = cipher.update(File.read(encFile))
+          encData << cipher.final
+          #End Encryption
           File.open(encFile, 'wb') do |f|
             f.write(encData)
           end
           grid_file = grid_fs.put(attFile.path)
+          encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+          @newAsset.aes_key = encrypted_aes
           @newAsset.data = grid_file.id #Attachment.data is equal to the BSON::ObjectId of the GridFs file.
           @newAsset.assetable_id = @records.system.company_id
 
@@ -132,14 +142,23 @@ module RailsAdmin
             line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
             line.run(in: file.path, resolution: "30x30", out: thumbFilename)
             thumbFile = File.open(thumbFilename)
-            encThumbData = Mongoid::EncryptedFields.cipher.encrypt(thumbFile.read)
+            #Encryption
+            public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+            public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+            cipher = OpenSSL::Cipher.new('aes-256-cbc')
+            cipher.encrypt
+            key = cipher.random_key
+            encThumbData = cipher.update(File.read(thumbFile))
             File.open(thumbFile, 'wb') do |f|
               f.write(encThumbData)
             end
-            encData = Mongoid::EncryptedFields.cipher.encrypt(file.read)
+            encData = cipher.update(File.read(file))
             File.open(file, 'wb') do |f|
               f.write(encData)
             end
+            encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+            picture_asset.aes_key = encrypted_aes
+            #End of Encryption
             grid_file = grid_fs.put(file.path)
             picture_asset.data_file_size = File.size(file).to_i
             picture_asset.assetable_id = @company.id.to_i
