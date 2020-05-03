@@ -8,7 +8,7 @@
 //= require i18n/translations
 //= require ./jquery-1.12.1.min.js
 //= require ./jquery-ui-1.9.2.min.js
-//= require ./jquery-migrate-3.0.0
+//= require ./jquery-migrate-1.4.1.min.js
 //= require ./ra.filter-box.js
 //= require ./ra.filtering-multiselect.js
 //= require ./ra.filtering-select.js
