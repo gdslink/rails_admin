@@ -1,5 +1,13 @@
 <%
 models = @scope_adapter.models
+#make sure application drop down is up to date
+ @current_scope["Application"][:entries] = []
+ if(  @current_scope["Company"][:selected].blank? ) then
+    current_scope["Company"][:selected] = current_user.company_id.to_s
+ end
+ ::Application.where(:company_id => @current_scope["Company"][:selected]).all.each do |app|
+    @current_scope["Application"][:entries] << app
+ end
 %>
 
 <div id='scopeSelector'>
