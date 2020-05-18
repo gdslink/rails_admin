@@ -193,18 +193,28 @@ module RailsAdmin
     def global_search
       result = []
       RailsAdmin.config.included_models.each do |m|
+        next if m == "Company" 
+          add_scope = nil
+          if ( m == "User"   ) then
+            add_scope = :company_user
+          end
+          if ( m == "Application" ) then
+            add_scope = :company_user
+          end
         cached = Rails.cache.fetch(Digest::SHA1.hexdigest("admin/global_search/#{current_ability.cache_key}/#{params[:query]}/#{@current_scope_parameters.to_s}/#{cache_key(m)}")) do
           model_result = []
-        @model_config=RailsAdmin.config(m)
-        list_entries(@model_config).each do |e|
-          if e.respond_to?(:name)
-            model_result << {
-                :label => e.name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
-            }
+          @model_config=RailsAdmin.config(m)
+
+          list_entries(@model_config, :index, add_scope ).each do |e|
+            if e.respond_to?(:name)
+              model_result << {
+                  :label => e.name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
+              }
+            end
           end
+
+          model_result
         end
-        model_result
-      end
       result.concat cached
       end
 
@@ -212,13 +222,13 @@ module RailsAdmin
     end
    
     def list_entries(model_config = @model_config, auth_scope_key = :index, additional_scope = get_association_scope_from_params, pagination = !(params[:associated_collection] || params[:all] || params[:bulk_ids]))
-      
       scope = model_config.abstract_model.scoped
 
       if auth_scope = @authorization_adapter && @authorization_adapter.query(auth_scope_key, model_config.abstract_model)
         scope = scope.merge(auth_scope)
       end
       scope = scope.instance_eval(&additional_scope) if additional_scope
+
       get_collection(model_config, scope, pagination)
 
     end
