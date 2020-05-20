@@ -59,6 +59,7 @@ module RailsAdmin
                     Mongoid.override_client(:default)
                     @object = pattern
                     if pattern.save
+                      @object = pattern
                       respond_to do |format|
                         format.html { redirect_to_on_success }
                         format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
@@ -108,6 +109,7 @@ module RailsAdmin
                     pattern.pattern_file_id = grid_file.id
                     Mongoid.override_client(:default)
                     if pattern.save
+                      @object = pattern
                       respond_to do |format|
                         format.html { redirect_to_on_success }
                         format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
@@ -140,10 +142,11 @@ module RailsAdmin
                 pattern.html_block_id = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:id)[0]
                 pattern.html_block_key = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:key)[0]
                 if pattern.save
-                respond_to do |format|
-                  format.html { redirect_to_on_success }
-                  format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
-                end
+                  @object = pattern
+                  respond_to do |format|
+                    format.html { redirect_to_on_success }
+                    format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
+                  end
                 else 
                   if params[:pattern][:pattern]
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))

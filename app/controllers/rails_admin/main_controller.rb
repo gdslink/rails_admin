@@ -278,18 +278,36 @@ module RailsAdmin
 
     def redirect_to_on_success
       notice = t('admin.flash.successful', name: @model_config.label, action: t("admin.actions.#{@action.key}.done"))
-      if params[:_add_another]
-        redirect_to new_path(@current_scope_parameters.merge(return_to: params[:return_to])), flash: {success: notice}
-      elsif params[:_add_edit]
-        redirect_to edit_path(@current_scope_parameters.merge(id: @object.id, return_to: params[:return_to])), flash: {success: notice}
-      elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )        
-        redirect_to new_company_or_application_path, flash: {success: notice}
-      elsif ( !["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )  
-        redirect_to index_path, flash: {success: notice}
-      elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "edit"  )  
-        redirect_to '/admin', flash: {success: notice}
+
+      case params[:model_name]
+      when  "pattern"
+        redirectUrl = "/admin/pattern"
+        cur_locale = locale.to_s rescue 'en'
+        redirectNotice = {success: notice}
+        if params[:_add_edit]
+          redirectUrl = "/admin/pattern/#{object.id}/edit?#{@current_scope_parameters.to_query}&locale=#{cur_locale}"
+        end
+        if params[:_add_another]
+          redirectUrl =  "/admin/pattern/pattern_action?#{@current_scope_parameters.to_query}&locale=#{cur_locale}"
+        end
+        if params[:_save]
+          redirectUrl =  "/admin/pattern?#{@current_scope_parameters.to_query}&locale=#{cur_locale}"
+        end
+        redirect_to redirectUrl, flash: redirectNotice
       else
-        redirect_to back_or_index, flash: {success: notice}
+        if params[:_add_another]
+          redirect_to new_path(@current_scope_parameters.merge(return_to: params[:return_to])), flash: {success: notice}
+        elsif params[:_add_edit]
+          redirect_to edit_path(@current_scope_parameters.merge(id: @object.id, return_to: params[:return_to])), flash: {success: notice}
+        elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )        
+          redirect_to new_company_or_application_path, flash: {success: notice}
+        elsif ( !["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "new"  )  
+          redirect_to index_path, flash: {success: notice}
+        elsif ( ["Application", "Company"].include? @abstract_model.model_name  and  params[:action] == "edit"  )  
+          redirect_to '/admin', flash: {success: notice}
+        else
+          redirect_to back_or_index, flash: {success: notice}
+        end
       end
     end
 

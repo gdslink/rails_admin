@@ -67,17 +67,5 @@
           $('select#pattern_pattern_type').on('change', function(e) {
             toggle_pattern();
           });
-    #submit_buttons.form-group.form-actions
-      .col-sm-offset-2.col-sm-10
-        %input{:name => "return_to", :type => "hidden", :value => "https://casecenter-test.dataview360.com/admin/pattern?locale=en"}/
-        %button.btn.btn-primary{"data-disable-with" => "Save", :name => "_save", :type => "submit"}
-          %i.icon-white.icon-ok
-            Save
-        %span.extra_buttons
-          %button.btn.btn-info{"data-disable-with" => "Save and add another", :name => "_add_another", :type => "submit"}
-            Save and add another
-          %button.btn.btn-info{"data-disable-with" => "Save and edit", :name => "_add_edit", :type => "submit"}
-            Save and edit
-          %button.btn.btn-default{"data-disable-with" => "Cancel", :formnovalidate => "", :name => "_continue", :type => "submit"}
-            %i.icon-remove
-            Cancel
+          
+    = render "rails_admin/main/submit_buttons"
