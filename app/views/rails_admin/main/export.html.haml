@@ -83,11 +83,11 @@
       %button.btn.btn-primary{type: "submit", name: 'csv'}
         %i.icon-white.icon-ok
         = t("admin.export.confirmation", name: 'csv')
-      %button.btn.btn-info{type: "submit", name: 'json'}
+      %button.btn.btn-secondary{type: "submit", name: 'json'}
         = t("admin.export.confirmation", name: 'json')
-      %button.btn.btn-info{type: "submit", name: 'xml'}
+      %button.btn.btn-secondary{type: "submit", name: 'xml'}
         = t("admin.export.confirmation", name: 'xml')
-      %button.btn{type: "submit", name: "_continue"}
+      %button.btn{type: "button", name: "_continue",onclick: "window.location='/admin'"}
         %i.icon-remove
         = t("admin.form.cancel")
 
