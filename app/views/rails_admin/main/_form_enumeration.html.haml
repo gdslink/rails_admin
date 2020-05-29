@@ -15,4 +15,5 @@
         down: t("admin.misc.down")
       }
     }
+    
   = form.select field.method_name, field.enum.sort!, { selected: field.form_value, object: form.object }, field.html_attributes.reverse_merge({data: { filteringmultiselect: true, options: js_data.to_json }, multiple: true})
