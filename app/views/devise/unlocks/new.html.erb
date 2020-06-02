@@ -16,7 +16,7 @@
       <td>
       <div class="head_title"><%=t('devise.sessions.email')%></div>
       <div class="small">&nbsp;</div><br class="clear">
-      <%=f.email_field :email, :class => "lg_log", :size => '30'%>
+      <%= f.email_field :email, :class => "lg_log", :size => '30', :required => true %>
       </td>
   </tr>
   </tbody></table>
