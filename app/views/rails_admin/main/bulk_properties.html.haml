@@ -33,17 +33,20 @@
     <br>
     <br>
     <div class="col-sm-12" style="height:30px;">  </div>
-    <span class="col-sm-2"> <label class="control-label" style="float: right;">User Properties to update</label> </span>
-    %div{:style => "height: 20px;"}
-    %div{:class => "col-sm-10"}
-      %div
-        -@all_properties.each do |prop|
-          %div{:style => "margin-bottom: 5px"}
-            %input{:name => "prop"+prop.name+"checkbox", :type => "hidden", :value=>''}
-            %label{:style => "display:block; font-size:14px;"} #{prop.name}
-            %div
-              %input{:name => "prop"+prop.name, :type => "text", :class => "form-control", :id => "prop"+prop.name, :style => "display:inline; vertical-align:bottom;" }
-              %input{:name => "prop"+prop.name+"checkbox", :type => "checkbox", :class => "form-control",  :id => "prop"+prop.name+"checkbox", :style => "display:inline; vertical-align:middle;" }
+    - if @all_properties.size > 0
+      <span class="col-sm-2"> <label class="control-label" style="float: right;">User Properties to update</label> </span>
+      %div{:style => "height: 20px;"}
+      %div{:class => "col-sm-10"}
+        %div
+          -@all_properties.each do |prop|
+            %div{:style => "margin-bottom: 5px"}
+              %input{:name => "prop"+prop.name+"checkbox", :type => "hidden", :value=>''}
+              %label{:style => "display:block; font-size:14px;"} #{prop.name}
+              %div
+                %input{:name => "prop"+prop.name, :type => "text", :class => "form-control", :id => "prop"+prop.name, :style => "display:inline; vertical-align:bottom;" }
+                %input{:name => "prop"+prop.name+"checkbox", :type => "checkbox", :class => "form-control",  :id => "prop"+prop.name+"checkbox", :style => "display:inline; vertical-align:middle;" }
+    - else
+      <div class="col-sm-11" style="text-align:center; "> <h4> No user properties to update </h4> </div>
     <div class="col-sm-12" style="height:20px;">  </div>
   = render "rails_admin/main/bulk_properties_submit_buttons"
 
