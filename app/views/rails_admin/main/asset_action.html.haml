@@ -1,6 +1,14 @@
-%div{:style => "background-color: #F9F9F9;"}
-  %h1{:style => "padding-bottom: 1%; margin-top: 0px; padding-top:10px;"} Upload Asset
-  = form_tag('/admin/picture_asset/asset_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, multipart: true) do
-    = file_field_tag 'picture'
-    %br
-    = submit_tag 'Submit'
+%div{:style => "background-color: #F9F9F9; padding: 15px 0px;"}
+	= form_tag('/admin/picture_asset/asset_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, multipart: true) do
+		%fieldset{ :style =>"border : 0"}
+			<span class="col-sm-2"><label class="control-label" style="float: right;">Upload Image</label></span>
+			%div{:class => "col-sm-10 controls"}
+				= file_field_tag 'picture', :class => "form-control" , required: true
+			%br
+			%br
+			%br
+			%span{:class => "col-sm-2" }
+			%span{:class => "col-sm-10 controls" }
+				%button.btn.btn-primary{type: "submit", :style=>"margin-left:0px !important;"}
+					%i.icon-white.icon-ok
+					= t("admin.form.upload")
