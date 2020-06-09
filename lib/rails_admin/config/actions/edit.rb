@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module RailsAdmin
   module Config
     module Actions
@@ -224,6 +226,58 @@ module RailsAdmin
                       end
                     end
                   end
+                end
+
+                if @model_name == "XslSheet"
+                  if params[:entryPoint]
+                    @object.entry_point = params[:entryPoint]
+                  end
+                  if params[:stylesheet]
+                    tempFile = params[:stylesheet].tempfile
+                    file = File.open(tempFile)
+
+                    zipLocation = params[:stylesheet].original_filename[0..-5]
+                    Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+                    Zip::File.open(file.path) do |zipFile|
+                      zipFile.each do |file|
+                        if file.ftype == :directory
+                          Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
+                        else
+                          path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
+                          File.open(path, 'wb') do |f|
+                            f.write(file)
+                          end
+                        end
+                      end
+                    end
+                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                      Mongoid.override_client(:attachDb)
+                    end
+                    grid_fs = Mongoid::GridFS
+
+                    #Encryption
+                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                    cipher.encrypt
+                    key = cipher.random_key
+                    encData = cipher.update(File.read(file))
+                    encData << cipher.final
+                    #End Encryption
+                    
+                    File.open(file, 'wb') do |f|
+                      f.write(encData)
+                    end
+                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                    @object.aes_key = encrypted_aes
+                    grid_file = grid_fs.put(file.path)
+                    @object.stylesheet_id = grid_file.id
+                    oldPath = Rails.root.join('public', 'xsl', @object.data_file_name[0..-5])
+                    FileUtils.rm_rf(oldPath)
+                    @object.data_file_name = params[:stylesheet].original_filename
+                    Mongoid.override_client(:default)
+                  end
+                  @object.save
                 end
 
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name

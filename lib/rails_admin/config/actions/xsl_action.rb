@@ -1,3 +1,6 @@
+require 'zip'
+require 'fileutils'
+
 module RailsAdmin
   module Config
     module Actions
@@ -23,10 +26,26 @@ module RailsAdmin
             elsif request.put? # UPDATE
               tempFile = params[:stylesheet].tempfile
               file = File.open(tempFile)
+
+              zipLocation = params[:stylesheet].original_filename[0..-5]
+              Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+              Zip::File.open(file.path) do |zipFile|
+                zipFile.each do |file|
+                  if file.ftype == :directory
+                    Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
+                  else
+                    path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
+                    File.open(path, 'wb') do |f|
+                      f.write(file.get_input_stream.read)
+                    end
+                  end
+                end
+              end
+
               stylesheet = XslSheet.new()
               stylesheet.data_file_name = params[:stylesheet].original_filename
               stylesheet.assetable_id = params[:Application].to_i
-              if params[:stylesheet].content_type == "text/xml"
+              if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
                 if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                   Mongoid.override_client(:attachDb)
                 end
@@ -47,7 +66,7 @@ module RailsAdmin
                 end
                 encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
                 stylesheet.aes_key = encrypted_aes
-
+                stylesheet.entry_point = params[:entryPoint]
                 grid_file = grid_fs.put(file.path)
                 stylesheet.stylesheet_id = grid_file.id
                 Mongoid.override_client(:default)
@@ -62,6 +81,7 @@ module RailsAdmin
                   end
                   grid_fs.delete(stylesheet.stylesheet_id)
                   Mongoid.override_client(:default)
+                  FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
                   stylesheet.errors.full_messages.each do |message|
                     flash[:error] = message
                   end
