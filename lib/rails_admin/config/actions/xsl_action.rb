@@ -28,6 +28,9 @@ module RailsAdmin
               file = File.open(tempFile)
 
               zipLocation = params[:stylesheet].original_filename[0..-5]
+              if File.directory?(Rails.root.join('public','xsl',zipLocation))
+                FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+              end
               Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
               Zip::File.open(file.path) do |zipFile|
                 zipFile.each do |file|
@@ -70,23 +73,28 @@ module RailsAdmin
                 grid_file = grid_fs.put(file.path)
                 stylesheet.stylesheet_id = grid_file.id
                 Mongoid.override_client(:default)
-                if stylesheet.save
-                  respond_to do |format|
-                    format.html { redirect_to_on_success }
-                    format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }
+                if XslSheet.where(data_file_name: params[:stylesheet].original_filename).exists?
+                  oldStylesheet = XslSheet.where(data_file_name: params[:stylesheet].original_filename)
+                  oldStylesheet.update(:entry_point => params[:entryPoint], :stylesheet_id => grid_file.id)
+                else
+                  if stylesheet.save
+                    respond_to do |format|
+                      format.html { redirect_to_on_success }
+                      format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }
+                    end
+                  else 
+                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                      Mongoid.override_client(:attachDb)
+                    end
+                    grid_fs.delete(stylesheet.stylesheet_id)
+                    Mongoid.override_client(:default)
+                    FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                    stylesheet.errors.full_messages.each do |message|
+                      flash[:error] = message
+                    end
+                  file.close
+                  File.delete(file.path)
                   end
-                else 
-                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                    Mongoid.override_client(:attachDb)
-                  end
-                  grid_fs.delete(stylesheet.stylesheet_id)
-                  Mongoid.override_client(:default)
-                  FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
-                  stylesheet.errors.full_messages.each do |message|
-                    flash[:error] = message
-                  end
-                file.close
-                File.delete(file.path)
                 end
               else 
                 flash[:error] = "Upload must be an XSL file"
