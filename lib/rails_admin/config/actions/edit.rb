@@ -162,7 +162,7 @@ module RailsAdmin
 
                       grid_file = grid_fs.put(file.path)
                       picture_asset.data_file_size = File.size(tempFile).to_i
-                      picture_asset.assetable_id = params[:Company].to_i
+                      picture_asset.company_id = params[:Company].to_i
                       picture_asset.image_id = grid_file.id
                       grid_thumb_file = grid_fs.put(thumbFile.path)
                       picture_asset.thumb_image_id = grid_thumb_file.id

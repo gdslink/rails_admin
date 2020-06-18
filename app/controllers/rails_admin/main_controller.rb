@@ -80,9 +80,9 @@ module RailsAdmin
           encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
           @newAsset.aes_key = encrypted_aes
           @newAsset.data = grid_file.id #Attachment.data is equal to the BSON::ObjectId of the GridFs file.
-          @newAsset.assetable_id = @records.system.company_id
+          @newAsset.company_id = @records.system.company_id
 
-          @newAsset.assetable_type = @recordId
+          @newAsset.record_id = @recordId
           @newAsset.data_file_name = normalizedB
           @newAsset.user = current_user.email
 
@@ -99,7 +99,7 @@ module RailsAdmin
             @newAsset.destroy
             raise e
           ensure
-            count = Attachment.where(:assetable_type => @recordId).size
+            count = Attachment.where(:record_id => @recordId).size
             @records.system.update_attributes(
               attachments_count: count,
               edited_by: current_user.email,
@@ -161,7 +161,7 @@ module RailsAdmin
             #End of Encryption
             grid_file = grid_fs.put(file.path)
             picture_asset.data_file_size = File.size(file).to_i
-            picture_asset.assetable_id = @company.id.to_i
+            picture_asset.company_id = @company.id.to_i
             picture_asset.image_id = grid_file.id
             grid_thumb_file = grid_fs.put(thumbFile.path)
             picture_asset.thumb_image_id = grid_thumb_file.id

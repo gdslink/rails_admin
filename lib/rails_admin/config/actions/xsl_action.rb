@@ -47,7 +47,7 @@ module RailsAdmin
 
               stylesheet = XslSheet.new()
               stylesheet.data_file_name = params[:stylesheet].original_filename
-              stylesheet.assetable_id = params[:Application].to_i
+              stylesheet.company_id = params[:Application].to_i
               if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
                 if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                   Mongoid.override_client(:attachDb)
