@@ -1,3 +1,14 @@
+- if ['Screen', "HtmlBlock", "Form", "Email"].include? @model_name
+  :javascript
+    function disableInputEls(input_container){
+      ["select", "input", "button", "textarea"].forEach( function (element) {
+        els = input_container.querySelectorAll(element);
+            for (var i = 0; i < els.length; i++) {
+              els[i].setAttribute('disabled', 'true')
+        }
+      })  
+    }
+
 - @model_config.show.with(object: @object, view: self, controller: self.controller).visible_groups.each do |fieldset|
   - unless (fields = fieldset.with(object: @object, view: self, controller: self.controller).visible_fields).empty?
     - if !(values = fields.map{ |f| f.formatted_value.presence }).compact.empty? || !RailsAdmin::config.compact_show_view
@@ -20,12 +31,7 @@
                     window.onload = function(e){ 
                       html_iframe = document.getElementById('sourceIframe');
                       html_innerDoc = html_iframe.contentDocument || html_iframe.contentWindow.document;
-
-                      var bts = html_innerDoc.querySelectorAll('input');
-                      for (var i = 0; i < bts.length; i++) {
-                        bts[i].setAttribute('disabled', 'true')
-                      }
-
+                   
                       var els = html_innerDoc.getElementsByTagName('fieldset');
                       for (var i = 0; i < els.length; i++) {
                         els[i].style.border = 0;
@@ -34,10 +40,29 @@
                       if(document.readyState == 'complete'){
                           document.querySelector("#loading").style.display="none";                       
                       }
-
+                      disableInputEls(html_innerDoc);
                     }
                 - elsif (@model_name == 'Email' and field.name == :email_body) ||  (@model_name == 'HtmlBlock' and field.name == :code)
                   = render inline: field.value.gsub(/<style((\X)*)<\/style>/, '')
+                  :javascript
+                    window.onload = function(e){
+                      disableInputEls(document.querySelector("div.fieldset:last-of-type dd.well:last-of-type"));
+                    }
+
+                - elsif (@model_name == 'Form' and field.name == :code)
+                  = field.pretty_value
+                  :javascript
+                    //set style for screen elements to avoid stylings from other CSS's
+                    window.onload = function(e){ 
+                      html_iframe = document.getElementById('formIframe');
+                      html_innerDoc = html_iframe.contentDocument || html_iframe.contentWindow.document;
+
+                      if(document.readyState == 'complete'){
+                          document.querySelector("#loading").style.display="none";                       
+                      }
+                      disableInputEls(html_innerDoc);
+                    }
+
                 -else
                   = field.pretty_value
 
