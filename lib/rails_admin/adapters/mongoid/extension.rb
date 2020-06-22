@@ -16,7 +16,7 @@ module RailsAdmin
         end
 
         def rails_admin_default_object_label_method
-          self.new_record? ? "new #{self.class}" : "#{self.class} ##{id}"
+          self.new_record? ? "new #{self.class}" : "#{data_file_name}"
         end
 
         def safe_send(value)

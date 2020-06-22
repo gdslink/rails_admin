@@ -60,6 +60,7 @@ module RailsAdmin
     end
 
     def get_object
+      Mongoid.override_client(:default)
       fail(RailsAdmin::ObjectNotFound) unless (@object = @abstract_model.get(params[:id]))
     end
 
