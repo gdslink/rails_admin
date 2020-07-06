@@ -70,7 +70,52 @@ module RailsAdmin
               changes.delete(:authentication_token)
               changes.each { |k,v| changes.delete(k) if v[0] == v[1] }   # delete the attribute from changes hash if old values = new values
 
+              if @model_name == "Pattern"
+                if params[:pattern][:pattern_type] =="pdf"
+                  @object.html_block_id = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:id)[0]
+                  @object.html_block_key = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:key)[0]
+                  @object.pattern_file_name = "" 
+                else
+                  if params[:pattern_file_input]
+                    @object.pattern_file_name = params[:pattern_file_input].original_filename
+                    tempFile = params[:pattern_file_input].tempfile
+                    file = File.open(tempFile)
+                    binding.pry
+                    if ["application/rtf","text/rtf","text/csv","application/csv","application/vnd.ms-excel"].index(params[:pattern_file_input].content_type) != nil
+                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                        Mongoid.override_client(:attachDb)
+                      end
+                      grid_fs = Mongoid::GridFS
+                      #Encryption
+                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                      cipher.encrypt
+                      key = cipher.random_key
+                      encData = cipher.update(File.read(file))
+                      encData << cipher.final
+                      #End of Encryption
+                      File.open(file, 'wb') do |f|
+                        f.write(encData)
+                      end
+                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                      @object.aes_key = encrypted_aes
+
+                      grid_file = grid_fs.put(file.path)
+                      @object.pattern_file_id = grid_file.id
+                      Mongoid.override_client(:default)
+                      @object.html_block_id = nil
+                      @object.html_block_key = ""
+                    else
+                      flash[:error] = "Upload must be an rtf/csv"
+                    end
+                  end
+                end
+              end
+
+
               if @object.save
+
                 @object.reload
                 if @model_name == "Environment"
                   # handle Environment's schedule values history. apply updates on the temp copies and read changes
@@ -190,43 +235,7 @@ module RailsAdmin
                   end
                 end
 
-                if @model_name == "Pattern"
-                  if params[:pattern][:pattern_type] =="pdf"
-                    @object.html_block_id = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:id)[0]
-                    @object.html_block_key = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:key)[0]
-                    @object.save
-                  else
-                    if params[:pattern_file_input]
-                      @object.pattern_file_name = params[:pattern_file_input].original_filename
-                      tempFile = params[:pattern_file_input].tempfile
-                      file = File.open(tempFile)
-                      if params[:pattern_file_input].content_type == "text/csv" || params[:pattern_file_input].content_type == "application/vnd.ms-excel" || params[:pattern_file_input].content_type == "application/rtf"
-                        if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                          Mongoid.override_client(:attachDb)
-                        end
-                        grid_fs = Mongoid::GridFS
-                        #Encryption
-                        public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                        public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                        cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                        cipher.encrypt
-                        key = cipher.random_key
-                        encData = cipher.update(File.read(file))
-                        encData << cipher.final
-                        #End of Encryption
-                        File.open(file, 'wb') do |f|
-                          f.write(encData)
-                        end
-                        grid_file = grid_fs.put(file.path)
-                        @object.pattern_file_id = grid_file.id
-                        Mongoid.override_client(:default)
-                        @object.save
-                      else
-                        flash[:error] = "Upload must be an rtf/csv"
-                      end
-                    end
-                  end
-                end
+                
 
                 if @model_name == "XslSheet"
                   if params[:entryPoint]
