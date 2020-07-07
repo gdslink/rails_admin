@@ -80,7 +80,6 @@ module RailsAdmin
                     @object.pattern_file_name = params[:pattern_file_input].original_filename
                     tempFile = params[:pattern_file_input].tempfile
                     file = File.open(tempFile)
-                    binding.pry
                     if ["application/rtf","text/rtf","text/csv","application/csv","application/vnd.ms-excel"].index(params[:pattern_file_input].content_type) != nil
                       if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
