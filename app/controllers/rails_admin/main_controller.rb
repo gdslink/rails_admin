@@ -105,6 +105,7 @@ module RailsAdmin
               edited_by: current_user.email,
               edited_by_role: current_user.roles.map(&:name)
             )
+            Mongoid.override_client(:default)
           end
         end
       end
@@ -134,49 +135,53 @@ module RailsAdmin
           picture_asset.data_file_name = normalizedB
           picture_asset.data_content_type = MIME::Types.type_for("#{Rails.root}/tmp/#{normalizedB}").first.content_type
           if(["image/png", "image/jpeg", "image/jpg", "image/gif", "image/tiff"].include? picture_asset.data_content_type)
-            if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-              Mongoid.override_client(:attachDb)
-            end
-            grid_fs = Mongoid::GridFS
-            thumbFilename = "#{Rails.root}/tmp/thumb"+"#{normalizedB}"
-            line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
-            line.run(in: file.path, resolution: "30x30", out: thumbFilename)
-            thumbFile = File.open(thumbFilename)
-            #Encryption
-            public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-            public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-            cipher = OpenSSL::Cipher.new('aes-256-cbc')
-            cipher.encrypt
-            key = cipher.random_key
-            encThumbData = cipher.update(File.read(thumbFile))
-            File.open(thumbFile, 'wb') do |f|
-              f.write(encThumbData)
-            end
-            encData = cipher.update(File.read(file))
-            File.open(file, 'wb') do |f|
-              f.write(encData)
-            end
-            encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-            picture_asset.aes_key = encrypted_aes
-            #End of Encryption
-            grid_file = grid_fs.put(file.path)
-            picture_asset.data_file_size = File.size(file).to_i
-            picture_asset.company_id = @company.id.to_i
-            picture_asset.image_id = grid_file.id
-            grid_thumb_file = grid_fs.put(thumbFile.path)
-            picture_asset.thumb_image_id = grid_thumb_file.id
-            File.delete(thumbFile.path)
-            File.delete(file.path)
-            if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-              Mongoid.override_client(:default)
-            end
-            if picture_asset.save
-            else
-              grid_fs.delete(picture_asset.image_id)
-              grid_fs.delete(picture_asset.thumb_image_id)
-              picture_asset.errors.full_messages.each do |message|
-                flash[:error] = message
+            begin
+              if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                Mongoid.override_client(:attachDb)
               end
+              grid_fs = Mongoid::GridFS
+              thumbFilename = "#{Rails.root}/tmp/thumb"+"#{normalizedB}"
+              line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
+              line.run(in: file.path, resolution: "30x30", out: thumbFilename)
+              thumbFile = File.open(thumbFilename)
+              #Encryption
+              public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+              public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+              cipher = OpenSSL::Cipher.new('aes-256-cbc')
+              cipher.encrypt
+              key = cipher.random_key
+              encThumbData = cipher.update(File.read(thumbFile))
+              File.open(thumbFile, 'wb') do |f|
+                f.write(encThumbData)
+              end
+              encData = cipher.update(File.read(file))
+              File.open(file, 'wb') do |f|
+                f.write(encData)
+              end
+              encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+              picture_asset.aes_key = encrypted_aes
+              #End of Encryption
+              grid_file = grid_fs.put(file.path)
+              picture_asset.data_file_size = File.size(file).to_i
+              picture_asset.company_id = @company.id.to_i
+              picture_asset.image_id = grid_file.id
+              grid_thumb_file = grid_fs.put(thumbFile.path)
+              picture_asset.thumb_image_id = grid_thumb_file.id
+              File.delete(thumbFile.path)
+              File.delete(file.path)
+              if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                Mongoid.override_client(:default)
+              end
+              if picture_asset.save
+              else
+                grid_fs.delete(picture_asset.image_id)
+                grid_fs.delete(picture_asset.thumb_image_id)
+                picture_asset.errors.full_messages.each do |message|
+                  flash[:error] = message
+                end
+              end
+            ensure
+              Mongoid.override_client(:default)
             end
           else
             flash[:error] = "Upload must be an image"

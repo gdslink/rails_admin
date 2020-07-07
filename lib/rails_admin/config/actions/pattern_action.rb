@@ -39,30 +39,33 @@ module RailsAdmin
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
-                    grid_fs = Mongoid::GridFS
-                    #Encryption
-                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                    if( !public_key_file )
-                      raise Exception.new "attachments_public_key not configured"
+                    begin
+                      grid_fs = Mongoid::GridFS
+                      #Encryption
+                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                      if( !public_key_file )
+                        raise Exception.new "attachments_public_key not configured"
+                      end
+                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                      cipher.encrypt
+                      key = cipher.random_key
+                      encData = cipher.update(File.read(file))
+                      encData << cipher.final
+                      #End of Encryption
+
+                      File.open(file, 'wb') do |f|
+                        f.write(encData)
+                      end
+
+                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                      pattern.aes_key = encrypted_aes
+
+                      grid_file = grid_fs.put(file.path)
+                      pattern.pattern_file_id = grid_file.id
+                    ensure
+                      Mongoid.override_client(:default)
                     end
-                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                    cipher.encrypt
-                    key = cipher.random_key
-                    encData = cipher.update(File.read(file))
-                    encData << cipher.final
-                    #End of Encryption
-
-                    File.open(file, 'wb') do |f|
-                      f.write(encData)
-                    end
-
-                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                    pattern.aes_key = encrypted_aes
-
-                    grid_file = grid_fs.put(file.path)
-                    pattern.pattern_file_id = grid_file.id
-                    Mongoid.override_client(:default)
                     @object = pattern
                     if pattern.save
                       @object = pattern
@@ -75,8 +78,11 @@ module RailsAdmin
                         if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                           Mongoid.override_client(:attachDb)
                         end
-                        grid_fs.delete(pattern.pattern_file_id)
-                        Mongoid.override_client(:default)
+                        begin
+                          grid_fs.delete(pattern.pattern_file_id)
+                        ensure
+                          Mongoid.override_client(:default)
+                        end
                       end
                       pattern.errors.full_messages.each do |message|
                         flash[:error] = message
@@ -108,8 +114,11 @@ module RailsAdmin
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
-                    grid_fs.delete(pattern.pattern_file_id)
-                    Mongoid.override_client(:default)
+                    begin
+                      grid_fs.delete(pattern.pattern_file_id)
+                    ensure
+                      Mongoid.override_client(:default)
+                    end
                   end
                   pattern.errors.full_messages.each do |message|
                     flash[:error] = message
