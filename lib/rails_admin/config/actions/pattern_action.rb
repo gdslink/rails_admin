@@ -35,10 +35,15 @@ module RailsAdmin
                 file_mimes = {"csv":["text/csv","application/vnd.ms-excel","application/csv"],"rtf":["application/msword","application/rtf","text/rtf"]}
 
                 if ["csv","rtf"].index(pattern.pattern_type) != nil
-                  if file_mimes[pattern.pattern_type].index(params[:pattern][:pattern].content_type) != nil
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                      Mongoid.override_client(:attachDb)
+                  if file_mimes[pattern.pattern_type.to_sym].index(params[:pattern][:pattern].content_type) != nil
+                    mongodb_attachment_db = CaseCenter::Config::Reader.get('mongodb_attachment_database')
+                    
+                    if mongodb_attachment_db == nil
+                      raise Exception.new "mongodb_attachment_database not configured"
                     end
+                 
+                    Mongoid.override_client(:attachDb)
+                   
                     grid_fs = Mongoid::GridFS
                     #Encryption
                     public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
