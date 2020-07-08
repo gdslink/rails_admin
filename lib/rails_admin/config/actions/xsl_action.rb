@@ -52,27 +52,32 @@ module RailsAdmin
                 if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                   Mongoid.override_client(:attachDb)
                 end
-                grid_fs = Mongoid::GridFS
+                begin
+                  grid_fs = Mongoid::GridFS
 
-                #Encryption
-                public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                cipher.encrypt
-                key = cipher.random_key
-                encData = cipher.update(File.read(file))
-                encData << cipher.final
-                #End Encryption
-                
-                File.open(file, 'wb') do |f|
-                  f.write(encData)
+                  #Encryption
+                  public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                  public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                  cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                  cipher.encrypt
+                  key = cipher.random_key
+                  encData = cipher.update(File.read(file))
+                  encData << cipher.final
+                  #End Encryption
+                  
+                  File.open(file, 'wb') do |f|
+                    f.write(encData)
+                  end
+                  encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                  stylesheet.aes_key = encrypted_aes
+                  stylesheet.entry_point = params[:entryPoint]
+                  grid_file = grid_fs.put(file.path)
+                  stylesheet.stylesheet_id = grid_file.id                
+                ensure
+                  Mongoid.override_client(:default)
                 end
-                encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                stylesheet.aes_key = encrypted_aes
-                stylesheet.entry_point = params[:entryPoint]
-                grid_file = grid_fs.put(file.path)
-                stylesheet.stylesheet_id = grid_file.id
-                Mongoid.override_client(:default)
+
+
                 if XslSheet.where(data_file_name: params[:stylesheet].original_filename).exists?
                   oldStylesheet = XslSheet.where(data_file_name: params[:stylesheet].original_filename)
                   oldStylesheet.update(:entry_point => params[:entryPoint], :stylesheet_id => grid_file.id)
@@ -86,8 +91,11 @@ module RailsAdmin
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
-                    grid_fs.delete(stylesheet.stylesheet_id)
-                    Mongoid.override_client(:default)
+                    begin
+                      grid_fs.delete(stylesheet.stylesheet_id)
+                    ensure
+                      Mongoid.override_client(:default)
+                    end
                     FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
                     stylesheet.errors.full_messages.each do |message|
                       flash[:error] = message

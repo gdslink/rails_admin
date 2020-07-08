@@ -84,25 +84,28 @@ module RailsAdmin
                       if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
                       end
-                      grid_fs = Mongoid::GridFS
-                      #Encryption
-                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                      cipher.encrypt
-                      key = cipher.random_key
-                      encData = cipher.update(File.read(file))
-                      encData << cipher.final
-                      #End of Encryption
-                      File.open(file, 'wb') do |f|
-                        f.write(encData)
-                      end
-                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                      @object.aes_key = encrypted_aes
+                      begin
+                        grid_fs = Mongoid::GridFS
+                        #Encryption
+                        public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                        public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                        cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                        cipher.encrypt
+                        key = cipher.random_key
+                        encData = cipher.update(File.read(file))
+                        encData << cipher.final
+                        #End of Encryption
+                        File.open(file, 'wb') do |f|
+                          f.write(encData)
+                        end
+                        encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                        @object.aes_key = encrypted_aes
 
-                      grid_file = grid_fs.put(file.path)
-                      @object.pattern_file_id = grid_file.id
-                      Mongoid.override_client(:default)
+                        grid_file = grid_fs.put(file.path)
+                        @object.pattern_file_id = grid_file.id
+                      ensure
+                        Mongoid.override_client(:default)
+                      end
                       @object.html_block_id = nil
                       @object.html_block_key = ""
                     else
@@ -180,39 +183,40 @@ module RailsAdmin
                       if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
                       end
-                      grid_fs = Mongoid::GridFS
-                      thumbFilename = params[:picture].original_filename
-                      line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
-                      line.run(in: tempFile.path, resolution: "30x30", out: thumbFilename)
-                      thumbFile = File.open(thumbFilename)
+                      begin
+                        grid_fs = Mongoid::GridFS
+                        thumbFilename = params[:picture].original_filename
+                        line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
+                        line.run(in: tempFile.path, resolution: "30x30", out: thumbFilename)
+                        thumbFile = File.open(thumbFilename)
 
-                      #Encryption
-                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                      cipher.encrypt
-                      key = cipher.random_key
-                      encThumbData = cipher.update(File.read(thumbFile))
-                      File.open(thumbFile, 'wb') do |f|
-                        f.write(encThumbData)
-                      end
-                      encData = cipher.update(File.read(file))
-                      File.open(file, 'wb') do |f|
-                        f.write(encData)
-                      end
-                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                      picture_asset.aes_key = encrypted_aes
-                      #End of Encryption
+                        #Encryption
+                        public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                        public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                        cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                        cipher.encrypt
+                        key = cipher.random_key
+                        encThumbData = cipher.update(File.read(thumbFile))
+                        File.open(thumbFile, 'wb') do |f|
+                          f.write(encThumbData)
+                        end
+                        encData = cipher.update(File.read(file))
+                        File.open(file, 'wb') do |f|
+                          f.write(encData)
+                        end
+                        encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                        picture_asset.aes_key = encrypted_aes
+                        #End of Encryption
 
-                      grid_file = grid_fs.put(file.path)
-                      picture_asset.data_file_size = File.size(tempFile).to_i
-                      picture_asset.company_id = params[:Company].to_i
-                      picture_asset.image_id = grid_file.id
-                      grid_thumb_file = grid_fs.put(thumbFile.path)
-                      picture_asset.thumb_image_id = grid_thumb_file.id
-                      thumbFile.close
-                      File.delete(thumbFile.path)
-                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                        grid_file = grid_fs.put(file.path)
+                        picture_asset.data_file_size = File.size(tempFile).to_i
+                        picture_asset.company_id = params[:Company].to_i
+                        picture_asset.image_id = grid_file.id
+                        grid_thumb_file = grid_fs.put(thumbFile.path)
+                        picture_asset.thumb_image_id = grid_thumb_file.id
+                        thumbFile.close
+                        File.delete(thumbFile.path)
+                      ensure
                         Mongoid.override_client(:default)
                       end
                       picture_asset.save
@@ -261,29 +265,32 @@ module RailsAdmin
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
-                    grid_fs = Mongoid::GridFS
+                    begin
+                      grid_fs = Mongoid::GridFS
 
-                    #Encryption
-                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                    cipher.encrypt
-                    key = cipher.random_key
-                    encData = cipher.update(File.read(file))
-                    encData << cipher.final
-                    #End Encryption
-                    
-                    File.open(file, 'wb') do |f|
-                      f.write(encData)
+                      #Encryption
+                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                      cipher.encrypt
+                      key = cipher.random_key
+                      encData = cipher.update(File.read(file))
+                      encData << cipher.final
+                      #End Encryption
+                      
+                      File.open(file, 'wb') do |f|
+                        f.write(encData)
+                      end
+                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                      @object.aes_key = encrypted_aes
+                      grid_file = grid_fs.put(file.path)
+                      @object.stylesheet_id = grid_file.id
+                      oldPath = Rails.root.join('public', 'xsl', @object.data_file_name[0..-5])
+                      FileUtils.rm_rf(oldPath)
+                      @object.data_file_name = params[:stylesheet].original_filename
+                    ensure
+                      Mongoid.override_client(:default)
                     end
-                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                    @object.aes_key = encrypted_aes
-                    grid_file = grid_fs.put(file.path)
-                    @object.stylesheet_id = grid_file.id
-                    oldPath = Rails.root.join('public', 'xsl', @object.data_file_name[0..-5])
-                    FileUtils.rm_rf(oldPath)
-                    @object.data_file_name = params[:stylesheet].original_filename
-                    Mongoid.override_client(:default)
                   end
                   @object.save
                 end

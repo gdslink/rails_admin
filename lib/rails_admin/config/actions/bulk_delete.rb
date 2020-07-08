@@ -55,11 +55,14 @@ module RailsAdmin
                   if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                     Mongoid.override_client(:attachDb)
                   end
-                  stylesheet_ids.each do |s|
-                    grid_fs = Mongoid::GridFs
-                    grid_fs.delete(s.to_s)
+                  begin
+                    stylesheet_ids.each do |s|
+                      grid_fs = Mongoid::GridFs
+                      grid_fs.delete(s.to_s)
+                    end
+                  ensure
+                    Mongoid.override_client(:default)
                   end
-                  Mongoid.override_client(:default)
                 end
                 flash[:success] = t('admin.flash.successful', name: pluralize(destroyed.count, @model_config.label), action: t('admin.actions.delete.done')) unless destroyed.empty?
                 flash[:error] = t('admin.flash.error', name: pluralize(not_destroyed.count, @model_config.label), action: t('admin.actions.delete.done')) unless not_destroyed.empty?
