@@ -197,10 +197,12 @@ module RailsAdmin
                         cipher.encrypt
                         key = cipher.random_key
                         encThumbData = cipher.update(File.read(thumbFile))
+                        encThumbData << cipher.final
                         File.open(thumbFile, 'wb') do |f|
                           f.write(encThumbData)
                         end
                         encData = cipher.update(File.read(file))
+                        encData << cipher.final
                         File.open(file, 'wb') do |f|
                           f.write(encData)
                         end
