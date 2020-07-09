@@ -53,8 +53,8 @@ module RailsAdmin
                     File.open(thumbFile, 'wb') do |f|
                       f.write(encThumbData)
                     end
-                    encData << cipher.final
                     encData = cipher.update(File.read(file))
+                    encData << cipher.final
                     File.open(file, 'wb') do |f|
                       f.write(encData)
                     end
