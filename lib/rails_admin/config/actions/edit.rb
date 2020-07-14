@@ -71,15 +71,19 @@ module RailsAdmin
               changes.each { |k,v| changes.delete(k) if v[0] == v[1] }   # delete the attribute from changes hash if old values = new values
 
               if @model_name == "Pattern"
+
                 if params[:pattern][:pattern_type] =="pdf"
                   @object.html_block_id = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:id)[0]
                   @object.html_block_key = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:key)[0]
                   @object.pattern_file_name = "" 
                 else
                   if params[:pattern_file_input]
-                    @object.pattern_file_name = params[:pattern_file_input].original_filename
+                    
                     tempFile = params[:pattern_file_input].tempfile
                     file = File.open(tempFile)
+
+                    currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
+
                     if ["application/rtf","text/rtf","text/csv","application/csv","application/vnd.ms-excel"].index(params[:pattern_file_input].content_type) != nil
                       if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
@@ -103,6 +107,7 @@ module RailsAdmin
 
                         grid_file = grid_fs.put(file.path)
                         @object.pattern_file_id = grid_file.id
+                        @object.pattern_file_name = params[:pattern_file_input].original_filename
                       ensure
                         Mongoid.override_client(:default)
                       end
