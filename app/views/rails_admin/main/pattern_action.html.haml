@@ -6,29 +6,29 @@
         %i.icon-chevron-down
         Basic info
       #pattern_name_field.form-group.control-group.string_type.name_field
-        %label.col-sm-2.control-label{:for => "pattern_name"}=t('mongoid.attributes.pattern.name_label') 
+        %label.col-sm-2.control-label{:for => "pattern_name"} Name
         .controls.col-sm-10
           %input#pattern_name.form-control{"data-kwimpalaid" => "1580116335176-2", "data-kwimpalastatus" => "alive", :maxlength => "255", :name => "pattern[name]", :required => "required", :size => "50", :type => "text"}/
-          %span.help-block= t('mongoid.attributes.pattern.span_help_block_required_and_255') 
+          %span.help-block Required. Length up to 255.
       #pattern_description_field.form-group.control-group.string_type.description_field
-        %label.col-sm-2.control-label{:for => "pattern_description"}=t('mongoid.attributes.pattern.description_label') 
+        %label.col-sm-2.control-label{:for => "pattern_description"} Description
         .controls.col-sm-10
           %input#pattern_description.form-control{:maxlength => "255", :name => "pattern[description]", :size => "50", :type => "text"}/
-          %span.help-block= t('mongoid.attributes.pattern.span_help_block_optional_and_255') 
+          %span.help-block Optional. Length up to 255.
       #pattern_pattern_type_field.form-group.control-group.enum_type.pattern_type_field
-        %label.col-sm-2.control-label{:for => "pattern_pattern_type"}=t('mongoid.attributes.pattern.template_type_label')
+        %label.col-sm-2.control-label{:for => "pattern_pattern_type"} Template type
         .controls.col-sm-10{"data-children-count" => "2"}
           %select#pattern_pattern_type{"data-enumeration" => "true", :name => "pattern[pattern_type]", :placeholder => "Search", :required => "required", :style => "display: none;"}
             %option{:value => "csv"} csv
             %option{:selected => "selected", :value => "pdf"} pdf
             %option{:value => "rtf"} rtf            
-          %span.help-block= t('mongoid.attributes.pattern.span_help_block_required')
+          %span.help-block Required.
       #pattern_pattern_field.form-group.control-group.paperclip_type.pattern_field{:style => "display: none;"}
-        %label.col-sm-2.control-label{:for => "pattern_pattern"}=t('mongoid.attributes.pattern.pattern_label') 
+        %label.col-sm-2.control-label{:for => "pattern_pattern"} Pattern
         .controls.col-sm-10
           .toggle
             %input#pattern_pattern{"data-fileupload" => "true", :name => "pattern[pattern]", :type => "file"}/
-          %span.help-block{:value=>"#t('mongoid.attributes.pattern.span_help_block_required')"}
+          %span.help-block Required.
       #pattern_html_block_id_field.form-group.control-group.belongs_to_association_type.html_block_field{:style => "display: block;"}
         %label.col-sm-2.control-label{:for => "pattern_html_block_id"} Pattern
         .controls.col-sm-10{"data-children-count" => "2"}
@@ -37,7 +37,7 @@
             - @htmlBlocks.sort!
             - @htmlBlocks.each do |b|
               %option{:name => b, :value=> b}="#{b}"
-          %span.help-block= t('mongoid.attributes.pattern.span_help_block_required')
+          %span.help-block Required.
       .controls.col-sm-12
         :javascript
           var html_block_div = $("div#pattern_html_block_id_field")

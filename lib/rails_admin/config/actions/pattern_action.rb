@@ -96,11 +96,7 @@ module RailsAdmin
                       File.delete(file.path)
                     end 
                   else
-                    if pattern.pattern_type == "csv"
-                      flash[:error] = t('activerecord.errors.models.pattern.attributes.upload.errors.invalid_csv_upload')
-                    elsif pattern.pattern_type == "rtf"
-                      flash[:error] = t('activerecord.errors.models.pattern.attributes.upload.errors.invalid_rtf_upload')
-                    end
+                    flash[:error] = "Upload must be a #{pattern.pattern_type}"
                   end
                 end
               else
