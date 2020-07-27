@@ -109,6 +109,7 @@ module RailsAdmin
           end
         end
       end
+      flash[:success] = "Attachments imported from old system."
       redirect_to "/admin/Company/"+@company.id.to_s+"/edit?locale=en"
     end
 
@@ -188,6 +189,7 @@ module RailsAdmin
           end
         end
       end
+      flash[:success] = "Assets imported from old system."
       redirect_to "/admin/picture_asset"
     end
 
