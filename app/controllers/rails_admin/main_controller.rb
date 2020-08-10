@@ -54,49 +54,53 @@ module RailsAdmin
               @records = @application.get_mongoid_class.find_by(id: @recordId) rescue nil
             end
           end
-          fileDownloaded = s3.bucket(bucketName).object("#{b}")
-          fileDownloaded.get(response_target: "#{Rails.root}/tmp/#{normalizedB}")
-          @newAsset = Attachment.new
-          attFile = File.open("#{Rails.root}/tmp/#{normalizedB}")
-          currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: attFile.path).strip
-          if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-            Mongoid.override_client(:attachDb)
-          end
-          grid_fs = Mongoid::GridFS
-          encFile = File.open(attFile)
-          #Encryption
-          public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-          public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-          cipher = OpenSSL::Cipher.new('aes-256-cbc')
-          cipher.encrypt
-          key = cipher.random_key
-          encData = cipher.update(File.read(encFile))
-          encData << cipher.final
-          #End Encryption
-          File.open(encFile, 'wb') do |f|
-            f.write(encData)
-          end
-          grid_file = grid_fs.put(attFile.path)
-          encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-          @newAsset.aes_key = encrypted_aes
-          @newAsset.data = grid_file.id #Attachment.data is equal to the BSON::ObjectId of the GridFs file.
-          @newAsset.company_id = @records.system.company_id
+          if @records
+            fileDownloaded = s3.bucket(bucketName).object("#{b}")
+            fileDownloaded.get(response_target: "#{Rails.root}/tmp/#{normalizedB}")
+            @newAsset = Attachment.new
+            attFile = File.open("#{Rails.root}/tmp/#{normalizedB}")
+            currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: attFile.path).strip
+            if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+              Mongoid.override_client(:attachDb)
+            end
+            grid_fs = Mongoid::GridFS
+            encFile = File.open(attFile)
+            #Encryption
+            public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+            public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+            cipher = OpenSSL::Cipher.new('aes-256-cbc')
+            cipher.encrypt
+            key = cipher.random_key
+            encData = cipher.update(File.read(encFile))
+            encData << cipher.final
+            #End Encryption
+            File.open(encFile, 'wb') do |f|
+              f.write(encData)
+            end
+            grid_file = grid_fs.put(attFile.path)
+            encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+            @newAsset.aes_key = encrypted_aes
+            @newAsset.data = grid_file.id #Attachment.data is equal to the BSON::ObjectId of the GridFs file.
+            @newAsset.company_id = @records.system.company_id
 
-          @newAsset.record_id = @recordId
-          @newAsset.data_file_name = normalizedB
-          @newAsset.user = current_user.email
+            @newAsset.record_id = @recordId
+            @newAsset.data_file_name = normalizedB
+            @newAsset.user = current_user.email
 
-          @newAsset.data_file_size = File.size(attFile.path).to_i
-          @newAsset.updated_at = Time.now.strftime("%a %b %e %Y, %k:%M:%S")
-          attFile.close
-          if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-            Mongoid.override_client(:default)
+            @newAsset.data_file_size = File.size(attFile.path).to_i
+            @newAsset.updated_at = Time.now.strftime("%a %b %e %Y, %k:%M:%S")
+            attFile.close
+          
+            if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+              Mongoid.override_client(:default)
+            end
+            @newAsset.save!
           end
-          @newAsset.save!
+
           begin
-            @unique_id = @newAsset.id.to_s
+            @unique_id = @newAsset.id.to_s if @newAsset
           rescue Exception => e
-            @newAsset.destroy
+            @newAsset.destroy if @newAsset
             raise e
           ensure
             count = Attachment.where(:record_id => @recordId).size
@@ -104,7 +108,7 @@ module RailsAdmin
               attachments_count: count,
               edited_by: current_user.email,
               edited_by_role: current_user.roles.map(&:name)
-            )
+            ) if @records
             Mongoid.override_client(:default)
           end
         end
