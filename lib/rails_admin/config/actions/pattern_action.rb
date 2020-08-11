@@ -14,12 +14,13 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+
             if request.get? # EDIT
               respond_to do |format|
                 format.html { render @action.template_name }
                 format.js   { render @action.template_name, layout: false }
               end
-            elsif request.put? # UPDATE
+            elsif request.put? 
               if params[:pattern][:pattern]
                 tempFile = params[:pattern][:pattern].tempfile
                 file = File.open(tempFile)
@@ -32,16 +33,18 @@ module RailsAdmin
                 pattern.application_id = params[:Application].to_i
                 pattern.pattern_content_type = params[:pattern][:pattern].content_type
 
-                file_mimes = {"csv":["text/csv","application/vnd.ms-excel","application/csv"],"rtf":["application/msword","application/rtf","text/rtf"]}
+                file_mimes = {"csv":["text/csv","text/plain","application/vnd.ms-excel","application/csv"],"rtf":["application/msword","application/rtf","text/rtf"]}
+
+                currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
 
                 if ["csv","rtf"].index(pattern.pattern_type) != nil
-                  if file_mimes[pattern.pattern_type.to_sym].index(params[:pattern][:pattern].content_type) != nil
+                  if file_mimes[pattern.pattern_type.to_sym].index(currentFileType) != nil
                     mongodb_attachment_db = CaseCenter::Config::Reader.get('mongodb_attachment_database')
                     
                     if mongodb_attachment_db == nil
                       raise Exception.new "mongodb_attachment_database not configured"
                     end
-		    Mongoid.override_client(:attachDb)
+                    Mongoid.override_client(:attachDb)
                     
                     begin
                     grid_fs = Mongoid::GridFS
