@@ -83,7 +83,7 @@ module RailsAdmin
                     file = File.open(tempFile)
 
                     currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
-binding.pry
+
                     if ["application/rtf","text/rtf","text/csv","text/plain","application/csv","application/vnd.ms-excel"].index(currentFileType) != nil
                       if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
