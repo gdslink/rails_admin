@@ -33,14 +33,15 @@ module RailsAdmin
                   FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
                 end
                 Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+
                 Zip::File.open(file.path) do |zipFile|
-                  zipFile.each do |file|
-                    if file.ftype == :directory
-                      Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
+                  zipFile.each do |curFile|
+                    if curFile.ftype == :directory
+                      FileUtils.mkdir_p(Rails.root.join('public','xsl',zipLocation,curFile.name))
                     else
-                      path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
+                      path = File.join(Rails.root.join('public','xsl',zipLocation),curFile.name)
                       File.open(path, 'wb') do |f|
-                        f.write(file.get_input_stream.read)
+                        f.write(curFile.get_input_stream.read)
                       end
                     end
                   end
