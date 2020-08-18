@@ -258,6 +258,9 @@ module RailsAdmin
                     file = File.open(tempFile)
 
                     zipLocation = params[:stylesheet].original_filename[0..-5]
+                    if File.directory?(Rails.root.join('public','xsl',zipLocation))
+                      FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                    end
                     Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
                     Zip::File.open(file.path) do |zipFile|
                       zipFile.each do |file|
