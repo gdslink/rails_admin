@@ -46,8 +46,7 @@ module RailsAdmin
         importObjects = bucket.objects(prefix: "#{pref}").collect(&:key)
       elsif CaseCenter::Config::Reader.get("local_assets_path")
         using_S3 = false
-        # local_path = CaseCenter::Config::Reader.get("local_assets_path") + "/ckeditor_assets/attachments/" + @company.key
-        local_path = "/CaseCenterAPP/old_stuff/ckeditor_assets/attachments/bestegg"
+        local_path = CaseCenter::Config::Reader.get("local_assets_path") + "/ckeditor_assets/attachments/" + @company.key
         files = Dir["#{local_path}/**/*"]
         importObjects = files.each.map { |f| f if File.file?(f) }.compact        
       end
