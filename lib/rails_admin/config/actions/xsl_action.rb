@@ -36,10 +36,12 @@ module RailsAdmin
 
                 Zip::File.open(file.path) do |zipFile|
                   zipFile.each do |curFile|
-                    if curFile.ftype == :directory
-                      FileUtils.mkdir_p(Rails.root.join('public','xsl',zipLocation,curFile.name))
-                    else
+                    if curFile.ftype == :file
                       path = File.join(Rails.root.join('public','xsl',zipLocation),curFile.name)
+                      dirname = File.dirname(path)
+                      unless File.directory?(dirname)
+                        FileUtils.mkdir_p(dirname)
+                      end
                       File.open(path, 'wb') do |f|
                         f.write(curFile.get_input_stream.read)
                       end
