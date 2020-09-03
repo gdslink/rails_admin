@@ -42,7 +42,7 @@ module RailsAdmin
         bucketName = CaseCenter::Config::Reader.get("s3_assets_bucket")
         bucket = s3.bucket(bucketName)
         
-        pref = "ckeditor_assets/attachments/bestegg" # +@company.key
+        pref = "ckeditor_assets/attachments/" + @company.key
         importObjects = bucket.objects(prefix: "#{pref}/").collect(&:key)
       elsif CaseCenter::Config::Reader.get("local_assets_path")
         using_S3 = false
