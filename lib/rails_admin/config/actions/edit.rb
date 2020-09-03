@@ -190,16 +190,17 @@ module RailsAdmin
                   file = File.open(tempFile)
 
                   zipLocation = params[:stylesheet].original_filename[0..-5]
-                  if File.directory?(Rails.root.join('public','xsl',zipLocation))
-                    FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                  if File.directory?(Rails.root.join('public','xsl',@company.key,zipLocation))
+                    FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                   end
-                  Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+                  Dir.mkdir(Rails.root.join('public','xsl',@company.key))
+                  Dir.mkdir(Rails.root.join('public','xsl',@company.key,zipLocation))
                   Zip::File.open(file.path) do |zipFile|
                     zipFile.each do |file|
                       if file.ftype == :directory
-                        Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
+                        Dir.mkdir(Rails.root.join('public','xsl',@company.key,zipLocation,file.name))
                       else
-                        path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
+                        path = File.join(Rails.root.join('public','xsl',@company.key,zipLocation),file.name)
                         File.open(path, 'wb') do |f|
                           f.write(file)
                         end
@@ -229,7 +230,7 @@ module RailsAdmin
                     @object.aes_key = encrypted_aes
                     grid_file = grid_fs.put(file.path)
                     @object.stylesheet_id = grid_file.id
-                    oldPath = Rails.root.join('public', 'xsl', @object.data_file_name[0..-5])
+                    oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
                     FileUtils.rm_rf(oldPath)
                     @object.data_file_name = params[:stylesheet].original_filename
                   ensure

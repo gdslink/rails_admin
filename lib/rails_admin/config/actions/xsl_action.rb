@@ -29,15 +29,16 @@ module RailsAdmin
                 file = File.open(tempFile)
 
                 zipLocation = params[:stylesheet].original_filename[0..-5]
-                if File.directory?(Rails.root.join('public','xsl',zipLocation))
-                  FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                if File.directory?(Rails.root.join('public','xsl',@company.key,zipLocation))
+                  FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                 end
-                Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+                Dir.mkdir(Rails.root.join('public','xsl',@company.key))
+                Dir.mkdir(Rails.root.join('public','xsl',@company.key,zipLocation))
 
                 Zip::File.open(file.path) do |zipFile|
                   zipFile.each do |curFile|
                     if curFile.ftype == :file
-                      path = File.join(Rails.root.join('public','xsl',zipLocation),curFile.name)
+                      path = File.join(Rails.root.join('public','xsl',@company.key,zipLocation),curFile.name)
                       dirname = File.dirname(path)
                       unless File.directory?(dirname)
                         FileUtils.mkdir_p(dirname)
@@ -94,7 +95,7 @@ module RailsAdmin
                     ensure
                       Mongoid.override_client(:default)
                     end
-                    FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                    FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                     stylesheet.errors.full_messages.each do |message|
                       flash[:error] = message
                     end
