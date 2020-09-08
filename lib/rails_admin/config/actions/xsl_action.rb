@@ -33,7 +33,7 @@ module RailsAdmin
                   if File.directory?(Rails.root.join('public','xsl',@company.key,zipLocation))
                     FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                   end
-                  # Dir.mkdir(Rails.root.join('public','xsl',@company.key))
+                  Dir.mkdir(Rails.root.join('public','xsl',@company.key))
                   Dir.mkdir(Rails.root.join('public','xsl',@company.key,zipLocation))
 
                   Zip::File.open(file.path) do |zipFile|
