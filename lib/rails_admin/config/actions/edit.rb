@@ -236,8 +236,10 @@ module RailsAdmin
                       @object.aes_key = encrypted_aes
                       grid_file = grid_fs.put(file.path)
                       @object.stylesheet_id = grid_file.id
-                      # oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
-                      # FileUtils.rm_rf(oldPath)
+                      if @object.data_file_name  != params[:stylesheet].original_filename
+                        oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
+                        FileUtils.rm_rf(oldPath) 
+                      end
                       @object.data_file_name = params[:stylesheet].original_filename
                     ensure
                       Mongoid.override_client(:default)

@@ -55,6 +55,8 @@ module RailsAdmin
                     grid_fs = Mongoid::GridFS
                     grid_fs.delete(@object.stylesheet_id.to_s)
                     Mongoid.override_client(:default)
+                    path = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
+                    FileUtils.rm_rf(path) 
                   end
                   if @abstract_model.model_name == "Pattern"
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
