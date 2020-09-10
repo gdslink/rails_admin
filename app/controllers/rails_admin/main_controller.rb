@@ -126,10 +126,10 @@ module RailsAdmin
           ensure
             count = Attachment.where(:record_id => record_id).size
             record.system.update_attributes(
-              attachments_count: count,
-              edited_by: current_user.email,
-              edited_by_role: current_user.roles.map(&:name)
+                attachments_count: count,
+                updated_by: record.updated_by_struct(current_user, false)
             ) if record
+            
             Mongoid.override_client(:default)
           end
         end
