@@ -35,7 +35,7 @@ module RailsAdmin
                   if @abstract_model.model_name == "XslSheet"
                     stylesheet_ids = []
                     @objects.each do |x|
-                      stylesheet_ids.push(x.stylesheet_id)
+                      stylesheet_ids.push([x.stylesheet_id, x.data_file_name[0..-5]])
                     end
                   end
                   processed_objects = @abstract_model.destroy(@objects)
@@ -58,7 +58,9 @@ module RailsAdmin
                   begin
                     stylesheet_ids.each do |s|
                       grid_fs = Mongoid::GridFs
-                      grid_fs.delete(s.to_s)
+                      grid_fs.delete(s[0].to_s)
+                      path = Rails.root.join('public', 'xsl', @company.key, s[1])
+                      FileUtils.rm_rf(path) 
                     end
                   ensure
                     Mongoid.override_client(:default)
