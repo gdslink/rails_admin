@@ -196,7 +196,7 @@ module RailsAdmin
                       FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                     end
 
-                    Dir.mkdir(Rails.root.join('public','xsl',@company.key,zipLocation))
+                    FileUtils.mkdir_p(Rails.root.join('public','xsl',@company.key,zipLocation))
 
                     Zip::File.open(file.path) do |zipFile|
                       zipFile.each do |curFile|
