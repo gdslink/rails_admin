@@ -100,3 +100,8 @@ $(document).on 'click',  "#remove_filter",(event) ->
   $("hr.filters_box").hide()
   $(this).parent().siblings("input[type='search']").val("")
   $(this).parents("form").submit()  
+
+
+$(window).load ->
+  global_search_results = document.getElementById('ui-id-1');
+  $(global_search_results).off('menufocus');
