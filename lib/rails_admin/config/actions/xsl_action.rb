@@ -24,80 +24,83 @@ module RailsAdmin
               end
 
             elsif request.put? # UPDATE
-              tempFile = params[:stylesheet].tempfile
-              file = File.open(tempFile)
+              if params[:stylesheet].nil?
+                flash.now[:error] = "An XSL file or folder structure must be uploaded."
+              else
+                tempFile = params[:stylesheet].tempfile
+                file = File.open(tempFile)
 
-              zipLocation = params[:stylesheet].original_filename[0..-5]
-              if File.directory?(Rails.root.join('public','xsl',zipLocation))
-                FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
-              end
-              Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
-              Zip::File.open(file.path) do |zipFile|
-                zipFile.each do |file|
-                  if file.ftype == :directory
-                    Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
+                zipLocation = params[:stylesheet].original_filename[0..-5]
+                if File.directory?(Rails.root.join('public','xsl',zipLocation))
+                  FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                end
+                Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+                Zip::File.open(file.path) do |zipFile|
+                  zipFile.each do |file|
+                    if file.ftype == :directory
+                      Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
+                    else
+                      path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
+                      File.open(path, 'wb') do |f|
+                        f.write(file.get_input_stream.read)
+                      end
+                    end
+                  end
+                end
+                stylesheet = XslSheet.new()
+                stylesheet.data_file_name = params[:stylesheet].original_filename
+                stylesheet.company_id = params[:Application].to_i
+                if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
+                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    Mongoid.override_client(:attachDb)
+                  end
+                  grid_fs = Mongoid::GridFS
+
+                  #Encryption
+                  public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                  public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                  cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                  cipher.encrypt
+                  key = cipher.random_key
+                  encData = cipher.update(File.read(file))
+                  encData << cipher.final
+                  #End Encryption
+                  
+                  File.open(file, 'wb') do |f|
+                    f.write(encData)
+                  end
+                  encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                  stylesheet.aes_key = encrypted_aes
+                  stylesheet.entry_point = params[:entryPoint]
+                  grid_file = grid_fs.put(file.path)
+                  stylesheet.stylesheet_id = grid_file.id
+                  Mongoid.override_client(:default)
+                  if XslSheet.where(data_file_name: params[:stylesheet].original_filename).exists?
+                    oldStylesheet = XslSheet.where(data_file_name: params[:stylesheet].original_filename)
+                    oldStylesheet.update(:entry_point => params[:entryPoint], :stylesheet_id => grid_file.id)
                   else
-                    path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
-                    File.open(path, 'wb') do |f|
-                      f.write(file.get_input_stream.read)
+                    if stylesheet.save
+                      respond_to do |format|
+                        format.html { redirect_to_on_success }
+                        format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }
+                      end
+                    else 
+                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                        Mongoid.override_client(:attachDb)
+                      end
+                      grid_fs.delete(stylesheet.stylesheet_id)
+                      Mongoid.override_client(:default)
+                      FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                      stylesheet.errors.full_messages.each do |message|
+                        flash.now[:error] = message
+                      end
+                    file.close
+                    File.delete(file.path)
                     end
                   end
+                else 
+                  flash.now[:error] = "Upload must be an XSL file"
                 end
-              end
-
-              stylesheet = XslSheet.new()
-              stylesheet.data_file_name = params[:stylesheet].original_filename
-              stylesheet.company_id = params[:Application].to_i
-              if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
-                if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                  Mongoid.override_client(:attachDb)
-                end
-                grid_fs = Mongoid::GridFS
-
-                #Encryption
-                public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                cipher.encrypt
-                key = cipher.random_key
-                encData = cipher.update(File.read(file))
-                encData << cipher.final
-                #End Encryption
-                
-                File.open(file, 'wb') do |f|
-                  f.write(encData)
-                end
-                encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                stylesheet.aes_key = encrypted_aes
-                stylesheet.entry_point = params[:entryPoint]
-                grid_file = grid_fs.put(file.path)
-                stylesheet.stylesheet_id = grid_file.id
-                Mongoid.override_client(:default)
-                if XslSheet.where(data_file_name: params[:stylesheet].original_filename).exists?
-                  oldStylesheet = XslSheet.where(data_file_name: params[:stylesheet].original_filename)
-                  oldStylesheet.update(:entry_point => params[:entryPoint], :stylesheet_id => grid_file.id)
-                else
-                  if stylesheet.save
-                    respond_to do |format|
-                      format.html { redirect_to_on_success }
-                      format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }
-                    end
-                  else 
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                      Mongoid.override_client(:attachDb)
-                    end
-                    grid_fs.delete(stylesheet.stylesheet_id)
-                    Mongoid.override_client(:default)
-                    FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
-                    stylesheet.errors.full_messages.each do |message|
-                      flash[:error] = message
-                    end
-                  file.close
-                  File.delete(file.path)
-                  end
-                end
-              else 
-                flash[:error] = "Upload must be an XSL file"
               end
             end
           end
