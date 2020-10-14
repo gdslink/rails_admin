@@ -14,6 +14,10 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+            if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"update_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+            end
+
             if request.get? # NEW
               @object = @abstract_model.new
               @authorization_adapter && @authorization_adapter.attributes_for(:new, @abstract_model).each do |name, value|
@@ -24,7 +28,7 @@ module RailsAdmin
               end
               respond_to do |format|
                 format.html { render @action.template_name }
-                format.js   { render @action.template_name, layout: false }
+                format.js { render @action.template_name, layout: false }
               end
 
             elsif request.post? # CREATE
@@ -44,8 +48,8 @@ module RailsAdmin
                     picture_asset = PictureAsset.new
                     picture_asset.data_file_name = params[:picture].original_filename
                     picture_asset.data_content_type = params[:picture].content_type
-                    if(["image/png", "image/jpeg", "image/jpg", "image/gif"].include? picture_asset.data_content_type)
-                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    if (["image/png", "image/jpeg", "image/jpg", "image/gif"].include? picture_asset.data_content_type)
+                      if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
                       end
                       begin
@@ -101,7 +105,7 @@ module RailsAdmin
                 @auditing_adapter && @auditing_adapter.create_object(@object, @abstract_model, _current_user)
                 respond_to do |format|
                   format.html { redirect_to_on_success }
-                  format.js   { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
+                  format.js { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
                 end
               else
                 if params[:user].present?
@@ -124,6 +128,16 @@ module RailsAdmin
         register_instance_option :pjax? do
           false
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = bindings[:controller].current_ability.can? :"create_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+          end
+          is_visible
+        end
+
       end
     end
   end

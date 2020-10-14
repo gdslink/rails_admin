@@ -22,6 +22,10 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+            if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"update_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+            end
+
             if request.get? # DELETE
 
               respond_to do |format|
@@ -87,6 +91,16 @@ module RailsAdmin
         register_instance_option :link_icon do
           'icon-remove'
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = bindings[:controller].current_ability.can? :"destroy_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+          end
+          is_visible
+        end
+
       end
     end
   end

@@ -16,11 +16,15 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+            if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"update_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+            end
+
             if request.get? # EDIT
 
               respond_to do |format|
                 format.html { render @action.template_name }
-                format.js   { render @action.template_name, layout: false }
+                format.js { render @action.template_name, layout: false }
               end
 
             elsif request.put? # UPDATE
@@ -68,24 +72,24 @@ module RailsAdmin
               end
               changes = @object.changes
               changes.delete(:authentication_token)
-              changes.each { |k,v| changes.delete(k) if v[0] == v[1] }   # delete the attribute from changes hash if old values = new values
+              changes.each { |k, v| changes.delete(k) if v[0] == v[1] } # delete the attribute from changes hash if old values = new values
 
               if @model_name == "Pattern"
 
-                if params[:pattern][:pattern_type] =="pdf"
-                  @object.html_block_id = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:id)[0]
-                  @object.html_block_key = HtmlBlock.where(:application_id=>User.current_user.current_scope['Application'], :name=>params[:email][:pattern_id]).pluck(:key)[0]
-                  @object.pattern_file_name = "" 
+                if params[:pattern][:pattern_type] == "pdf"
+                  @object.html_block_id = HtmlBlock.where(:application_id => User.current_user.current_scope['Application'], :name => params[:email][:pattern_id]).pluck(:id)[0]
+                  @object.html_block_key = HtmlBlock.where(:application_id => User.current_user.current_scope['Application'], :name => params[:email][:pattern_id]).pluck(:key)[0]
+                  @object.pattern_file_name = ""
                 else
                   if params[:pattern_file_input]
-                    
+
                     tempFile = params[:pattern_file_input].tempfile
                     file = File.open(tempFile)
 
                     currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
 
-                    if ["application/rtf","text/rtf","text/csv","text/plain","application/csv","application/vnd.ms-excel"].index(currentFileType) != nil
-                      if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    if ["application/rtf", "text/rtf", "text/csv", "text/plain", "application/csv", "application/vnd.ms-excel"].index(currentFileType) != nil
+                      if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
                       end
                       begin
@@ -127,8 +131,8 @@ module RailsAdmin
                   picture_asset = PictureAsset.new
                   picture_asset.data_file_name = params[:picture].original_filename
                   picture_asset.data_content_type = params[:picture].content_type
-                  if(["image/png", "image/jpeg", "image/jpg", "image/gif"].include? picture_asset.data_content_type)
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                  if (["image/png", "image/jpeg", "image/jpg", "image/gif"].include? picture_asset.data_content_type)
+                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
                     begin
@@ -168,12 +172,12 @@ module RailsAdmin
                       File.delete(thumbFile.path)
                     ensure
                       Mongoid.override_client(:default)
-                    end                                        
+                    end
                     if picture_asset.save
                       @object.logo_image_file_name = grid_thumb_file.id
                     elsif picture_asset.errors.messages.values[0].include? "is already taken"
                       @object.logo_image_errors = "Logo image filename is already taken"
-                    end                    
+                    end
                   else
                     # flash[:error] = "Upload must be an image"
                     @object.logo_image_errors = "Upload must be an image"
@@ -186,22 +190,22 @@ module RailsAdmin
                   @object.entry_point = params[:entryPoint]
                 end
                 if params[:stylesheet]
-                  if XslSheet.where( :_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename  ).size == 0
+                  if XslSheet.where(:_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename).size == 0
                     tempFile = params[:stylesheet].tempfile
                     file = File.open(tempFile)
 
                     zipLocation = params[:stylesheet].original_filename[0..-5]
 
-                    if File.directory?(Rails.root.join('public','xsl',@company.key,zipLocation))
-                      FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
+                    if File.directory?(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+                      FileUtils.rm_rf(Rails.root.join('public', 'xsl', @company.key, zipLocation))
                     end
 
-                    FileUtils.mkdir_p(Rails.root.join('public','xsl',@company.key,zipLocation))
+                    FileUtils.mkdir_p(Rails.root.join('public', 'xsl', @company.key, zipLocation))
 
                     Zip::File.open(file.path) do |zipFile|
                       zipFile.each do |curFile|
                         if curFile.ftype == :file
-                          path = File.join(Rails.root.join('public','xsl',@company.key,zipLocation),curFile.name)
+                          path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
                           dirname = File.dirname(path)
                           unless File.directory?(dirname)
                             FileUtils.mkdir_p(dirname)
@@ -213,7 +217,7 @@ module RailsAdmin
                       end
                     end
 
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
                     begin
@@ -228,7 +232,7 @@ module RailsAdmin
                       encData = cipher.update(File.read(file))
                       encData << cipher.final
                       #End Encryption
-                      
+
                       File.open(file, 'wb') do |f|
                         f.write(encData)
                       end
@@ -236,9 +240,9 @@ module RailsAdmin
                       @object.aes_key = encrypted_aes
                       grid_file = grid_fs.put(file.path)
                       @object.stylesheet_id = grid_file.id
-                      if @object.data_file_name  != params[:stylesheet].original_filename
+                      if @object.data_file_name != params[:stylesheet].original_filename
                         oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
-                        FileUtils.rm_rf(oldPath) 
+                        FileUtils.rm_rf(oldPath)
                       end
                       @object.data_file_name = params[:stylesheet].original_filename
                     ensure
@@ -246,7 +250,7 @@ module RailsAdmin
                     end
                   else
                     @object.edit_warnings = "Data filename taken"
-                  end                  
+                  end
                 end
               end
 
@@ -264,10 +268,10 @@ module RailsAdmin
                       end
                     end
                     schedule_changes.merge!(old_schedule_values[i].changes)
-                    ["environment_id", "schedule_id", "key"].each {|k| schedule_changes.delete(k) }
+                    ["environment_id", "schedule_id", "key"].each { |k| schedule_changes.delete(k) }
                     schedule_changes_itemized.merge!(schedule_changes)
-                    schedule_changes.each{ |k,v| schedule_changes_itemized[obj.key.to_s + "." + k] =  schedule_changes_itemized.delete k    }
-                   end
+                    schedule_changes.each { |k, v| schedule_changes_itemized[obj.key.to_s + "." + k] = schedule_changes_itemized.delete k }
+                  end
                   changes.merge!(schedule_changes_itemized)
 
                   # handle Environments property values history. apply updates on the temp copies and read changes
@@ -280,10 +284,10 @@ module RailsAdmin
                       end
                     end
                     env_property_changes.merge!(old_env_property_values[i].changes)
-                    ["environment_id", "environment_property_id", "key"].each {|k| env_property_changes.delete(k) }
+                    ["environment_id", "environment_property_id", "key"].each { |k| env_property_changes.delete(k) }
                     env_property_changes_itemized.merge!(env_property_changes)
-                    env_property_changes.each{ |k,v| env_property_changes_itemized[obj.key.to_s + "." + k] =  env_property_changes_itemized.delete k    }
-                   end
+                    env_property_changes.each { |k, v| env_property_changes_itemized[obj.key.to_s + "." + k] = env_property_changes_itemized.delete k }
+                  end
                   changes.merge!(env_property_changes_itemized)
                 end
 
@@ -299,11 +303,11 @@ module RailsAdmin
                       end
                     end
                     user_property_changes.merge!(old_user_properties_values[i].changes)
-                    ["user_id", "company_id", "id", "key"].each {|k| user_property_changes.delete(k) }
+                    ["user_id", "company_id", "id", "key"].each { |k| user_property_changes.delete(k) }
                     user_property_changes_itemized.merge!(user_property_changes)
-                    user_property_changes.each{ |k,v| user_property_changes_itemized[obj.key.to_s + "." + k] =  user_property_changes_itemized.delete k }
-                   end
-                   changes.merge!(user_property_changes_itemized)
+                    user_property_changes.each { |k, v| user_property_changes_itemized[obj.key.to_s + "." + k] = user_property_changes_itemized.delete k }
+                  end
+                  changes.merge!(user_property_changes_itemized)
                 end
 
                 if params[:checkboxes].present?
@@ -315,10 +319,6 @@ module RailsAdmin
                     end
                   end
                 end
-
-                
-
-
 
                 @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                 @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
@@ -341,6 +341,16 @@ module RailsAdmin
         register_instance_option :pjax? do
           false
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = bindings[:controller].current_ability.can? :"update_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+          end
+          is_visible
+        end
+
       end
     end
   end

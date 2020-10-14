@@ -106,6 +106,16 @@ module RailsAdmin
         register_instance_option :link_icon do
           'icon-list-alt'
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = bindings[:controller].current_ability.can? :"asset_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+          end
+          is_visible
+        end
+
       end
     end
   end
