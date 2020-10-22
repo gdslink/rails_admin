@@ -160,7 +160,7 @@ module RailsAdmin
                     Mongoid.override_client(:default)
                   end
                   pattern.errors.full_messages.each do |message|
-                    flash[:error] = message
+                    flash.now[:error] = message
                   end
                 end
                 if params[:pattern][:pattern]
