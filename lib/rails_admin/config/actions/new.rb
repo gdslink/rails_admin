@@ -15,7 +15,7 @@ module RailsAdmin
         register_instance_option :controller do
           proc do
             if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
-              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"update_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"create_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
             end
 
             if request.get? # NEW
