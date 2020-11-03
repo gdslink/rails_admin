@@ -111,7 +111,7 @@ module RailsAdmin
           is_visible = authorized?
           if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
             model_name = bindings[:controller].abstract_model.model_name
-            is_visible = bindings[:controller].current_ability.can? :"asset_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+            is_visible = (bindings[:controller].current_ability.can? :"asset_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]) && model_name == "PictureAsset"
           end
           is_visible
         end

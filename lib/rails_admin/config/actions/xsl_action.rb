@@ -17,6 +17,11 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+
+            if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"create_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+            end
+
             if request.get? # EDIT
               respond_to do |format|
                 format.html { render @action.template_name }
@@ -104,7 +109,7 @@ module RailsAdmin
                     File.delete(file.path)
                     end
                   else 
-                    flash[:error] = "Upload must be an ZIP file"
+                    flash[:error] = "Upload must be a ZIP file"
                   end
                 else
                   flash[:error] = "Data file name is already taken"
@@ -123,7 +128,7 @@ module RailsAdmin
           is_visible = authorized?
           if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
             model_name = bindings[:controller].abstract_model.model_name
-            is_visible = bindings[:controller].current_ability.can? :"xsl_action__#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+            is_visible = (bindings[:controller].current_ability.can? :"xsl_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record] ) && model_name == "XslSheet"
           end
           is_visible
         end
