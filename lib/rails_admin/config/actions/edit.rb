@@ -79,10 +79,9 @@ module RailsAdmin
                 if params[:pattern][:pattern_type] == "pdf"
                   @object.html_block_id = HtmlBlock.where(:application_id => User.current_user.current_scope['Application'], :name => params[:email][:pattern_id]).pluck(:id)[0]
                   @object.html_block_key = HtmlBlock.where(:application_id => User.current_user.current_scope['Application'], :name => params[:email][:pattern_id]).pluck(:key)[0]
-                  @object.pattern_file_name = ""
+                  # @object.pattern_file_name = ""
                 else
                   if params[:pattern_file_input]
-
                     tempFile = params[:pattern_file_input].tempfile
                     file = File.open(tempFile)
 
@@ -115,8 +114,8 @@ module RailsAdmin
                       ensure
                         Mongoid.override_client(:default)
                       end
-                      @object.html_block_id = nil
-                      @object.html_block_key = ""
+                      # @object.html_block_id = nil
+                      # @object.html_block_key = ""
                     else
                       flash[:error] = "Upload must be an rtf/csv"
                     end
