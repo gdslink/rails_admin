@@ -79,7 +79,13 @@ module RailsAdmin
                 if params[:pattern][:pattern_type] == "pdf"
                   @object.html_block_id = HtmlBlock.where(:application_id => User.current_user.current_scope['Application'], :name => params[:email][:pattern_id]).pluck(:id)[0]
                   @object.html_block_key = HtmlBlock.where(:application_id => User.current_user.current_scope['Application'], :name => params[:email][:pattern_id]).pluck(:key)[0]
-                  # @object.pattern_file_name = ""
+                  if @object.has_attribute?(:pattern_file_id)
+                    @object.unset(:pattern_file_id)
+                    @object.unset(:pattern_file_name)
+                    @object.unset(:pattern_content_type)
+                    @object.unset(:pattern_file_size)
+                    @object.unset(:aes_key)
+                  end
                 else
                   if params[:pattern_file_input]
                     tempFile = params[:pattern_file_input].tempfile
@@ -111,11 +117,15 @@ module RailsAdmin
                         grid_file = grid_fs.put(file.path)
                         @object.pattern_file_id = grid_file.id
                         @object.pattern_file_name = params[:pattern_file_input].original_filename
+                        @object.pattern_file_size = File.size(tempFile).to_i
+                        @object.pattern_content_type = params[:pattern_file_input].content_type
                       ensure
                         Mongoid.override_client(:default)
                       end
-                      # @object.html_block_id = nil
-                      # @object.html_block_key = ""
+                      if @object.has_attribute?(:html_block_id)
+                        @object.unset(:html_block_id)
+                        @object.unset(:html_block_key)
+                      end
                     else
                       flash[:error] = "Upload must be an rtf/csv"
                     end
