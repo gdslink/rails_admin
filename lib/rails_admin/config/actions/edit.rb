@@ -74,6 +74,15 @@ module RailsAdmin
               changes.delete(:authentication_token)
               changes.each { |k, v| changes.delete(k) if v[0] == v[1] } # delete the attribute from changes hash if old values = new values
 
+              if @model_name == "HtmlBlock"
+                oldHtmlKey = HtmlBlock.where(:id => params[:id]).pluck(:key).first
+                patterns = Pattern.patternScope.where(:html_block_key => oldHtmlKey)
+                patterns.each do |pat|
+                  pat.html_block_key = @object.key
+                  pat.update
+                end
+              end
+
               if @model_name == "Pattern"
 
                 if params[:pattern][:pattern_type] == "pdf"
