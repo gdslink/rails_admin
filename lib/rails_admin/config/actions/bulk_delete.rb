@@ -35,7 +35,7 @@ module RailsAdmin
                   if @abstract_model.model_name == "XslSheet"
                     stylesheet_ids = []
                     @objects.each do |x|
-                      stylesheet_ids.push(x.stylesheet_id)
+                      stylesheet_ids.push([x.stylesheet_id, x.data_file_name[0..-5]])
                     end
                   end
                   processed_objects = @abstract_model.destroy(@objects)
@@ -55,11 +55,16 @@ module RailsAdmin
                   if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                     Mongoid.override_client(:attachDb)
                   end
-                  stylesheet_ids.each do |s|
-                    grid_fs = Mongoid::GridFs
-                    grid_fs.delete(s.to_s)
+                  begin
+                    stylesheet_ids.each do |s|
+                      grid_fs = Mongoid::GridFs
+                      grid_fs.delete(s[0].to_s)
+                      path = Rails.root.join('public', 'xsl', @company.key, s[1])
+                      FileUtils.rm_rf(path) 
+                    end
+                  ensure
+                    Mongoid.override_client(:default)
                   end
-                  Mongoid.override_client(:default)
                 end
                 flash[:success] = t('admin.flash.successful', name: pluralize(destroyed.count, @model_config.label), action: t('admin.actions.delete.done')) unless destroyed.empty?
                 flash[:error] = t('admin.flash.error', name: pluralize(not_destroyed.count, @model_config.label), action: t('admin.actions.delete.done')) unless not_destroyed.empty?
@@ -77,6 +82,16 @@ module RailsAdmin
         register_instance_option :bulkable? do
           true
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = bindings[:controller].current_ability.can? :"destroy_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]
+          end
+          is_visible
+        end
+
       end
     end
   end

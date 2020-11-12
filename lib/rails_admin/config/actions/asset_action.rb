@@ -34,38 +34,43 @@ module RailsAdmin
                   if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                     Mongoid.override_client(:attachDb)
                   end
-                  grid_fs = Mongoid::GridFS
-                  thumbFilename = params[:picture].original_filename
-                  line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
-                  line.run(in: tempFile.path, resolution: "30x30", out: thumbFilename)
-                  thumbFile = File.open(thumbFilename)
+                  begin
+                    grid_fs = Mongoid::GridFS
+                    thumbFilename = params[:picture].original_filename
+                    line = Terrapin::CommandLine.new("convert", ":in -scale :resolution :out")
+                    line.run(in: tempFile.path, resolution: "30x30", out: thumbFilename)
+                    thumbFile = File.open(thumbFilename)
 
 
-                  #Encryption
-                  public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                  public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                  cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                  cipher.encrypt
-                  key = cipher.random_key
-                  encThumbData = cipher.update(File.read(thumbFile))
-                  File.open(thumbFile, 'wb') do |f|
-                    f.write(encThumbData)
+                    #Encryption
+                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                    cipher.encrypt
+                    key = cipher.random_key
+                    encThumbData = cipher.update(File.read(thumbFile))
+                    encThumbData << cipher.final
+                    File.open(thumbFile, 'wb') do |f|
+                      f.write(encThumbData)
+                    end
+                    encData = cipher.update(File.read(file))
+                    encData << cipher.final
+                    File.open(file, 'wb') do |f|
+                      f.write(encData)
+                    end
+                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                    picture_asset.aes_key = encrypted_aes
+
+                    #End of encryption block
+                    grid_file = grid_fs.put(file.path)
+                    picture_asset.data_file_size = File.size(tempFile).to_i
+                    picture_asset.company_id = params[:Company].to_i
+                    picture_asset.image_id = grid_file.id
+                    grid_thumb_file = grid_fs.put(thumbFile.path)
+                    picture_asset.thumb_image_id = grid_thumb_file.id
+                  ensure
+                    Mongoid.override_client(:default)
                   end
-                  encData = cipher.update(File.read(file))
-                  File.open(file, 'wb') do |f|
-                    f.write(encData)
-                  end
-                  encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                  picture_asset.aes_key = encrypted_aes
-
-                  #End of encryption block
-                  grid_file = grid_fs.put(file.path)
-                  picture_asset.data_file_size = File.size(tempFile).to_i
-                  picture_asset.company_id = params[:Company].to_i
-                  picture_asset.image_id = grid_file.id
-                  grid_thumb_file = grid_fs.put(thumbFile.path)
-                  picture_asset.thumb_image_id = grid_thumb_file.id
-                  Mongoid.override_client(:default)
                   thumbFile.close
                   File.delete(thumbFile.path)
                   if picture_asset.save
@@ -78,9 +83,12 @@ module RailsAdmin
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
-                    grid_fs.delete(picture_asset.image_id)
-                    grid_fs.delete(picture_asset.thumb_image_id)
-                    Mongoid.override_client(:default)
+                    begin
+                      grid_fs.delete(picture_asset.image_id)
+                      grid_fs.delete(picture_asset.thumb_image_id)
+                    ensure
+                      Mongoid.override_client(:default)
+                    end
                     picture_asset.errors.full_messages.each do |message|
                       flash[:error] = message
                     end
@@ -98,6 +106,16 @@ module RailsAdmin
         register_instance_option :link_icon do
           'icon-list-alt'
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = (bindings[:controller].current_ability.can? :"asset_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]) && model_name == "PictureAsset"
+          end
+          is_visible
+        end
+
       end
     end
   end

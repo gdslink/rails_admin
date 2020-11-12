@@ -8,14 +8,14 @@ module RailsAdmin
       options = {:model_name => model_name}.merge(opts)
       options.merge!(current_scope_parameters)
       case action
-        when :dashboard
-          dashboard_path(options)
-        when :edit
-          edit_path(options)
-        when :list
-          list_path(options)
-        when :new
-          new_path(options)
+      when :dashboard
+        dashboard_path(options)
+      when :edit
+        edit_path(options)
+      when :list
+        list_path(options)
+      when :new
+        new_path(options)
       end
     end
 
@@ -34,8 +34,8 @@ module RailsAdmin
 
     def current_action?(action, abstract_model = @abstract_model, object = @object)
       @action.custom_key == action.custom_key &&
-        abstract_model.try(:to_param) == @abstract_model.try(:to_param) &&
-        (@object.try(:persisted?) ? @object.id == object.try(:id) : !object.try(:persisted?))
+          abstract_model.try(:to_param) == @abstract_model.try(:to_param) &&
+          (@object.try(:persisted?) ? @object.id == object.try(:id) : !object.try(:persisted?))
     end
 
     def action(key, abstract_model = nil, object = nil)
@@ -78,10 +78,10 @@ module RailsAdmin
       action = RailsAdmin::Config::Actions.find(action.to_sym) if action.is_a?(Symbol) || action.is_a?(String)
 
       capitalize_first_letter I18n.t(
-        "admin.actions.#{action.i18n_key}.#{label}",
-        model_label: model_config && model_config.label,
-        model_label_plural: model_config && model_config.label_plural,
-        object_label: model_config && object.try(model_config.object_label_method),
+          "admin.actions.#{action.i18n_key}.#{label}",
+          model_label: model_config && model_config.label,
+          model_label_plural: model_config && model_config.label_plural,
+          object_label: model_config && object.try(model_config.object_label_method),
       )
     end
 
@@ -116,7 +116,7 @@ module RailsAdmin
     def navigation(nodes_stack, nodes, level = 0)
       nodes.collect do |node|
         model_param = node.abstract_model.to_param
-        url         = url_for(action: :index, controller: 'rails_admin/main', model_name: model_param)
+        url = url_for(action: :index, controller: 'rails_admin/main', model_name: model_param)
         level_class = " nav-level-#{level}" if level > 0
         nav_icon = node.navigation_icon ? %(<i class="#{node.navigation_icon}"></i>).html_safe : ''
         # li = content_tag :a, data: {model: model_param}, class: 'item' do
@@ -137,18 +137,18 @@ module RailsAdmin
           o = a.send(:eval, 'bindings[:object]')
           content_tag(:li, class: current_action?(a, am, o) && 'active') do
             crumb = begin
-              if !current_action?(a, am, o)
-                if a.http_methods.include?(:get)
-                  link_to rails_admin.url_for(action: a.action_name, controller: 'rails_admin/main', model_name: am.try(:to_param), id: (o.try(:persisted?) && o.try(:id) || nil), Application: ( @application ? @application.id : nil ), Company: ( @company ? @company.id : nil )), class: 'pjax' do
-                    wording_for(:breadcrumb, a, am, o)
-                  end
-                else
-                  content_tag(:span, wording_for(:breadcrumb, a, am, o))
-                end
-              else
-                wording_for(:breadcrumb, a, am, o)
-              end
-            end
+                      if !current_action?(a, am, o)
+                        if a.http_methods.include?(:get)
+                          link_to rails_admin.url_for(action: a.action_name, controller: 'rails_admin/main', model_name: am.try(:to_param), id: (o.try(:persisted?) && o.try(:id) || nil), Application: (@application ? @application.id : nil), Company: (@company ? @company.id : nil)), class: 'pjax' do
+                            wording_for(:breadcrumb, a, am, o)
+                          end
+                        else
+                          content_tag(:span, wording_for(:breadcrumb, a, am, o))
+                        end
+                      else
+                        wording_for(:breadcrumb, a, am, o)
+                      end
+                    end
             crumb
           end
         end.reverse.join.html_safe
@@ -156,13 +156,14 @@ module RailsAdmin
     end
 
     # parent => :root, :collection, :member
-    def menu_for(parent, abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
+    def menu_for(parent, abstract_model = nil, object = nil, only_icon = false)
+      # perf matters here (no action view trickery)
       actions = actions(parent, abstract_model, object).select { |a| a.http_methods.include?(:get) }
       actions.collect do |action|
         wording = wording_for(:menu, action)
         %(
           <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if current_action?(action)}">
-            <a class="#{action.pjax? ? 'pjax' : ''}" href="#{url_for(action: action.action_name, controller: 'rails_admin/main', model_name: abstract_model.try(:to_param), id: (object.try(:persisted?) && object.try(:id) || nil),Company:User.current_user.current_scope['Company'].to_s,Application:User.current_user.current_scope['Application'].to_s)}">
+            <a class="#{action.pjax? ? 'pjax' : ''}" href="#{url_for(action: action.action_name, controller: 'rails_admin/main', model_name: abstract_model.try(:to_param), id: (object.try(:persisted?) && object.try(:id) || nil), Company: User.current_user.current_scope['Company'].to_s, Application: User.current_user.current_scope['Application'].to_s)}">
               <i class="#{action.link_icon}"></i>
               <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
             </a>
@@ -176,22 +177,26 @@ module RailsAdmin
       return '' if actions.empty?
       content_tag :li, class: 'dropdown', style: 'float:right' do
         content_tag(:a, class: 'dropdown-toggle', data: {toggle: 'dropdown'}, href: '#') { t('admin.misc.bulk_menu_title').html_safe + ' ' + '<b class="caret"></b>'.html_safe } +
-          content_tag(:ul, class: 'dropdown-menu', style: 'left:auto; right:0;') do
-            actions.collect do |action|
-              content_tag :li do
-                link_to wording_for(:bulk_link, action), '#', onclick: "jQuery('#bulk_action').val('#{action.action_name}'); jQuery('#bulk_form').submit(); return false;"
-              end
-            end.join.html_safe
-          end
+            content_tag(:ul, class: 'dropdown-menu', style: 'left:auto; right:0;') do
+              actions.collect do |action|
+                content_tag :li do
+                  link_to wording_for(:bulk_link, action), '#', onclick: "jQuery('#bulk_action').val('#{action.action_name}'); jQuery('#bulk_form').submit(); return false;"
+                end
+              end.join.html_safe
+            end
       end.html_safe
     end
 
     def flash_alert_class(flash_key)
       case flash_key.to_s
-      when 'error'  then 'alert-danger'
-      when 'alert'  then 'alert-warning'
-      when 'notice' then 'alert-info'
-      else "alert-#{flash_key}"
+      when 'error' then
+        'alert-danger'
+      when 'alert' then
+        'alert-warning'
+      when 'notice' then
+        'alert-info'
+      else
+        "alert-#{flash_key}"
       end
     end
   end

@@ -14,12 +14,13 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+
             if request.get? # EDIT
               respond_to do |format|
                 format.html { render @action.template_name }
                 format.js   { render @action.template_name, layout: false }
               end
-            elsif request.put? # UPDATE
+            elsif request.put?
               if params[:pattern][:pattern]
                 tempFile = params[:pattern][:pattern].tempfile
                 file = File.open(tempFile)
@@ -31,14 +32,27 @@ module RailsAdmin
                 pattern.pattern_file_size = File.size(tempFile).to_i
                 pattern.application_id = params[:Application].to_i
                 pattern.pattern_content_type = params[:pattern][:pattern].content_type
-                if pattern.pattern_type == "csv"
-                  if params[:pattern][:pattern].content_type == "text/csv" || params[:pattern][:pattern].content_type == "application/vnd.ms-excel"
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                      Mongoid.override_client(:attachDb)
+
+                file_mimes = {"csv":["text/csv","text/plain","application/vnd.ms-excel","application/csv"],"rtf":["application/msword","application/rtf","text/rtf"]}
+
+                currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
+
+                if ["csv","rtf"].index(pattern.pattern_type) != nil
+                  if file_mimes[pattern.pattern_type.to_sym].index(currentFileType) != nil
+                    mongodb_attachment_db = CaseCenter::Config::Reader.get('mongodb_attachment_database')
+
+                    if mongodb_attachment_db == nil
+                      raise Exception.new "mongodb_attachment_database not configured"
                     end
+                    Mongoid.override_client(:attachDb)
+
+                    begin
                     grid_fs = Mongoid::GridFS
                     #Encryption
                     public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                    if( !public_key_file )
+                      raise Exception.new "attachments_public_key not configured"
+                    end
                     public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
                     cipher = OpenSSL::Cipher.new('aes-256-cbc')
                     cipher.encrypt
@@ -47,16 +61,18 @@ module RailsAdmin
                     encData << cipher.final
                     #End of Encryption
 
-                    File.open(file, 'wb') do |f|
-                      f.write(encData)
+                      File.open(file, 'wb') do |f|
+                        f.write(encData)
+                      end
+
+                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                      pattern.aes_key = encrypted_aes
+
+                      grid_file = grid_fs.put(file.path)
+                      pattern.pattern_file_id = grid_file.id
+                    ensure
+                      Mongoid.override_client(:default)
                     end
-
-                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                    pattern.aes_key = encrypted_aes
-
-                    grid_file = grid_fs.put(file.path)
-                    pattern.pattern_file_id = grid_file.id
-                    Mongoid.override_client(:default)
                     @object = pattern
                     if pattern.save
                       @object = pattern
@@ -69,58 +85,11 @@ module RailsAdmin
                         if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                           Mongoid.override_client(:attachDb)
                         end
-                        grid_fs.delete(pattern.pattern_file_id)
-                        Mongoid.override_client(:default)
-                      end
-                      pattern.errors.full_messages.each do |message|
-                        flash[:error] = message
-                      end
-                    end
-                    if params[:pattern][:pattern]
-                      File.delete(file.path)
-                    end
-                  else
-                    flash[:error] = "Upload must be a csv"
-                  end
-                elsif pattern.pattern_type == "rtf"
-                  if params[:pattern][:pattern].content_type == "application/rtf" || params[:pattern][:pattern].content_type == "application/msword"
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                      Mongoid.override_client(:attachDb)
-                    end
-                    grid_fs = Mongoid::GridFS
-                    #Encryption
-                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                    cipher.encrypt
-                    key = cipher.random_key
-                    encData = cipher.update(File.read(file))
-                    encData << cipher.final
-                    #End of Encryption
-
-                    File.open(file, 'wb') do |f|
-                      f.write(encData)
-                    end
-
-                    encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                    pattern.aes_key = encrypted_aes
-
-                    grid_file = grid_fs.put(file.path)
-                    pattern.pattern_file_id = grid_file.id
-                    Mongoid.override_client(:default)
-                    if pattern.save
-                      @object = pattern
-                      respond_to do |format|
-                        format.html { redirect_to_on_success }
-                        format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
-                      end
-                    else 
-                      if params[:pattern][:pattern]
-                        if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                          Mongoid.override_client(:attachDb)
+                        begin
+                          grid_fs.delete(pattern.pattern_file_id)
+                        ensure
+                          Mongoid.override_client(:default)
                         end
-                        grid_fs.delete(pattern.pattern_file_id)
-                        Mongoid.override_client(:default)
                       end
                       pattern.errors.full_messages.each do |message|
                         flash[:error] = message
@@ -156,8 +125,11 @@ module RailsAdmin
                     if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
-                    grid_fs.delete(pattern.pattern_file_id)
-                    Mongoid.override_client(:default)
+                    begin
+                      grid_fs.delete(pattern.pattern_file_id)
+                    ensure
+                      Mongoid.override_client(:default)
+                    end
                   end
                   pattern.errors.full_messages.each do |message|
                     flash.now[:error] = message
@@ -174,6 +146,16 @@ module RailsAdmin
         register_instance_option :link_icon do
           'icon-list-alt'
         end
+
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = (bindings[:controller].current_ability.can? :"pattern_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record] ) && model_name == "Pattern"
+          end
+          is_visible
+        end
+
       end
     end
   end

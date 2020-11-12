@@ -1,7 +1,8 @@
 - if ['Screen', "HtmlBlock", "Form", "Email"].include? @model_name
   :javascript
     function disableInputEls(input_container){
-      ["select", "input", "button", "textarea"].forEach( function (element) {
+    input_els = ["select", "input", "button", "textarea"];
+    input_els.forEach( function (element) {
         els = input_container.querySelectorAll(element);
             for (var i = 0; i < els.length; i++) {
               els[i].setAttribute('disabled', 'true')
@@ -56,6 +57,11 @@
                     window.onload = function(e){ 
                       html_iframe = document.getElementById('formIframe');
                       html_innerDoc = html_iframe.contentDocument || html_iframe.contentWindow.document;
+
+                      html_iframe.addEventListener("load", function() {
+                        html_innerDoc = this.contentDocument || this.contentWindow.document;
+                        disableInputEls(html_innerDoc);
+                      });
 
                       if(document.readyState == 'complete'){
                           document.querySelector("#loading").style.display="none";                       

@@ -17,6 +17,11 @@ module RailsAdmin
 
         register_instance_option :controller do
           proc do
+
+            if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"create_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+            end
+
             if request.get? # EDIT
               respond_to do |format|
                 format.html { render @action.template_name }
@@ -24,36 +29,37 @@ module RailsAdmin
               end
 
             elsif request.put? # UPDATE
-              if params[:stylesheet].nil?
-                flash.now[:error] = "An XSL file or folder structure must be uploaded."
-              else
-                tempFile = params[:stylesheet].tempfile
-                file = File.open(tempFile)
+              if(params[:stylesheet]) then
+                if XslSheet.where( :data_file_name => params[:stylesheet].original_filename ).size == 0
+                  tempFile = params[:stylesheet].tempfile
+                  file = File.open(tempFile)
 
                 zipLocation = params[:stylesheet].original_filename[0..-5]
-                if File.directory?(Rails.root.join('public','xsl',zipLocation))
-                  FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                if File.directory?(Rails.root.join('public','xsl',@company.key,zipLocation))
+                  FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                 end
-                Dir.mkdir(Rails.root.join('public','xsl',zipLocation))
+                Dir.mkdir(Rails.root.join('public','xsl',@company.key)) rescue nil
+                  Dir.mkdir(Rails.root.join('public','xsl',@company.key,zipLocation))
                 Zip::File.open(file.path) do |zipFile|
-                  zipFile.each do |file|
-                    if file.ftype == :directory
-                      Dir.mkdir(Rails.root.join('public','xsl',zipLocation,file.name))
-                    else
-                      path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
-                      File.open(path, 'wb') do |f|
-                        f.write(file.get_input_stream.read)
+                  zipFile.each do |curFile|
+                    if curFile.ftype == :file
+                      path = File.join(Rails.root.join('public','xsl',@company.key,zipLocation),curFile.name)
+                      dirname = File.dirname(path)
+                        unless File.directory?(dirname)
+                          FileUtils.mkdir_p(dirname)
+                        endFile.open(path, 'wb') do |f|
+                        f.write(curFile.get_input_stream.read)
                       end
                     end
                   end
                 end
                 stylesheet = XslSheet.new()
                 stylesheet.data_file_name = params[:stylesheet].original_filename
-                stylesheet.company_id = params[:Application].to_i
+                stylesheet.company_id = params[:Company].to_i
                 if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
                   if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                     Mongoid.override_client(:attachDb)
-                  end
+                  endbegin
                   grid_fs = Mongoid::GridFS
 
                   #Encryption
@@ -65,7 +71,7 @@ module RailsAdmin
                   encData = cipher.update(File.read(file))
                   encData << cipher.final
                   #End Encryption
-                  
+
                   File.open(file, 'wb') do |f|
                     f.write(encData)
                   end
@@ -74,32 +80,35 @@ module RailsAdmin
                   stylesheet.entry_point = params[:entryPoint]
                   grid_file = grid_fs.put(file.path)
                   stylesheet.stylesheet_id = grid_file.id
-                  Mongoid.override_client(:default)
-                  if XslSheet.where(data_file_name: params[:stylesheet].original_filename).exists?
-                    oldStylesheet = XslSheet.where(data_file_name: params[:stylesheet].original_filename)
-                    oldStylesheet.update(:entry_point => params[:entryPoint], :stylesheet_id => grid_file.id)
-                  else
+                  ensureMongoid.override_client(:default)
+                  end
                     if stylesheet.save
                       respond_to do |format|
                         format.html { redirect_to_on_success }
                         format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }
                       end
-                    else 
+                    else
                       if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         Mongoid.override_client(:attachDb)
-                      end
-                      grid_fs.delete(stylesheet.stylesheet_id)
-                      Mongoid.override_client(:default)
-                      FileUtils.rm_rf(Rails.root.join('public','xsl',zipLocation))
+                      endbegin
+                      grid_fs.delete(stylesheet.stylesheet_id)ensure
+                      Mongoid.override_client(:default)end
+                      FileUtils.rm_rf(Rails.root.join('public','xsl',@company.key,zipLocation))
                       stylesheet.errors.full_messages.each do |message|
                         flash.now[:error] = message
                       end
                     file.close
                     File.delete(file.path)
-                    end
+
                   end
-                else 
-                  flash.now[:error] = "Upload must be an XSL file"
+                else
+                  flash.now[:error] = "Upload must be a ZIP file"
+                  end
+                else
+                  flash[:error] = "Data file name is already taken"
+                end
+              else
+                flash.now[:error] = "An XSL file or folder structure must be uploaded."
                 end
               end
             end
@@ -109,6 +118,15 @@ module RailsAdmin
         register_instance_option :link_icon do
           'icon-list-alt'
         end
+        register_instance_option :visible? do
+          is_visible = authorized?
+          if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
+            model_name = bindings[:controller].abstract_model.model_name
+            is_visible = (bindings[:controller].current_ability.can? :"xsl_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record] ) && model_name == "XslSheet"
+          end
+          is_visible
+        end
+
       end
     end
   end
