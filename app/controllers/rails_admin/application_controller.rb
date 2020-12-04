@@ -69,19 +69,19 @@ module RailsAdmin
     end
 
     def _current_user
+      if CaseCenter::Config::Reader.get('saml_authentication') == false
+        auth_user = instance_eval(&RailsAdmin::Config.current_user_method)
 
-      auth_user = instance_eval(&RailsAdmin::Config.current_user_method)
-
-      if(auth_user) then
-        mfa_enabled = auth_user.roles.map(&:enable_mfa).include? true
-        if ( mfa_enabled and auth_user.gauth_enabled != "1") then
-          sign_out auth_user
-          redirect_to "/"
+        if(auth_user) then
+          mfa_enabled = auth_user.roles.map(&:enable_mfa).include? true
+          if ( mfa_enabled and auth_user.gauth_enabled != "1") then
+            sign_out auth_user
+            redirect_to "/"
+          end
         end
+
+        auth_user
       end
-
-      auth_user
-
     end
 
     private
@@ -116,7 +116,9 @@ module RailsAdmin
     end
 
     def _authorize!
-      instance_eval(&RailsAdmin::Config.authorize_with)
+      if CaseCenter::Config::Reader.get('saml_authentication') == false
+        instance_eval(&RailsAdmin::Config.authorize_with)
+      end
     end
 
     def _scope_current_user!
