@@ -268,6 +268,9 @@ module RailsAdmin
           if ( m == "Application" ) then
             add_scope = :company_user
           end
+          if ( m == "Pattern" ) then
+            add_scope = :application_pattern
+          end
         cached = Rails.cache.fetch(Digest::SHA1.hexdigest("admin/global_search/#{current_ability.cache_key}/#{params[:query]}/#{@current_scope_parameters.to_s}/#{cache_key(m)}")) do
           model_result = []
           @model_config=RailsAdmin.config(m)
