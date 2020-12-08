@@ -19,7 +19,7 @@ module RailsAdmin
           proc do
 
             if !@action.bindings[:controller].current_user.is_root && !@action.bindings[:controller].current_user.is_admin && !@action.bindings[:abstract_model].try(:model_name).nil?
-              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"create_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Application"][:selected_record]
+              raise CanCan::AccessDenied unless @action.bindings[:controller].current_ability.can? :"xsl_action_#{@abstract_model.model_name}", @action.bindings[:controller].current_scope["Company"][:selected_record]
             end
 
             if request.get? # EDIT
@@ -86,6 +86,7 @@ module RailsAdmin
                       Mongoid.override_client(:default)
                     end
                     if stylesheet.save
+                      @auditing_adapter && @auditing_adapter.create_object(stylesheet, @abstract_model, _current_user)
                       respond_to do |format|
                         format.html { redirect_to_on_success }
                         format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }
