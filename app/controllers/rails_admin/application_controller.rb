@@ -69,10 +69,10 @@ module RailsAdmin
     end
 
     def _current_user
-      if CaseCenter::Config::Reader.get('saml_authentication') == false
+      #if CaseCenter::Config::Reader.get('saml_authentication') == false
         auth_user = instance_eval(&RailsAdmin::Config.current_user_method)
 
-        if(auth_user) then
+        if(CaseCenter::Config::Reader.get('saml_authentication') == false && auth_user) then
           mfa_enabled = auth_user.roles.map(&:enable_mfa).include? true
           if ( mfa_enabled and auth_user.gauth_enabled != "1") then
             sign_out auth_user
@@ -81,7 +81,7 @@ module RailsAdmin
         end
 
         auth_user
-      end
+      #end
     end
 
     private
