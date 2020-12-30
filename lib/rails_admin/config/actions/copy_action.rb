@@ -24,6 +24,7 @@ module RailsAdmin
               @newObject.name = @newObject.name + "_copy_" + x.to_s
               @newObject.key = @newObject.key + "_copy_" + x.to_s
               @newObject.screen_flows = @object.screen_flows
+              @newObject.fields = @object.fields
               if @newObject.save
                 @auditing_adapter && @auditing_adapter.create_object(@newObject, @abstract_model, _current_user)
                 respond_to do |format|
