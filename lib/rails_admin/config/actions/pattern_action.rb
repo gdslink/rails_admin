@@ -75,6 +75,7 @@ module RailsAdmin
                     end
                     @object = pattern
                     if pattern.save
+                      @auditing_adapter && @auditing_adapter.create_object(pattern, @abstract_model, _current_user)
                       @object = pattern
                       respond_to do |format|
                         format.html { redirect_to_on_success }

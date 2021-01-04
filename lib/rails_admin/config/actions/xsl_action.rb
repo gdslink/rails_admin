@@ -85,8 +85,10 @@ module RailsAdmin
                     ensure
                       Mongoid.override_client(:default)
                     end
+                    @object = stylesheet
                     if stylesheet.save
                       @auditing_adapter && @auditing_adapter.create_object(stylesheet, @abstract_model, _current_user)
+                      @object = stylesheet
                       respond_to do |format|
                         format.html { redirect_to_on_success }
                         format.js { render json: {id: stylesheet.id.to_s, label: @model_config.with(object: stylesheet).object_label} }

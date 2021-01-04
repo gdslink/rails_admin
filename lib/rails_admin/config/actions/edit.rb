@@ -62,61 +62,71 @@ module RailsAdmin
                   old_user_properties_values.last.clear_changes_information
                 end
               end
-
               if @model_name == "XslSheet"
                 if params[:entryPoint]
                   @object.entry_point = params[:entryPoint]
                 end
                 if params[:stylesheet]
-                  tempFile = params[:stylesheet].tempfile
-                  file = File.open(tempFile)
+                  if XslSheet.where(:_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename).size == 0
+                    tempFile = params[:stylesheet].tempfile
+                    file = File.open(tempFile)
 
-                  zipLocation = params[:stylesheet].original_filename[0..-5]
-                  FileUtils.mkdir_p(Rails.root.join('public','xsl',zipLocation))
-                  Zip::File.open(file.path) do |zipFile|
-                    zipFile.each do |file|
-                      if file.ftype == :directory
-                        FileUtils.mkdir_p(Rails.root.join('public','xsl',zipLocation,file.name))
-                      else
-                        path = File.join(Rails.root.join('public','xsl',zipLocation),file.name)
-                        File.open(path, 'wb') do |f|
-                          f.write(file)
+                    zipLocation = params[:stylesheet].original_filename[0..-5]
+
+                    if File.directory?(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+                      FileUtils.rm_rf(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+                    end
+
+                    FileUtils.mkdir_p(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+
+                    Zip::File.open(file.path) do |zipFile|
+                      zipFile.each do |curFile|
+                        if curFile.ftype == :file
+                          path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
+                          dirname = File.dirname(path)
+                          unless File.directory?(dirname)
+                            FileUtils.mkdir_p(dirname)
+                          end
+                          File.open(path, 'wb') do |f|
+                            f.write(curFile.get_input_stream.read)
+                          end
                         end
                       end
                     end
-                  end
-                  if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                    Mongoid.override_client(:attachDb)
-                  end
-                  grid_fs = Mongoid::GridFS
 
-                  #Encryption
-                  public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                  public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                  cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                  cipher.encrypt
-                  key = cipher.random_key
-                  encData = cipher.update(File.read(file))
-                  encData << cipher.final
-                  #End Encryption
+                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                      Mongoid.override_client(:attachDb)
+                    end
+                    begin
+                      grid_fs = Mongoid::GridFS
 
-                  File.open(file, 'wb') do |f|
-                    f.write(encData)
-                  end
-                  encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                  @object.aes_key = encrypted_aes
-                  grid_file = grid_fs.put(file.path)
-                  @object.stylesheet_id = grid_file.id
-                  oldPath = Rails.root.join('public', 'xsl', @object.data_file_name[0..-5])
-                  FileUtils.rm_rf(oldPath)
-                  @object.data_file_name = params[:stylesheet].original_filename
-                  Mongoid.override_client(:default)
-                end
-                if @object.save
+                      #Encryption
+                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                      cipher.encrypt
+                      key = cipher.random_key
+                      encData = cipher.update(File.read(file))
+                      encData << cipher.final
+                      #End Encryption
 
-                else
-                  @object.errors.full_messages.each do |message|
-                    flash.now[:error] = message
+                      File.open(file, 'wb') do |f|
+                        f.write(encData)
+                      end
+                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                      @object.aes_key = encrypted_aes
+                      grid_file = grid_fs.put(file.path)
+                      @object.stylesheet_id = grid_file.id
+                      if @object.data_file_name != params[:stylesheet].original_filename
+                        oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
+                        FileUtils.rm_rf(oldPath)
+                      end
+                      @object.data_file_name = params[:stylesheet].original_filename
+                    ensure
+                      Mongoid.override_client(:default)
+                    end
+                  else
+                    @object.edit_warnings = "Data filename taken"
                   end
                 end
               end
@@ -131,6 +141,11 @@ module RailsAdmin
               changes = @object.changes
               changes.delete(:authentication_token)
               changes.each { |k, v| changes.delete(k) if v[0] == v[1] } # delete the attribute from changes hash if old values = new values
+
+              if @model_name == "XslSheet"
+                changes.delete(:aes_key)
+                changes.delete(:stylesheet_id)
+              end
 
               if @model_name == "HtmlBlock"
                 oldHtmlKey = HtmlBlock.where(:id => params[:id]).pluck(:key).first
@@ -257,75 +272,6 @@ module RailsAdmin
                   else
                     # flash[:error] = "Upload must be an image"
                     @object.logo_image_errors = "Upload must be an image"
-                  end
-                end
-              end
-
-              if @model_name == "XslSheet"
-                if params[:entryPoint]
-                  @object.entry_point = params[:entryPoint]
-                end
-                if params[:stylesheet]
-                  if XslSheet.where(:_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename).size == 0
-                    tempFile = params[:stylesheet].tempfile
-                    file = File.open(tempFile)
-
-                    zipLocation = params[:stylesheet].original_filename[0..-5]
-
-                    if File.directory?(Rails.root.join('public', 'xsl', @company.key, zipLocation))
-                      FileUtils.rm_rf(Rails.root.join('public', 'xsl', @company.key, zipLocation))
-                    end
-
-                    FileUtils.mkdir_p(Rails.root.join('public', 'xsl', @company.key, zipLocation))
-
-                    Zip::File.open(file.path) do |zipFile|
-                      zipFile.each do |curFile|
-                        if curFile.ftype == :file
-                          path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
-                          dirname = File.dirname(path)
-                          unless File.directory?(dirname)
-                            FileUtils.mkdir_p(dirname)
-                          end
-                          File.open(path, 'wb') do |f|
-                            f.write(curFile.get_input_stream.read)
-                          end
-                        end
-                      end
-                    end
-
-                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                      Mongoid.override_client(:attachDb)
-                    end
-                    begin
-                      grid_fs = Mongoid::GridFS
-
-                      #Encryption
-                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                      cipher.encrypt
-                      key = cipher.random_key
-                      encData = cipher.update(File.read(file))
-                      encData << cipher.final
-                      #End Encryption
-
-                      File.open(file, 'wb') do |f|
-                        f.write(encData)
-                      end
-                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                      @object.aes_key = encrypted_aes
-                      grid_file = grid_fs.put(file.path)
-                      @object.stylesheet_id = grid_file.id
-                      if @object.data_file_name != params[:stylesheet].original_filename
-                        oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
-                        FileUtils.rm_rf(oldPath)
-                      end
-                      @object.data_file_name = params[:stylesheet].original_filename
-                    ensure
-                      Mongoid.override_client(:default)
-                    end
-                  else
-                    @object.edit_warnings = "Data filename taken"
                   end
                 end
               end
