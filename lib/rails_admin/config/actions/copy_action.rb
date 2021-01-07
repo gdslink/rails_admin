@@ -23,7 +23,12 @@ module RailsAdmin
 
               @newObject.name = @newObject.name + "_copy_" + x.to_s
               @newObject.key = @newObject.key + "_copy_" + x.to_s
-              @newObject.filter_screen_flows = @object.filter_screen_flows
+
+              @object.filter_screen_flows.each do |fsf|
+                newFsf = fsf.dup
+                @newObject.filter_screen_flows.push(newFsf)
+              end
+
               @newObject.fields = @object.fields
               if @newObject.save
                 @auditing_adapter && @auditing_adapter.create_object(@newObject, @abstract_model, _current_user)
