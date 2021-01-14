@@ -208,6 +208,12 @@ module RailsAdmin
                   @object.entry_point = params[:entryPoint]
                 end
                 if params[:stylesheet]
+                  oldZipName = @object.data_file_name+"@_@@_@"+@object.data_file_name
+                  formsUsingZip = Form.where("`code` LIKE ?", "%xsl: \"#{oldZipName}\"%")
+                  formsUsingZip.each do |f|
+                    f.code.sub! "xsl: \""+oldZipName+"\"", "xsl: \""+params[:stylesheet].original_filename+"@_@@_@"+params[:stylesheet].original_filename+'"'
+                    f.save
+                  end
                   if XslSheet.where(:_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename).size == 0
                     tempFile = params[:stylesheet].tempfile
                     file = File.open(tempFile)
