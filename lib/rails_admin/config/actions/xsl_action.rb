@@ -40,24 +40,24 @@ module RailsAdmin
                   end
                   Dir.mkdir(Rails.root.join('public', 'xsl', @company.key)) rescue nil
                   Dir.mkdir(Rails.root.join('public', 'xsl', @company.key, zipLocation))
-                  Zip::File.open(file.path) do |zipFile|
-                    zipFile.each do |curFile|
-                      if curFile.ftype == :file
-                        path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
-                        dirname = File.dirname(path)
-                        unless File.directory?(dirname)
-                          FileUtils.mkdir_p(dirname)
-                        end
-                        File.open(path, 'wb') do |f|
-                          f.write(curFile.get_input_stream.read)
+                  if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
+                    Zip::File.open(file.path) do |zipFile|
+                      zipFile.each do |curFile|
+                        if curFile.ftype == :file
+                          path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
+                          dirname = File.dirname(path)
+                          unless File.directory?(dirname)
+                            FileUtils.mkdir_p(dirname)
+                          end
+                          File.open(path, 'wb') do |f|
+                            f.write(curFile.get_input_stream.read)
+                          end
                         end
                       end
                     end
-                  end
-                  stylesheet = XslSheet.new()
-                  stylesheet.data_file_name = params[:stylesheet].original_filename
-                  stylesheet.company_id = params[:Company].to_i
-                  if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
+                    stylesheet = XslSheet.new()
+                    stylesheet.data_file_name = params[:stylesheet].original_filename
+                    stylesheet.company_id = params[:Company].to_i
                     if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end

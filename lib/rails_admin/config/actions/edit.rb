@@ -67,66 +67,70 @@ module RailsAdmin
                   @object.entry_point = params[:entryPoint]
                 end
                 if params[:stylesheet]
-                  if XslSheet.where(:_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename).size == 0
-                    tempFile = params[:stylesheet].tempfile
-                    file = File.open(tempFile)
+                  if params[:stylesheet].content_type == "application/zip" || params[:stylesheet].content_type == "application/x-zip-compressed"
+                    if XslSheet.where(:_id.ne => @object.id, :data_file_name => params[:stylesheet].original_filename).size == 0
+                      tempFile = params[:stylesheet].tempfile
+                      file = File.open(tempFile)
 
-                    zipLocation = params[:stylesheet].original_filename[0..-5]
+                      zipLocation = params[:stylesheet].original_filename[0..-5]
 
-                    if File.directory?(Rails.root.join('public', 'xsl', @company.key, zipLocation))
-                      FileUtils.rm_rf(Rails.root.join('public', 'xsl', @company.key, zipLocation))
-                    end
+                      if File.directory?(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+                        FileUtils.rm_rf(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+                      end
 
-                    FileUtils.mkdir_p(Rails.root.join('public', 'xsl', @company.key, zipLocation))
+                      FileUtils.mkdir_p(Rails.root.join('public', 'xsl', @company.key, zipLocation))
 
-                    Zip::File.open(file.path) do |zipFile|
-                      zipFile.each do |curFile|
-                        if curFile.ftype == :file
-                          path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
-                          dirname = File.dirname(path)
-                          unless File.directory?(dirname)
-                            FileUtils.mkdir_p(dirname)
-                          end
-                          File.open(path, 'wb') do |f|
-                            f.write(curFile.get_input_stream.read)
+                      Zip::File.open(file.path) do |zipFile|
+                        zipFile.each do |curFile|
+                          if curFile.ftype == :file
+                            path = File.join(Rails.root.join('public', 'xsl', @company.key, zipLocation), curFile.name)
+                            dirname = File.dirname(path)
+                            unless File.directory?(dirname)
+                              FileUtils.mkdir_p(dirname)
+                            end
+                            File.open(path, 'wb') do |f|
+                              f.write(curFile.get_input_stream.read)
+                            end
                           end
                         end
                       end
-                    end
 
-                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                      Mongoid.override_client(:attachDb)
-                    end
-                    begin
-                      grid_fs = Mongoid::GridFS
-
-                      #Encryption
-                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                      cipher.encrypt
-                      key = cipher.random_key
-                      encData = cipher.update(File.read(file))
-                      encData << cipher.final
-                      #End Encryption
-
-                      File.open(file, 'wb') do |f|
-                        f.write(encData)
+                      if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                        Mongoid.override_client(:attachDb)
                       end
-                      encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
-                      @object.aes_key = encrypted_aes
-                      grid_file = grid_fs.put(file.path)
-                      @object.stylesheet_id = grid_file.id
-                      if @object.data_file_name != params[:stylesheet].original_filename
-                        oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
-                        FileUtils.rm_rf(oldPath)
+                      begin
+                        grid_fs = Mongoid::GridFS
+
+                        #Encryption
+                        public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                        public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                        cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                        cipher.encrypt
+                        key = cipher.random_key
+                        encData = cipher.update(File.read(file))
+                        encData << cipher.final
+                        #End Encryption
+
+                        File.open(file, 'wb') do |f|
+                          f.write(encData)
+                        end
+                        encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
+                        @object.aes_key = encrypted_aes
+                        grid_file = grid_fs.put(file.path)
+                        @object.stylesheet_id = grid_file.id
+                        if @object.data_file_name != params[:stylesheet].original_filename
+                          oldPath = Rails.root.join('public', 'xsl', @company.key, @object.data_file_name[0..-5])
+                          FileUtils.rm_rf(oldPath)
+                        end
+                        @object.data_file_name = params[:stylesheet].original_filename
+                      ensure
+                        Mongoid.override_client(:default)
                       end
-                      @object.data_file_name = params[:stylesheet].original_filename
-                    ensure
-                      Mongoid.override_client(:default)
+                    else
+                      @object.edit_warnings = "Data filename taken"
                     end
                   else
-                    @object.edit_warnings = "Data filename taken"
+                    @object.edit_warnings = "Upload must be a ZIP file"
                   end
                 end
               end
@@ -277,7 +281,6 @@ module RailsAdmin
               end
 
               if @object.save
-
                 @object.reload
                 if @model_name == "Environment"
                   # handle Environment's schedule values history. apply updates on the temp copies and read changes
