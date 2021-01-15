@@ -259,6 +259,8 @@ module RailsAdmin
 
     def global_search
       result = []
+      RailsAdmin::Config.reset_model(XslSheet) # required for xsl when selected company got changed
+
       RailsAdmin.config.included_models.each do |m|
         next if m == "Company" 
           add_scope = nil
@@ -267,7 +269,10 @@ module RailsAdmin
           end
           if ( m == "Application" ) then
             add_scope = :company_user
-          end
+          end          
+          if ( m == "PictureAsset" ) then
+            add_scope = :companyId
+          end          
           if ( m == "Pattern" ) then
             add_scope = :application_pattern
           end
@@ -276,11 +281,17 @@ module RailsAdmin
           @model_config=RailsAdmin.config(m)
 
           list_entries(@model_config, :index, add_scope ).each do |e|
-            if e.respond_to?(:name)
+            if e.respond_to?(:name) 
               model_result << {
                   :label => e.name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
               }
+              next
             end
+            if e.respond_to?(:data_file_name)
+              model_result << {
+                  :label => e.data_file_name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => m == "PictureAsset" ? show_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name)) : edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
+              }
+            end            
           end
 
           model_result
@@ -443,7 +454,8 @@ module RailsAdmin
       options = options.merge(page: (params[Kaminari.config.param_name] || 1).to_i, per: (params[:per] || model_config.list.items_per_page)) if pagination
       options = options.merge(include: associations) unless associations.blank?
       options = options.merge(get_sort_hash(model_config))
-      options = options.merge(query: params[:query]) if params[:query].present?
+      options = options.merge(query: params[:query]) if params[:query].present?      
+      options = options.merge(query: params[:query].gsub("_", "\\_")) if (model_config.abstract_model.adapter == :active_record  && params[:query].present? ) # escape underscore for MySQL's like %%
       options = options.merge(filters: params[:f]) if params[:f].present?
       options = options.merge(bulk_ids: params[:bulk_ids]) if params[:bulk_ids]
       model_config.abstract_model.all(options, scope)
