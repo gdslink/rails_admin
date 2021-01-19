@@ -259,7 +259,6 @@ module RailsAdmin
 
     def global_search
       result = []
-      RailsAdmin::Config.reset_model(XslSheet) # required for xsl when selected company got changed
 
       RailsAdmin.config.included_models.each do |m|
         next if m == "Company" 
@@ -450,6 +449,7 @@ module RailsAdmin
 
     def get_collection(model_config, scope, pagination)
       associations = model_config.list.fields.select { |f| f.type == :belongs_to_association && !f.polymorphic? }.collect { |f| f.association.name }
+      relod_xsl_model_config if model_config.abstract_model.model_name == "XslSheet" # required in case user has changed current selected company
       options = {}
       options = options.merge(page: (params[Kaminari.config.param_name] || 1).to_i, per: (params[:per] || model_config.list.items_per_page)) if pagination
       options = options.merge(include: associations) unless associations.blank?
@@ -480,6 +480,49 @@ module RailsAdmin
         end
         # Delete fields that are blank
         @attributes[key] = nil if value.blank?
+      end
+    end
+
+
+    def relod_xsl_model_config
+      RailsAdmin.config do |c|
+        # XslSheet
+        c.model XslSheet do
+          label Proc.new {"Xsl Sheet"}
+          navigation_label Proc.new {I18n.t('navigation.actions')}
+          weight 303
+          navigation_icon 'fa fa-file-excel-o'
+          list do
+            Mongoid.override_client(:default)
+            scopes [:companyIdScope]
+            field :data_file_name
+            field :updated_at
+            field :aes_key do
+              queryable false
+              visible false
+            end
+          end
+          edit do
+            field :prevStylesheet do
+              label Proc.new{"Previous XSL"}
+              render do
+                bindings[:view].render :partial => "admin/xsl_sheets/xsl_prev_sheet"
+              end
+            end
+            field :stylesheet do
+              label Proc.new{"XSL Files"}
+              render do 
+                bindings[:view].render :partial => "admin/xsl_sheets/xsl_sheet"
+              end
+            end
+            field :entryPoint do
+              label Proc.new{"Entry Point"}
+              render do 
+                bindings[:view].render :partial => "admin/xsl_sheets/xsl_entry_input"
+              end
+            end
+          end
+        end
       end
     end
   end
