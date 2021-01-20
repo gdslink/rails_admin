@@ -74,7 +74,7 @@
     .form-group.control-group
       %label.col-sm-2.control-label{for: "csv_options_generator_col_sep"}= t('admin.export.csv.col_sep')
       .col-sm-10.controls
-        = select_tag 'csv_options[generator][col_sep]', options_for_select({ '' => t('admin.export.csv.default_col_sep'), "<comma> ','" => ',', "<semicolon> ';'" => ';', '<tabs>' => "'\t'" }), placeholder: t('admin.misc.search'), :'data-enumeration' => true
+        = select_tag 'csv_options[generator][col_sep]', options_for_select({ "<comma> ','" => ',', "<semicolon> ';'" => ';', '<tabs>' => "'\t'" }), include_blank: true, placeholder: t('admin.misc.search'), :'data-enumeration' => true 
         %p.help-block= t('admin.export.csv.col_sep_help', value: t('admin.export.csv.default_col_sep'))
 
   .form-group.form-actions
