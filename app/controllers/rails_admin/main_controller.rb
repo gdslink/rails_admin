@@ -263,6 +263,7 @@ module RailsAdmin
 
     def global_search
       result = []
+
       RailsAdmin.config.included_models.each do |m|
         next if m == "Company" 
           add_scope = nil
@@ -271,7 +272,10 @@ module RailsAdmin
           end
           if ( m == "Application" ) then
             add_scope = :company_user
-          end
+          end          
+          if ( m == "PictureAsset" ) then
+            add_scope = :companyId
+          end          
           if ( m == "Pattern" ) then
             add_scope = :application_pattern
           end
@@ -280,11 +284,17 @@ module RailsAdmin
           @model_config=RailsAdmin.config(m)
 
           list_entries(@model_config, :index, add_scope ).each do |e|
-            if e.respond_to?(:name)
+            if e.respond_to?(:name) 
               model_result << {
                   :label => e.name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
               }
+              next
             end
+            if e.respond_to?(:data_file_name)
+              model_result << {
+                  :label => e.data_file_name , :class => Common::MENU_LIST[e.class.model_name.to_s], :model_name => e.class.model_name.to_s, :category => e.class.model_name.human, :url => m == "PictureAsset" ? show_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name)) : edit_url(@current_scope_parameters.merge(:id => e.id, :model_name => e.class.model_name))
+              }
+            end            
           end
 
           model_result
@@ -443,11 +453,13 @@ module RailsAdmin
 
     def get_collection(model_config, scope, pagination)
       associations = model_config.list.fields.select { |f| f.type == :belongs_to_association && !f.polymorphic? }.collect { |f| f.association.name }
+      relod_xsl_model_config if model_config.abstract_model.model_name == "XslSheet" # required in case user has changed current selected company
       options = {}
       options = options.merge(page: (params[Kaminari.config.param_name] || 1).to_i, per: (params[:per] || model_config.list.items_per_page)) if pagination
       options = options.merge(include: associations) unless associations.blank?
       options = options.merge(get_sort_hash(model_config))
-      options = options.merge(query: params[:query]) if params[:query].present?
+      options = options.merge(query: params[:query]) if params[:query].present?      
+      options = options.merge(query: params[:query].gsub("_", "\\_")) if (model_config.abstract_model.adapter == :active_record  && params[:query].present? ) # escape underscore for MySQL's like %%
       options = options.merge(filters: params[:f]) if params[:f].present?
       options = options.merge(bulk_ids: params[:bulk_ids]) if params[:bulk_ids]
       model_config.abstract_model.all(options, scope)
@@ -472,6 +484,49 @@ module RailsAdmin
         end
         # Delete fields that are blank
         @attributes[key] = nil if value.blank?
+      end
+    end
+
+
+    def relod_xsl_model_config
+      RailsAdmin.config do |c|
+        # XslSheet
+        c.model XslSheet do
+          label Proc.new {"Xsl Sheet"}
+          navigation_label Proc.new {I18n.t('navigation.actions')}
+          weight 303
+          navigation_icon 'fa fa-file-excel-o'
+          list do
+            Mongoid.override_client(:default)
+            scopes [:companyIdScope]
+            field :data_file_name
+            field :updated_at
+            field :aes_key do
+              queryable false
+              visible false
+            end
+          end
+          edit do
+            field :prevStylesheet do
+              label Proc.new{"Previous XSL"}
+              render do
+                bindings[:view].render :partial => "admin/xsl_sheets/xsl_prev_sheet"
+              end
+            end
+            field :stylesheet do
+              label Proc.new{"XSL Files"}
+              render do 
+                bindings[:view].render :partial => "admin/xsl_sheets/xsl_sheet"
+              end
+            end
+            field :entryPoint do
+              label Proc.new{"Entry Point"}
+              render do 
+                bindings[:view].render :partial => "admin/xsl_sheets/xsl_entry_input"
+              end
+            end
+          end
+        end
       end
     end
   end

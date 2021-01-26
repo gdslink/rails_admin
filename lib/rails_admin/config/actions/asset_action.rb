@@ -59,7 +59,6 @@ module RailsAdmin
                     cipher2.key = key
                     encData = cipher2.update(File.read(file))
                     encData << cipher2.final
-                    
                     File.open(file, 'wb') do |f|
                       f.write(encData)
                     end
