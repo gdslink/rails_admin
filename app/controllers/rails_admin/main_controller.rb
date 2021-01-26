@@ -209,8 +209,12 @@ module RailsAdmin
                 File.open(thumbFile, 'wb') do |f|
                   f.write(encThumbData)
                 end
-                encData = cipher.update(File.read(file))
-                encData << cipher.final
+
+                cipher2 = OpenSSL::Cipher.new('aes-256-cbc')
+                cipher2.encrypt
+                cipher2.key = key
+                encData = cipher2.update(File.read(file))
+                encData << cipher2.final
 
                 File.open("#{Rails.root}/tmp/#{normalizedB}_encrypted", "wb") {|f| f.write(encData) }
                 file_encrypted = File.open("#{Rails.root}/tmp/#{normalizedB}_encrypted")
