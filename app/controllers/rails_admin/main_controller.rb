@@ -187,7 +187,7 @@ module RailsAdmin
 
             picture_asset.data_file_name = normalizedB
             picture_asset.data_content_type = MIME::Types.type_for("#{Rails.root}/tmp/#{normalizedB}").first.content_type
-            if(["image/png", "image/jpeg", "image/jpg", "image/gif", "image/tiff"].include? picture_asset.data_content_type)
+            if(ASSET_TYPE_ALLOWED.include? picture_asset.data_content_type)
               begin
                 if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                   Mongoid.override_client(:attachDb)
