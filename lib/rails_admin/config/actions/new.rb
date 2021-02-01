@@ -47,11 +47,9 @@ module RailsAdmin
                     file = File.open(tempFile)
                     picture_asset = PictureAsset.new
                     picture_asset.data_file_name = params[:picture].original_filename
-                    picture_asset.data_content_type = params[:picture].content_type
-                    if (["image/png", "image/jpeg", "image/jpg", "image/gif"].include? picture_asset.data_content_type)
-                      if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                        Mongoid.override_client(:attachDb)
-                      end
+                    picture_asset.data_content_type = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: file.path).strip
+                    if ASSET_TYPE_ALLOWED.include? picture_asset.data_content_type
+                      Mongoid.override_client(:attachDb) if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       begin
                         grid_fs = Mongoid::GridFS
                         thumbFilename = params[:picture].original_filename
