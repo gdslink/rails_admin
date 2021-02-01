@@ -4,6 +4,9 @@
 			<span class="col-sm-2"><label class="control-label" style="float: right;">Upload Image</label></span>
 			%div{:class => "col-sm-10 controls"}
 				= file_field_tag 'picture', :class => "form-control" , required: true
+				%small
+					= "Allowed formats: " + ASSET_TYPE_ALLOWED.to_sentence
+			%br
 			%br
 			%br
 			%br
