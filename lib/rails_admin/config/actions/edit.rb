@@ -224,6 +224,7 @@ module RailsAdmin
                   tempFile = params[:picture].tempfile
                   file = File.open(tempFile)
                   picture_asset = PictureAsset.new
+                  picture_asset.company_id = params[:Company].to_i
                   picture_asset.data_file_name = params[:picture].original_filename
                   picture_asset.data_content_type = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: file.path).strip
                   if ASSET_TYPE_ALLOWED.include? picture_asset.data_content_type
@@ -254,19 +255,17 @@ module RailsAdmin
                       encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
                       picture_asset.aes_key = encrypted_aes
                       #End of Encryption
-
+                    ensure
+                      Mongoid.override_client(:default)
+                    end
+                    if picture_asset.save
                       grid_file = grid_fs.put(file.path)
                       picture_asset.data_file_size = File.size(tempFile).to_i
-                      picture_asset.company_id = params[:Company].to_i
                       picture_asset.image_id = grid_file.id
                       grid_thumb_file = grid_fs.put(thumbFile.path)
                       picture_asset.thumb_image_id = grid_thumb_file.id
                       thumbFile.close
                       File.delete(thumbFile.path)
-                    ensure
-                      Mongoid.override_client(:default)
-                    end
-                    if picture_asset.save
                       @object.logo_image_file_name = grid_thumb_file.id
                     elsif picture_asset.errors.messages.values[0].include? "is already taken"
                       @object.logo_image_errors = "Logo image filename is already taken"
