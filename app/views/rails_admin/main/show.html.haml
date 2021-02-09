@@ -69,6 +69,16 @@
                       disableInputEls(html_innerDoc);
                     }
 
+                - elsif (@model_name == 'Role' and field.name == :admin_permissions)
+                  = field.pretty_value
+                  :javascript
+                    document.querySelectorAll(".admin_permissions_field")[0].parentElement.parentElement.children[1].innerHTML = document.querySelectorAll(".admin_permissions_field")[0].parentElement.parentElement.children[1].innerText
+
+                - elsif (@model_name == 'Role' and field.name == :client_permissions)
+                  =field.pretty_value
+                  :javascript
+                    document.querySelectorAll(".client_permissions_field")[0].parentElement.parentElement.children[1].innerHTML = document.querySelectorAll(".client_permissions_field")[0].parentElement.parentElement.children[1].innerText
+
                 -else
                   = field.pretty_value
 
