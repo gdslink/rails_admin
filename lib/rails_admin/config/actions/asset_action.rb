@@ -78,6 +78,7 @@ module RailsAdmin
                   thumbFile.close
                   File.delete(thumbFile.path)
                   if picture_asset.save
+                    invalidate_cache_key(@model_name)
                     @auditing_adapter && @auditing_adapter.create_object(picture_asset, @abstract_model, _current_user)
                     respond_to do |format|
                       format.html { redirect_to_on_success }

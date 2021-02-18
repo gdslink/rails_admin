@@ -139,6 +139,7 @@ module RailsAdmin
                   File.delete(file.path)
                 end
               end
+              invalidate_cache_key(@model_name)
             end
           end
         end

@@ -117,6 +117,7 @@ module RailsAdmin
               else
                 flash.now[:error] = "An XSL file or folder structure must be uploaded."
               end
+              invalidate_cache_key(@model_name)
             end
           end
         end
