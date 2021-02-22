@@ -28,16 +28,6 @@ module RailsAdmin
                          else
                            User.current_user.current_scope['Application'] || nil
                          end
-
-        if abstract_model.to_s == "PictureAsset"
-          create(message: [message].flatten.join(', '),
-           item: object.data_file_name,
-           table: abstract_model.to_s,
-           username: user.try(:email),
-           application_id: application_id
-          )
-          return
-        end  
                                
         create(message: [message].flatten.join(', '),
                item: object.id,
@@ -53,7 +43,7 @@ module RailsAdmin
       end
 
       def history_for_object(abstract_model, object, query, sort, sort_reverse, all, page, per_page = (RailsAdmin::Config.default_items_per_page || 20))
-        history = where(table: abstract_model.to_s, item: object.id)
+        history = where(table: abstract_model.to_s, item: object.id.to_s)
         history_for_model_or_object(history, abstract_model, query, sort, sort_reverse, all, page, per_page)
       end
 

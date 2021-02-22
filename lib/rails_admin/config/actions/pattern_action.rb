@@ -116,6 +116,7 @@ module RailsAdmin
                 pattern.html_block_id = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:id)[0]
                 pattern.html_block_key = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:key)[0]
                 if pattern.save
+                  @auditing_adapter && @auditing_adapter.create_object(pattern, @abstract_model, _current_user)
                   @object = pattern
                   respond_to do |format|
                     format.html { redirect_to_on_success }
