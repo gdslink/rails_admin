@@ -47,5 +47,6 @@
 
 - unless params[:all] || !@history.respond_to?(:current_page)
   = paginate(@history, theme: 'ra-twitter-bootstrap', remote: true)
-  = link_to(t("admin.misc.show_all"), send(path_method, params.merge(all: true)), class: "show-all btn pjax") unless (tc = @history.total_count) <= @history.size || tc > 100
+  .row
+    .col-md-6= link_to(t("admin.misc.show_all"), send(path_method, params.merge(all: true)), class: "show-all btn btn-default clearfix pjax") unless (tc = @history.total_count) <= @history.size || tc > 100
 
