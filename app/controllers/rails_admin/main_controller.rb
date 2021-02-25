@@ -378,6 +378,14 @@ module RailsAdmin
           redirectUrl =  "/admin/xsl_sheet?#{@current_scope_parameters.to_query}&locale=#{cur_locale}"
         end
         redirect_to redirectUrl, flash: redirectNotice
+      when "test_record"
+        redirectUrl = "/admin/test_record"
+        cur_locale = locale.to_s rescue 'en'
+        redirectNotice = {success: notice}
+        if params[:_save]
+          redirectUrl =  "/admin/test_record?#{@current_scope_parameters.to_query}&locale=#{cur_locale}"
+        end
+        redirect_to redirectUrl, flash: redirectNotice
       else
         if params[:_add_another]
           redirect_to new_path(@current_scope_parameters.merge(return_to: params[:return_to])), flash: {success: notice}

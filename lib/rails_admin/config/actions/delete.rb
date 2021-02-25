@@ -27,14 +27,12 @@ module RailsAdmin
             end
 
             if request.get? # DELETE
-
               respond_to do |format|
                 format.html { render @action.template_name }
                 format.js   { render @action.template_name, layout: false }
               end
 
             elsif request.delete? # DESTROY
-
               redirect_path = nil
               @auditing_adapter && @auditing_adapter.delete_object(@object, @abstract_model, _current_user)
               if @object.destroy
@@ -69,6 +67,10 @@ module RailsAdmin
                     grid_fs = Mongoid::GridFS
                     grid_fs.delete(@object.pattern_file_id.to_s)
                     Mongoid.override_client(:default)
+                  end
+                  if @abstract_model.model_name == "TestRecord"
+                    assocRecord = @application.get_mongoid_class.find(@object.record_id)
+                    assocRecord.delete
                   end
                   @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                   flash[:success] = t('admin.flash.successful', name: @model_config.label, action: t('admin.actions.delete.done'))

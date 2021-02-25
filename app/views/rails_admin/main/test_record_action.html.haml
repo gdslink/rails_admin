@@ -1,0 +1,160 @@
+-field_collection = []
+-field_hash = Hash.new
+-Field.where(table_id: [nil, ""]).each do |field|
+  -field_collection.push( field.name )
+  -field_hash[field.name] = field.field_type
+  
+= form_tag('/admin/test_record/test_record_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, :class => "form-horizontal denser") do
+  %fieldset
+    <span class="col-sm-2" > <label class="control-label" for="fieldSelect" style="float: right;" >Select Fields</label> </span><span class="col-sm-1" , id="padding_span", style="padding-right:0px;"></span>
+    %div{:class => "col-sm-9", :style => "padding-bottom: 1%;"}
+      %div{:class => "form-group control-group has_and_belongs_to_many_association_type roles_field"}
+        =select "", "fieldSelect", field_collection, { id: "fieldSelect", name: "fieldSelect", selected: [171] }, {data: { filteringmultiselect: true  }, multiple: true}
+    %fieldset
+      <legend>Please select one of the following</legend>
+      <input type="radio" name="choice" id="customChoice" value="Custom" onclick="handleClick();" checked/><label for="customChoice">Custom Inputs</label><br />
+      <input type="radio" name="choice" id="presetChoice" value="Preset" onclick="handleClick();"/><label for="presetChoice">Preset Inputs</label><br />
+      <input type="radio" name="choice" id="randomChoice" value="Random" onclick="handleClick();"/><label for="randomChoice">Random Inputs</label><br />
+    %div{:class => "col-sm-10", :style => "display: grid; grid-template-columns: 1fr 5fr; grid-row-gap: 5px; margin-top: 1%;"}
+    %div{:class => "col-sm-11"}
+      %fieldset{:id => "col-sm-11-fieldset", :style => "display: none; grid-template-columns: 1fr 5fr; grid-row-gap: 5px;"}
+        %label{:for => "stringPreset", :display => "contents"} String Preset Value
+        %input{:type => "text", :name => "stringPreset", :id => "stringPreset"}
+        %label{:for => "integerPreset"} Integer Preset Value
+        %input{:type => "number", :name => "integerPreset", :id => "integerPreset"}
+        %label{:for => "decimalPreset"} Decimal Preset Value
+        %input{:type => "number", :step => "0.01", :name => "decimalPreset", :id => "decimalPreset"}
+        %label{:for => "floatPreset"} Float Preset Value
+        %input{:type => "number", :step => "0.00001", :name => "floatPreset", :id => "floatPreset"}
+        %label{:for => "moneyPreset"} Money Preset Value
+        %input{:type => "number", :step => "0.01", :min => "0.00", :name => "moneyPreset", :id => "moneyPreset"}
+        %label{:for => "datePreset"} Date Preset Value
+        %input{:type => "date", :name => "datePreset", :id => "datePreset"}
+  = render "rails_admin/main/bulk_properties_submit_buttons"
+
+%script#formControls
+  :plain
+      var rubyModel = "none";
+      var fieldTypeJson = #{ field_hash.to_json };
+      var customRadBut = document.getElementById("customChoice");
+      var presetRadBut = document.getElementById("presetChoice");
+      var randomRadBut = document.getElementById("randomChoice");
+
+      function handleClick()
+      {
+        customDiv = document.getElementsByClassName("col-sm-10")[0];
+        presetDiv = document.getElementById("col-sm-11-fieldset");
+        if(presetRadBut.checked)
+        {
+          presetDiv.style.display = "grid";
+          presetDiv.style.gridTemplateColumn = "1fr 5fr";
+          presetDiv.style.gridRowGap = "5px";
+          customDiv.style.display = "none";
+        }
+        if(customRadBut.checked)
+        {
+          presetDiv.style.display = "none";
+          customDiv.style.display = "grid";
+          customDiv.style.gridTemplateColumn = "1fr 5fr";
+          customDiv.style.gridRowGap = "5px";
+        }
+        if(randomRadBut.checked)
+        {
+          presetDiv.style.display = "none";
+          customDiv.style.display = "none";
+        }
+      }
+      function createLabsAndCustomInputs(options, fieldDiv){
+        for(var i=0; i < options.length; i++)
+        {
+          if(!document.getElementById(options[i].value))
+          {
+            var fieldElement = document.createElement("label");
+            fieldElement.style.display = "contents";
+            fieldElement.innerHTML = options[i].value;
+            fieldElement.id = options[i].value;
+            fieldDiv.appendChild(fieldElement);
+            fieldType = fieldTypeJson[options[i].value]
+            if(fieldType == "String" || fieldType == "Mongoid::CaseInsensitiveString")
+            {
+              var fieldInput = document.createElement("input");
+              fieldInput.type = "text";
+              fieldInput.id = options[i].value + "_input";
+              fieldInput.name = options[i].value + "_input";
+              fieldDiv.appendChild(fieldInput);
+            }
+            if(fieldType == "Integer")
+            {
+              var fieldInput = document.createElement("input");
+              fieldInput.type = "number";
+              fieldInput.id = options[i].value + "_input";
+              fieldInput.name = options[i].value + "_input";
+              fieldDiv.appendChild(fieldInput);
+            }
+            if(fieldType == "Float" || fieldType == "BigDecimal")
+            {
+              var fieldInput = document.createElement("input");
+              fieldInput.type = "number";
+              fieldInput.id = options[i].value + "_input";
+              fieldInput.name = options[i].value + "_input";
+              fieldInput.step = "0.01";
+              fieldDiv.appendChild(fieldInput);
+            }
+            if(fieldType == "Money")
+            {
+              var fieldInput = document.createElement("input");
+              fieldInput.type = "number";
+              fieldInput.id = options[i].value + "_input";
+              fieldInput.name = options[i].value + "_input";
+              fieldInput.min = "0.00";
+              fieldInput.step = "0.01";
+              fieldDiv.appendChild(fieldInput);
+            }
+            if(fieldType == "Date")
+            {
+              var fieldInput = document.createElement("input");
+              fieldInput.type = "date";
+              fieldInput.id = options[i].value + "_input";
+              fieldInput.name = options[i].value + "_input";
+              fieldDiv.appendChild(fieldInput);
+            }
+            brEle = document.createElement("br");
+            fieldDiv.appendChild(brEle);
+          }
+        }
+      }
+      document.addEventListener("DOMContentLoaded", function(event){
+      	document.getElementsByClassName("ui-icon ui-icon-circle-triangle-e ra-multiselect-item-add")[0].onclick = function(){
+          rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
+          rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
+          fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+          options = rightSelect.options;
+          createLabsAndCustomInputs(options, fieldDiv);
+        }
+
+        document.getElementsByClassName("ui-icon ui-icon-circle-triangle-w ra-multiselect-item-remove")[0].onclick = function(){
+          rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
+          rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
+          fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+          fieldDiv.innerHTML = '';
+          options = rightSelect.options;
+          createLabsAndCustomInputs(options, fieldDiv);
+        }
+
+        document.getElementsByClassName("ra-multiselect-item-add-all")[0].onclick = function(){
+          rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
+          rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
+          fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+          options = rightSelect.options;
+          createLabsAndCustomInputs(options, fieldDiv);
+        }
+
+        document.getElementsByClassName("ra-multiselect-item-remove-all")[0].onclick = function(){
+          rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
+          rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
+          fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+          fieldDiv.innerHTML = '';
+          options = rightSelect.options;
+          createLabsAndCustomInputs(options, fieldDiv);
+        }
+      });
