@@ -36,6 +36,8 @@ module RailsAdmin
               @object = @abstract_model.new
               sanitize_params_for!(request.xhr? ? :modal : :create)
               @object.check_child_parents = true if @model_name == "Table" #set flag on this object specifially, so that rails doesn't try to validate each child too
+              @object.check_fields_parents params["table"]["field_ids"] if @model_name == "Table"
+              params["table"]["field_ids"] = [] if @object.invalid_fields && !@object.invalid_fields.empty? # remove invalid fields from being assigned
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:create, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
@@ -111,6 +113,7 @@ module RailsAdmin
                     @userPropertyValues = params[:user][:user_property_list]
                   end
                 end
+                @object.restore_attribute! :child_ids if @model_name == "Table"
                 handle_save_error
               end
 

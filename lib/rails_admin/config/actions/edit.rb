@@ -138,6 +138,8 @@ module RailsAdmin
               sanitize_params_for!(request.xhr? ? :modal : :update)
               @object.make_associated_attributes_dirty if ["Role", "Table", "User", "Filter", "PopulateAction", "DataViewConnector"].include? @abstract_model.model_name
               @object.check_child_parents = true if @model_name == "Table" #set flag on this object specifially, so that rails doesn't try to validate each child too
+              @object.check_fields_parents params["table"]["field_ids"] if @model_name == "Table"
+              params["table"]["field_ids"] = [] if @object.invalid_fields && !@object.invalid_fields.empty? # skip field 
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:update, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
@@ -354,6 +356,7 @@ module RailsAdmin
                   format.js { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
                 end
               else
+                @object.restore_attribute! :child_ids if @model_name == "Table"
                 handle_save_error :edit
               end
               invalidate_cache_key(@model_name)
