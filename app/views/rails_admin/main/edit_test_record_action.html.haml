@@ -15,10 +15,21 @@
   -table_field_hash[table.name] = Hash.new
   -table_fields.each do |tab_field|
     -table_field_hash[table.name][tab_field.name] = tab_field.field_type
-= form_tag('/admin/test_record/test_record_action?'+'Application='+@application.id.to_s+'&Company='+@company.id.to_s+'&locale=en', method: :put, :class => "form-horizontal denser") do
+
+-editTemplateName = @object.template_name
+-editSelectedFields = JSON.parse(@object.selected_fields).sort
+-editFieldInputs = @object.selected_inputs
+-editDropdowns = @object.selected_dropdowns
+-editNumberOfRecords = @object.number_of_records
+-editSeperators = @object.selected_seperators
+-editSelectedTables = JSON.parse(@object.selected_tables).sort
+
+-full_collection = full_collection.reject {|w| editSelectedFields.include? w}
+
+= form_tag('/admin/test_record/test_record_action?'+'Application='+params[:Application]+'&Company='+params[:Company]+'&locale=en', method: :put, :class => "form-horizontal denser") do
   %fieldset
     <span class="col-sm-2" > <label class="control-label" for="fieldSelect" style="float: right;" >Template Name</label> </span><span class="col-sm-1" , id="padding_span", style="padding-right:0px;"></span>
-    %input{:type => "text", :id => "templateName", :name => "templateName", :style => "width: 25%;"}
+    %input{:type => "text", :id => "templateName", :name => "templateName", :style => "width: 25%;", :value => editTemplateName}
     %br
     %br
     <span class="col-sm-2" > <label class="control-label" for="fieldSelect" style="float: right;" >Select Fields</label> </span><span class="col-sm-1" , id="padding_span", style="padding-right:0px;"></span>
@@ -33,9 +44,10 @@
       %div{:class => "col-sm-11", :style => "display: grid; grid-template-columns: 1fr 5fr; grid-row-gap: 5px; margin-top: 1%;"}
     %br
     %label{:for => "numOfRecordsInput"}Number of records to generate:
-    %input{:type => "number", :id => "numOfRecordsInput", :name => "numOfRecordsInput", :min => 1, :value => 1}
+    %input{:type => "number", :id => "numOfRecordsInput", :name => "numOfRecordsInput", :min => 1, :value => editNumberOfRecords}
     %button{:type => "button", :id => "genRecordBut", :name => "genRecordBut", :onclick => "genRecords();"}Generate Records
     %input{:type => "hidden", :id => "genRecordInput", :name => "genRecordInput"}
+    %input{:type => "hidden", :id => "previousSelectedFields", :name => "previousSelectedFields", :value => editSelectedFields}
   = render "rails_admin/main/bulk_properties_submit_buttons"
 
 %script#formControls
@@ -46,6 +58,12 @@
     var tableArrayNames = #{ table_collection.to_json };
     var tableFieldArrayNames = #{ table_field_hash.to_json };
 
+    var editSelectedFields = #{ editSelectedFields };
+    var editDropdowns = #{ editDropdowns };
+    var editInputFields = #{ editFieldInputs };
+    var editSeperators = #{ editSeperators };
+    var editSelectedTables = #{ editSelectedTables };
+
     function genRecords()
     {
       genRecInp = document.getElementById("genRecordInput");
@@ -54,7 +72,7 @@
         type: "PUT",
         data: $(".form-horizontal.denser").serialize(),
         async: false,
-        url: "test_record_action",
+        url: "/admin/test_record/test_record_action",
         success: function() {
           alert("Records were generated");
         }
@@ -246,11 +264,69 @@
     document.addEventListener("DOMContentLoaded", function(event){
       searchBar = document.getElementsByClassName("form-control ra-multiselect-search")[0];
       searchBar.placeholder = "";
+      //Add in selected fields in the right side for edit section
+      document.getElementsByClassName("controls col-sm-10")[0].style.width = "100%";
+      document.getElementsByClassName("col-sm-2 control-label")[0].remove();
+      document.getElementsByClassName("form-group form-actions model_name_test_record")[0].remove();
+      editRightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0].children[0].children[0];
+      editFieldDiv = document.getElementsByClassName("col-sm-10")[1];
+      editTableDiv = document.getElementsByClassName("col-sm-11")[0];
+      for(var i = 0; i < editSelectedFields.length; i++)
+      {
+        if(editSelectedFields[i] != "")
+        {
+          var opt = editSelectedFields[i];
+          var el = document.createElement("option");
+          el.textContent = opt;
+          el.value = opt;
+          editRightMulti.appendChild(el);
+        }
+      }
+      createLabsAndCustomInputs(editRightMulti.options, editFieldDiv, editTableDiv);
+
+      //Change table iterations
+
+
+      //Change the selected fields to what they were saved to
+      for(var key in editDropdowns)
+      {
+        var value = editDropdowns[key];
+        drop = document.getElementById(key);
+        if(value == "Defined value")
+        {
+          drop.selectedIndex = 1;
+          drop.onchange();
+          inputKey = key.slice(0, -9);
+          inputValue = editInputFields[inputKey + "_input"];
+          inputField = document.getElementById(inputKey + "_input");
+          inputField.value = inputValue;
+        }
+        else if(value == "Value from list")
+        {
+          drop.selectedIndex = 2;
+          drop.onchange();
+          inputKey = key.slice(0, -9);
+          inputValue = editInputFields[inputKey + "_input"];
+          inputField = document.getElementById(inputKey + "_input");
+          inputField.value = inputValue;
+          seperatorValue = editSeperators[inputKey + "_seperator"];
+          seperatorField = document.getElementById(inputKey + "_seperator");
+          seperatorField.value = seperatorValue;
+        }
+      }
+
+      for(var i = 0; i < editSelectedTables.length; i++)
+      {
+        tableIteration1 = document.getElementById(editSelectedTables[i] + "iteration_input");
+        tableIteration1.value = editInputFields[editSelectedTables[i] + "iteration_input"];
+        tableIteration2 = document.getElementById(editSelectedTables[i] + "second_iteration_input");
+        tableIteration2.value = editInputFields[editSelectedTables[i] + "second_iteration_input"];
+      }
 
     	document.getElementsByClassName("ui-icon ui-icon-circle-triangle-e ra-multiselect-item-add")[0].onclick = function(){
         rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
         rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
-        fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+        fieldDiv = document.getElementsByClassName("col-sm-10")[1];
         tableDiv = document.getElementsByClassName("col-sm-11")[0];
         options = rightSelect.options;
         createLabsAndCustomInputs(options, fieldDiv, tableDiv);
@@ -259,7 +335,7 @@
       document.getElementsByClassName("ui-icon ui-icon-circle-triangle-w ra-multiselect-item-remove")[0].onclick = function(){
         rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
         rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
-        fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+        fieldDiv = document.getElementsByClassName("col-sm-10")[1];
         fieldDiv.innerHTML = '';
         tableDiv = document.getElementsByClassName("col-sm-11")[0];
         tableDiv.innerHTML = '';
@@ -270,7 +346,7 @@
       document.getElementsByClassName("ra-multiselect-item-add-all")[0].onclick = function(){
         rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
         rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
-        fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+        fieldDiv = document.getElementsByClassName("col-sm-10")[1];
         tableDiv = document.getElementsByClassName("col-sm-11")[0];
         options = rightSelect.options;
         createLabsAndCustomInputs(options, fieldDiv, tableDiv);
@@ -279,7 +355,7 @@
       document.getElementsByClassName("ra-multiselect-item-remove-all")[0].onclick = function(){
         rightMulti = document.getElementsByClassName("ra-multiselect-column ra-multiselect-right")[0];
         rightSelect = rightMulti.getElementsByClassName("form-control ra-multiselect-selection")[0];
-        fieldDiv = document.getElementsByClassName("col-sm-10")[0];
+        fieldDiv = document.getElementsByClassName("col-sm-10")[1];
         fieldDiv.innerHTML = '';
         tableDiv = document.getElementsByClassName("col-sm-11")[0];
         tableDiv.innerHTML = '';
