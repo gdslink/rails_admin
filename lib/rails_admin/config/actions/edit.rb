@@ -360,6 +360,7 @@ module RailsAdmin
                 handle_save_error :edit
               end
               invalidate_cache_key(@model_name)
+              Rails.cache.delete("company::#{@company.key}::application::#{@object.key}::#{current_user.cache_key}", namespace: 'tenants') if @model_name == "Application"
             end
           end
         end
