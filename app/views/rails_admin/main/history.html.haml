@@ -32,13 +32,13 @@
     - @history.each_with_index do |object, index|
       %tr
         - unless object.created_at.nil?
-          %td= l(object.created_at, format: :long, default: l(object.created_at, format: :long, locale: :en))
-        %td= object.username
+          %td{:class => "history-spacing"}= l(object.created_at, format: :long, default: l(object.created_at, format: :long, locale: :en))
+        %td{:class => "history-spacing"}= object.username
         - if @general
           - if o = @abstract_model.get(object.item)
             - label = o.send(@abstract_model.config.object_label_method)
             - if show_action = action(:show, @abstract_model, o)
-              %td= link_to(label, url_for(action: show_action.action_name, model_name: @abstract_model.to_param, id: o.id, params: @current_scope_parameters), class: 'pjax')
+              %td{:class => "history-spacing"}= link_to(label, url_for(action: show_action.action_name, model_name: @abstract_model.to_param, id: o.id, params: @current_scope_parameters), class: 'pjax')
             - else
               %td= label
           - else
