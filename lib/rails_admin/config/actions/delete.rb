@@ -76,6 +76,10 @@ module RailsAdmin
                 end
               else
                 flash[:error] = t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done'))
+                if @object.errors.messages[:rank]
+                  errors = [t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done')), @object.errors.messages[:rank][0]]
+                  flash[:error] = errors.join("<br/>").html_safe
+                end
                 redirect_path = back_or_index
               end
               invalidate_cache_key(@model_name)
