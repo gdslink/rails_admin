@@ -91,7 +91,9 @@ module RailsAdmin
                       @object.logo_image_file_name = grid_thumb_file.id
                       @object.save
                     else
-                      flash[:error] = "Upload must be an image"
+                      message = "Uploaded image is not in the allowed format ("
+                      ASSET_TYPE_ALLOWED.each {|e| message <<   e.split("/")[1].upcase  + "#{(e == ASSET_TYPE_ALLOWED.last)? ')' : ', ' }"}
+                      flash[:error] = message
                     end
                   end
                 end
