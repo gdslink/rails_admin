@@ -12,6 +12,10 @@ module RailsAdmin
           [:get, :post]
         end
 
+        register_instance_option :pjax? do
+          false
+        end
+
         register_instance_option :controller do
           proc do
             if format = params[:json] && :json || params[:csv] && :csv || params[:xml] && :xml
