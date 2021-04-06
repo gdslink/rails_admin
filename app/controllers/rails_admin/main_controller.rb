@@ -167,13 +167,13 @@ module RailsAdmin
 
             picture_asset = PictureAsset.new
 
-            if PictureAsset.where(company_id: @company.id,  data_file_name: normalizedB ).size > 0 
-              if normalizedB.include?(".")
-                normalizedB = normalizedB.match(/.*(?=\.)/)[0] + "_1" + normalizedB.match(/\.[^.]+$/)[0]
-              else
-                normalizedB = normalizedB + "_1"
-              end
-            end
+            # if PictureAsset.where(company_id: @company.id,  data_file_name: normalizedB ).size > 0 
+            #   if normalizedB.include?(".")
+            #     normalizedB = normalizedB.match(/.*(?=\.)/)[0] + "_1" + normalizedB.match(/\.[^.]+$/)[0]
+            #   else
+            #     normalizedB = normalizedB + "_1"
+            #   end
+            # end
 
             if using_S3
               fileDownloaded = s3.bucket(bucketName).object("#{b}")
