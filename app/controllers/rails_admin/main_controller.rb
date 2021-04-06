@@ -156,8 +156,8 @@ module RailsAdmin
         files = Dir["#{local_path}/**/*"]            
         importObjects = files.each.map { |f| f if File.file?(f) and f.include? "content_" }.compact 
       end
-
-      result = ActiveRecord::Base.connection.exec_query("SELECT unique_id from ckeditor_assets where type = 'Ckeditor::Picture' and assetable_id = #{@company.id}")
+      warnings = []
+      result = ActiveRecord::Base.connection.exec_query("SELECT unique_id, data_file_name from ckeditor_assets where type = 'Ckeditor::Picture' and assetable_id = #{@company.id}")
       result.rows.each do |row|
         importObjects.each do |b|
           if( b.include?(row[0]) and  b.split('/')[-1].starts_with? "content_")          
@@ -244,11 +244,12 @@ module RailsAdmin
                 Mongoid.override_client(:default)
               end             
             else
-              flash[:error] = "Upload must be an image"
+              warnings << row[0]+"/"+row[1]
             end
           end
         end
       end
+      flash[:warning] = "The following objects are not in the supported image format and have not been imported: " + warnings.join(", ") if warnings.size > 0
       flash[:success] = "Assets imported from old system."
       redirect_to "/admin/picture_asset"
     end
