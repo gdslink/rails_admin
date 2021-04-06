@@ -25,6 +25,7 @@ module RailsAdmin
               @newObject.key = @newObject.key + "_copy_" + x.to_s
               @newObject.screen_flows = @object.screen_flows
               if @newObject.save
+                invalidate_cache_key("Filter")
                 @auditing_adapter && @auditing_adapter.create_object(@newObject, @abstract_model, _current_user)
                 respond_to do |format|
                   format.html { redirect_to_on_success }
