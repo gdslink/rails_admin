@@ -18,7 +18,7 @@ module RailsAdmin
             if request.get? # EDIT
               respond_to do |format|
                 format.html { render @action.template_name }
-                format.js   { render @action.template_name, layout: false }
+                format.js { render @action.template_name, layout: false }
               end
             elsif request.put?
               if params[:pattern][:pattern]
@@ -28,38 +28,29 @@ module RailsAdmin
                 pattern.name = params[:pattern][:name]
                 pattern.description = params[:pattern][:description]
                 pattern.pattern_type = params[:pattern][:pattern_type]
+                pattern.content_type = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
                 pattern.pattern_file_name = params[:pattern][:pattern].original_filename
                 pattern.pattern_file_size = File.size(tempFile).to_i
                 pattern.application_id = params[:Application].to_i
                 pattern.pattern_content_type = params[:pattern][:pattern].content_type
 
-                file_mimes = {"csv":["text/csv","text/plain","application/vnd.ms-excel","application/csv"],"rtf":["application/msword","application/rtf","text/rtf"]}
-
-                currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
-
-                if ["csv","rtf"].index(pattern.pattern_type) != nil
-                  if file_mimes[pattern.pattern_type.to_sym].index(currentFileType) != nil
+                if %w[csv rtf].index(pattern.pattern_type) != nil
+                  if pattern.valid?
                     mongodb_attachment_db = CaseCenter::Config::Reader.get('mongodb_attachment_database')
-
-                    if mongodb_attachment_db == nil
-                      raise Exception.new "mongodb_attachment_database not configured"
-                    end
+                    raise Exception.new "mongodb_attachment_database not configured" if mongodb_attachment_db == nil
                     Mongoid.override_client(:attachDb)
-
                     begin
-                    grid_fs = Mongoid::GridFS
-                    #Encryption
-                    public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
-                    if( !public_key_file )
-                      raise Exception.new "attachments_public_key not configured"
-                    end
-                    public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
-                    cipher = OpenSSL::Cipher.new('aes-256-cbc')
-                    cipher.encrypt
-                    key = cipher.random_key
-                    encData = cipher.update(File.read(file))
-                    encData << cipher.final
-                    #End of Encryption
+                      grid_fs = Mongoid::GridFS
+                      #Encryption
+                      public_key_file = CaseCenter::Config::Reader.get('attachments_public_key');
+                      raise Exception.new "attachments_public_key not configured" if (!public_key_file)
+                      public_key = OpenSSL::PKey::RSA.new(File.read(public_key_file))
+                      cipher = OpenSSL::Cipher.new('aes-256-cbc')
+                      cipher.encrypt
+                      key = cipher.random_key
+                      encData = cipher.update(File.read(file))
+                      encData << cipher.final
+                      #End of Encryption
 
                       File.open(file, 'wb') do |f|
                         f.write(encData)
@@ -72,6 +63,7 @@ module RailsAdmin
                       pattern.pattern_file_id = grid_file.id
                     ensure
                       Mongoid.override_client(:default)
+
                     end
                     @object = pattern
                     if pattern.save
@@ -79,13 +71,11 @@ module RailsAdmin
                       @object = pattern
                       respond_to do |format|
                         format.html { redirect_to_on_success }
-                        format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
+                        format.js { render json: { id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label } }
                       end
-                    else 
+                    else
                       if params[:pattern][:pattern]
-                        if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                          Mongoid.override_client(:attachDb)
-                        end
+                        Mongoid.override_client(:attachDb) if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                         begin
                           grid_fs.delete(pattern.pattern_file_id)
                         ensure
@@ -113,18 +103,18 @@ module RailsAdmin
                 pattern.description = params[:pattern][:description]
                 pattern.pattern_type = params[:pattern][:pattern_type]
                 pattern.application_id = params[:Application].to_i
-                pattern.html_block_id = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:id)[0]
-                pattern.html_block_key = HtmlBlock.where(:name=>params[:pattern][:html_block_id]).pluck(:key)[0]
+                pattern.html_block_id = HtmlBlock.where(:name => params[:pattern][:html_block_id]).pluck(:id)[0]
+                pattern.html_block_key = HtmlBlock.where(:name => params[:pattern][:html_block_id]).pluck(:key)[0]
                 if pattern.save
                   @auditing_adapter && @auditing_adapter.create_object(pattern, @abstract_model, _current_user)
                   @object = pattern
                   respond_to do |format|
                     format.html { redirect_to_on_success }
-                    format.js { render json: {id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label} }
+                    format.js { render json: { id: pattern.id.to_s, label: @model_config.with(object: pattern).object_label } }
                   end
-                else 
+                else
                   if params[:pattern][:pattern]
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
                     begin
@@ -153,7 +143,7 @@ module RailsAdmin
           is_visible = authorized?
           if !bindings[:controller].current_user.is_root && !bindings[:controller].current_user.is_admin && !bindings[:abstract_model].try(:model_name).nil?
             model_name = bindings[:controller].abstract_model.model_name
-            is_visible = (bindings[:controller].current_ability.can? :"pattern_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record] ) && model_name == "Pattern"
+            is_visible = (bindings[:controller].current_ability.can? :"pattern_action_#{model_name}", bindings[:controller].current_scope["Application"][:selected_record]) && model_name == "Pattern"
           end
           is_visible
         end
