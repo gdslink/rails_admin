@@ -15,15 +15,43 @@ module RailsAdmin
               objectNameCopy = @object.name + "_copy_"
               objectNameLength = objectNameCopy.length + 1  
               @queues = Filter.where('name LIKE ? and application_id = ? and length(name) = ?',"%#{objectNameCopy}%", "#{@application.id}", "#{objectNameLength}")
-              x = 1
+              @queuesKey = Filter.where('`key` LIKE ? and application_id = ? and length(`key`) = ?',"%#{objectNameCopy}%", "#{@application.id}", "#{objectNameLength}")
+              
+              @allQueues = @queues.concat @queuesKey
+              @allQueues.uniq!
 
-              @queues.each do |q|
+              x = 1
+              @allQueues.each do |q|
                 x=x+1
               end
 
-              @newObject.name = @newObject.name + "_copy_" + x.to_s
-              @newObject.key = @newObject.key + "_copy_" + x.to_s
-              @newObject.screen_flows = @object.screen_flows
+              if !@allQueues.empty?
+                @queueNamesKeys = []
+                @queueNumbersOnly = []
+                @allQueues.each do |q|
+                  @queueNamesKeys.push(q.name, q.key)
+                end
+                @queueNamesKeys.uniq!
+                @queueNamesKeys.each do |q|
+                  j = Integer(q[-1]) rescue nil
+                  if j.is_a? Integer
+                    @queueNumbersOnly.push(q[-1])
+                  end
+                end
+                @queueNumbersOnly = @queueNumbersOnly.sort!
+                newNameNumber = @queueNumbersOnly.last.to_i + 1
+                @newObject.name = @newObject.name + "_copy_" + newNameNumber.to_s
+                @newObject.key = @newObject.key + "_copy_" + newNameNumber.to_s
+              else
+                @newObject.name = @newObject.name + "_copy_" + x.to_s
+                @newObject.key = @newObject.key + "_copy_" + x.to_s
+              end
+
+              @object.filter_screen_flows.each do |fsf|
+                newFsf = fsf.dup
+                @newObject.filter_screen_flows.push(newFsf)
+              end
+              @newObject.fields = @object.fields
               if @newObject.save
                 @auditing_adapter && @auditing_adapter.create_object(@newObject, @abstract_model, _current_user)
                 respond_to do |format|

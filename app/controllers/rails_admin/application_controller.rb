@@ -116,9 +116,7 @@ module RailsAdmin
     end
 
     def _authorize!
-      if CaseCenter::Config::Reader.get('saml_authentication') == false
-        instance_eval(&RailsAdmin::Config.authorize_with)
-      end
+      instance_eval(&RailsAdmin::Config.authorize_with)
     end
 
     def _scope_current_user!
