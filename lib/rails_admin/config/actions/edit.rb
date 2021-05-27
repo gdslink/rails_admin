@@ -138,6 +138,8 @@ module RailsAdmin
               sanitize_params_for!(request.xhr? ? :modal : :update)
               @object.make_associated_attributes_dirty if ["Role", "Table", "User", "Filter", "PopulateAction", "DataViewConnector"].include? @abstract_model.model_name
               @object.check_child_parents = true if @model_name == "Table" #set flag on this object specifially, so that rails doesn't try to validate each child too
+              @object.check_fields_parents params["table"]["field_ids"] if @model_name == "Table"
+              params["table"]["field_ids"] = [] if @model_name == "Table" && @object.invalid_fields && !@object.invalid_fields.empty? # skip field 
               @object.set_attributes(params[@abstract_model.param_key])
               @authorization_adapter && @authorization_adapter.attributes_for(:update, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
@@ -145,6 +147,44 @@ module RailsAdmin
               changes = @object.changes
               changes.delete(:authentication_token)
               changes.each { |k, v| changes.delete(k) if v[0] == v[1] } # delete the attribute from changes hash if old values = new values
+
+              if @model_name == "TestRecord"
+                @object.template_name = params[:templateName]
+                @object.application_id = @application.id
+                selectedFields = params[:fieldSelect].concat JSON.parse(params[:previousSelectedFields])
+                selectedFields.sort!
+                @object.selected_fields = selectedFields
+                @object.selected_inputs = params.select { |k| k.end_with? "_input" }.to_json
+                @object.selected_dropdowns = params.select { |k| k.end_with? "_dropdown" }.to_json
+                @object.selected_seperators = params.select { |k| k.end_with? +"_seperator" }.to_json
+                numberOfRecords = params[:numOfRecordsInput].to_i
+                @object.number_of_records = numberOfRecords
+                tableParams = params.select { |k| k.starts_with? "table_" }
+                tableParamInputs = tableParams.select { |table| table.end_with? "_input" }
+                selectedTables = []
+                record = @application.get_mongoid_class.new
+                @object.data_file_name = record["_id"].to_s
+                #Loop over tables
+                tableParamInputs.each { |selFieldIn|
+                  selField = selFieldIn[0]
+                  #Check if the selected field is a table, if so push to selectedTables array.
+                  if !tableParams.nil?
+                    selectedFields.each { |x|
+                      if x != ""
+                        if selField.start_with? "table_" + x
+                          selectedTables.push(x)
+                        end
+                      end
+                    }
+                  end
+                }
+                #Now have the fields that were selected that are tables in selectedTables array.
+                selectedTables = selectedTables.uniq
+                #Sort array by length, longest first so the tableParamInputs.select works correctly (e.g. child_table and child_table_2)
+                selectedTables = selectedTables.sort_by(&:length)
+                selectedTables = selectedTables.reverse
+                @object.selected_tables = selectedTables.to_json
+              end
 
               if @model_name == "XslSheet"
                 changes.delete(:aes_key)
@@ -176,13 +216,10 @@ module RailsAdmin
                   if params[:pattern_file_input]
                     tempFile = params[:pattern_file_input].tempfile
                     file = File.open(tempFile)
-
-                    currentFileType = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
-
-                    if ["application/rtf", "text/rtf", "text/csv", "text/plain", "application/csv", "application/vnd.ms-excel"].index(currentFileType) != nil
-                      if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
-                        Mongoid.override_client(:attachDb)
-                      end
+                    @object.pattern_type = params[:pattern][:pattern_type]
+                    @object.content_type = Terrapin::CommandLine.new('file', '-b --mime-type :file').run(file: tempFile.path).strip
+                    if @object.valid?
+                      Mongoid.override_client(:attachDb) if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       begin
                         grid_fs = Mongoid::GridFS
                         #Encryption
@@ -199,12 +236,10 @@ module RailsAdmin
                         end
                         encrypted_aes = Base64.encode64(public_key.public_encrypt(key))
                         @object.aes_key = encrypted_aes
-
                         grid_file = grid_fs.put(file.path)
                         @object.pattern_file_id = grid_file.id
                         @object.pattern_file_name = params[:pattern_file_input].original_filename
                         @object.pattern_file_size = File.size(tempFile).to_i
-                        @object.pattern_content_type = params[:pattern_file_input].content_type
                       ensure
                         Mongoid.override_client(:default)
                       end
@@ -212,11 +247,10 @@ module RailsAdmin
                         @object.unset(:html_block_id)
                         @object.unset(:html_block_key)
                       end
-                    else
-                      flash[:error] = "Upload must be an rtf/csv"
                     end
                   end
                 end
+
               end
 
               if @model_name == "Company"
@@ -258,7 +292,7 @@ module RailsAdmin
                     ensure
                       Mongoid.override_client(:default)
                     end
-                    if(CaseCenter::Config::Reader.get('mongodb_attachment_database'))
+                    if (CaseCenter::Config::Reader.get('mongodb_attachment_database'))
                       Mongoid.override_client(:attachDb)
                     end
                     grid_file = grid_fs.put(file.path)
@@ -351,9 +385,10 @@ module RailsAdmin
                 @auditing_adapter && @auditing_adapter.update_object(@object, @abstract_model, _current_user, changes) unless changes.empty?
                 respond_to do |format|
                   format.html { redirect_to_on_success }
-                  format.js { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
+                  format.js { render json: { id: @object.id.to_s, label: @model_config.with(object: @object).object_label } }
                 end
               else
+                @object.restore_attribute! :child_ids if @model_name == "Table"
                 handle_save_error :edit
               end
               invalidate_cache_key(@model_name)

@@ -53,6 +53,7 @@ module RailsAdmin
               end
               @newObject.fields = @object.fields
               if @newObject.save
+                invalidate_cache_key("Filter")
                 @auditing_adapter && @auditing_adapter.create_object(@newObject, @abstract_model, _current_user)
                 respond_to do |format|
                   format.html { redirect_to_on_success }

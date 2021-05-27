@@ -68,10 +68,6 @@ module RailsAdmin
                     grid_fs.delete(@object.pattern_file_id.to_s)
                     Mongoid.override_client(:default)
                   end
-                  if @abstract_model.model_name == "TestRecord"
-                    assocRecord = @application.get_mongoid_class.find(@object.record_id)
-                    assocRecord.delete
-                  end
                   @application.generate_mongoid_model if ["Field", "Status", "Table"].include? @model_name
                   flash[:success] = t('admin.flash.successful', name: @model_config.label, action: t('admin.actions.delete.done'))
                   redirect_path = (%w{Company Application}.include? @model_name) ? dashboard_path : index_path
@@ -80,6 +76,10 @@ module RailsAdmin
                 end
               else
                 flash[:error] = t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done'))
+                if @object.errors.messages[:rank]
+                  errors = [t('admin.flash.error', name: @model_config.label, action: t('admin.actions.delete.done')), @object.errors.messages[:rank][0]]
+                  flash[:error] = errors.join("<br/>").html_safe
+                end
                 redirect_path = back_or_index
               end
               invalidate_cache_key(@model_name)
