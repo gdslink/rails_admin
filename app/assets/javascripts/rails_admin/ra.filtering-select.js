@@ -92,6 +92,8 @@
       if(select.attr('placeholder'))
         input.attr('placeholder', select.attr('placeholder'))
 
+      $("div[class='gds content expanded']").scroll(function(){input.autocomplete("close");})
+
       input.data("ui-autocomplete")._renderItem = function(ul, item) {
         return $("<li></li>")
           .data("ui-autocomplete-item", item)
