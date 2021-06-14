@@ -159,7 +159,7 @@ module RailsAdmin
     def menu_for(parent, abstract_model = nil, object = nil, only_icon = false)
       # perf matters here (no action view trickery)
       actions = actions(parent, abstract_model, object).select { |a| a.http_methods.include?(:get) }
-      actions.reject{ |action| parent == :collection && action.action_name == :export && @objects.empty? }.collect do |action|
+      actions.reject{ |action| parent == :collection && action.action_name == :export && @objects.try(:empty?) }.collect do |action|
         wording = wording_for(:menu, action)
         %(
           <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if current_action?(action)}">
